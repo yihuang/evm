@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 
+	ibcapi "github.com/cosmos/ibc-go/v10/modules/core/api"
 	"github.com/spf13/cast"
 
 	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
@@ -40,6 +41,7 @@ import (
 	"github.com/cosmos/evm/x/erc20"
 	erc20keeper "github.com/cosmos/evm/x/erc20/keeper"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
+	erc20v2 "github.com/cosmos/evm/x/erc20/v2"
 	"github.com/cosmos/evm/x/feemarket"
 	feemarketkeeper "github.com/cosmos/evm/x/feemarket/keeper"
 	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
@@ -47,6 +49,7 @@ import (
 	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
 	"github.com/cosmos/evm/x/ibc/transfer"
 	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
+	transferv2 "github.com/cosmos/evm/x/ibc/transfer/v2"
 	"github.com/cosmos/evm/x/vm"
 	corevm "github.com/cosmos/evm/x/vm/core/vm"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
@@ -537,11 +540,18 @@ func NewExampleApp(
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 
+	var transferStackV2 ibcapi.IBCModule
+	transferStackV2 = transferv2.NewIBCModule(app.TransferKeeper)
+	transferStackV2 = erc20v2.NewIBCMiddleware(transferStackV2, app.Erc20Keeper)
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
+	ibcRouterV2 := ibcapi.NewRouter()
+	ibcRouterV2.AddRoute(ibctransfertypes.ModuleName, transferStackV2)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
+	app.IBCKeeper.SetRouterV2(ibcRouterV2)
 
 	clientKeeper := app.IBCKeeper.ClientKeeper
 	storeProvider := app.IBCKeeper.ClientKeeper.GetStoreProvider()
