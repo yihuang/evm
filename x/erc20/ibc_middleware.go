@@ -1,13 +1,15 @@
 package erc20
 
 import (
+	"errors"
+
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 
 	"github.com/cosmos/evm/ibc"
-	"github.com/cosmos/evm/x/erc20/keeper"
+	erc20types "github.com/cosmos/evm/x/erc20/types"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -21,11 +23,18 @@ var _ porttypes.IBCModule = &IBCMiddleware{}
 // the erc20 keeper and the underlying application.
 type IBCMiddleware struct {
 	*ibc.Module
-	keeper keeper.Keeper
+	keeper erc20types.ERC20Keeper
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application
-func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) IBCMiddleware {
+func NewIBCMiddleware(k erc20types.ERC20Keeper, app porttypes.IBCModule) IBCMiddleware {
+	if app == nil {
+		panic(errors.New("underlying application cannot be nil"))
+	}
+	if k == nil {
+		panic(errors.New("erc20 keeper cannot be nil"))
+	}
+
 	return IBCMiddleware{
 		Module: ibc.NewModule(app),
 		keeper: k,

@@ -3,6 +3,7 @@ package v2
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,7 +13,7 @@ import (
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
 	ibcapi "github.com/cosmos/ibc-go/v10/modules/core/api"
 
-	"github.com/cosmos/evm/x/erc20/keeper"
+	erc20types "github.com/cosmos/evm/x/erc20/types"
 )
 
 var _ ibcapi.IBCModule = &IBCMiddleware{}
@@ -22,14 +23,21 @@ var _ ibcapi.IBCModule = &IBCMiddleware{}
 // The logics are same as the IBCMiddleware, but this is a v2 version of the middleware
 type IBCMiddleware struct {
 	app    ibcapi.IBCModule
-	keeper keeper.Keeper
+	keeper erc20types.ERC20Keeper
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application
 func NewIBCMiddleware(
 	app ibcapi.IBCModule,
-	k keeper.Keeper,
+	k erc20types.ERC20Keeper,
 ) IBCMiddleware {
+	if app == nil {
+		panic(errors.New("underlying application cannot be nil"))
+	}
+	if k == nil {
+		panic(errors.New("erc20 keeper cannot be nil"))
+	}
+
 	return IBCMiddleware{
 		app:    app,
 		keeper: k,
