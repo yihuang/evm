@@ -25,7 +25,6 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	channeltypesv2 "github.com/cosmos/ibc-go/v10/modules/core/04-channel/v2/types"
-	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 
 	"github.com/cosmos/evm/evmd"
 	evmibctesting "github.com/cosmos/evm/ibc/testing"
@@ -36,43 +35,43 @@ const testclientid = "testclientid"
 type TransferTestSuiteV2 struct {
 	testifysuite.Suite
 
-	coordinator *ibctesting.Coordinator
+	coordinator *evmibctesting.Coordinator
 
 	// testing chains used for convenience and readability
-	evmChainA *ibctesting.TestChain
-	chainB    *ibctesting.TestChain
-	chainC    *ibctesting.TestChain
+	evmChainA *evmibctesting.TestChain
+	chainB    *evmibctesting.TestChain
+	chainC    *evmibctesting.TestChain
 
-	pathAToB *ibctesting.Path
-	pathBToC *ibctesting.Path
+	pathAToB *evmibctesting.Path
+	pathBToC *evmibctesting.Path
 
 	// chainB to evmChainA for testing OnRecvPacket, OnAckPacket, and OnTimeoutPacket
-	pathBToA *ibctesting.Path
+	pathBToA *evmibctesting.Path
 }
 
 const invalidPortID = "invalidportid"
 
 func (suite *TransferTestSuiteV2) SetupTest() {
 	suite.coordinator = evmibctesting.NewCoordinator(suite.T(), 1, 2)
-	suite.evmChainA = suite.coordinator.GetChain(ibctesting.GetChainID(1))
-	suite.chainB = suite.coordinator.GetChain(ibctesting.GetChainID(2))
-	suite.chainC = suite.coordinator.GetChain(ibctesting.GetChainID(3))
+	suite.evmChainA = suite.coordinator.GetChain(evmibctesting.GetChainID(1))
+	suite.chainB = suite.coordinator.GetChain(evmibctesting.GetChainID(2))
+	suite.chainC = suite.coordinator.GetChain(evmibctesting.GetChainID(3))
 
 	// setup between evmChainA and chainB
 	// NOTE:
 	// pathAToB.EndpointA = endpoint on evmChainA
 	// pathAToB.EndpointB = endpoint on chainB
-	suite.pathAToB = ibctesting.NewPath(suite.evmChainA, suite.chainB)
+	suite.pathAToB = evmibctesting.NewPath(suite.evmChainA, suite.chainB)
 
 	// setup between chainB and chainC
 	// pathBToC.EndpointA = endpoint on chainB
 	// pathBToC.EndpointB = endpoint on chainC
-	suite.pathBToC = ibctesting.NewPath(suite.chainB, suite.chainC)
+	suite.pathBToC = evmibctesting.NewPath(suite.chainB, suite.chainC)
 
 	// setup between chainB and evmChainA
 	// pathBToA.EndpointA = endpoint on chainB
 	// pathBToA.EndpointB = endpoint on evmChainA
-	suite.pathBToA = ibctesting.NewPath(suite.chainB, suite.evmChainA)
+	suite.pathBToA = evmibctesting.NewPath(suite.chainB, suite.evmChainA)
 
 	// setup IBC v2 paths between the chains
 	suite.pathAToB.SetupV2()
@@ -182,7 +181,7 @@ func (suite *TransferTestSuiteV2) TestOnSendPacket() {
 			tc.malleate()
 
 			ctx := suite.evmChainA.GetContext()
-			cbs := suite.evmChainA.App.GetIBCKeeper().ChannelKeeperV2.Router.Route(ibctesting.TransferPort)
+			cbs := suite.evmChainA.App.GetIBCKeeper().ChannelKeeperV2.Router.Route(evmibctesting.TransferPort)
 
 			err := cbs.OnSendPacket(
 				ctx,
@@ -312,7 +311,7 @@ func (suite *TransferTestSuiteV2) TestOnRecvPacket() {
 
 			ctx := suite.evmChainA.GetContext()
 			evmApp := suite.evmChainA.App.(*evmd.EVMD)
-			cbs := evmApp.GetIBCKeeper().ChannelKeeperV2.Router.Route(ibctesting.TransferPort)
+			cbs := evmApp.GetIBCKeeper().ChannelKeeperV2.Router.Route(evmibctesting.TransferPort)
 
 			// malleate payload after it has been sent but before OnRecvPacket callback is called
 			tc.malleate()
@@ -413,7 +412,7 @@ func (suite *TransferTestSuiteV2) TestOnAckPacket() {
 			)
 
 			ctx := suite.evmChainA.GetContext()
-			cbs := evmApp.GetIBCKeeper().ChannelKeeperV2.Router.Route(ibctesting.TransferPort)
+			cbs := evmApp.GetIBCKeeper().ChannelKeeperV2.Router.Route(evmibctesting.TransferPort)
 
 			ack := channeltypes.NewResultAcknowledgement([]byte{byte(1)})
 
@@ -538,7 +537,7 @@ func (suite *TransferTestSuiteV2) TestOnTimeoutPacket() {
 			suite.Require().Equal(originalCoin, chainAEscrowBalance)
 
 			ctx := suite.evmChainA.GetContext()
-			cbs := suite.evmChainA.App.GetIBCKeeper().ChannelKeeperV2.Router.Route(ibctesting.TransferPort)
+			cbs := suite.evmChainA.App.GetIBCKeeper().ChannelKeeperV2.Router.Route(evmibctesting.TransferPort)
 
 			err = cbs.OnTimeoutPacket(
 				ctx, suite.pathAToB.EndpointA.ClientID, suite.pathAToB.EndpointB.ClientID,
