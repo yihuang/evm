@@ -1,3 +1,4 @@
+//nolint:gosec // Reason: G115 warnings are safe in test context
 package ibctesting
 
 import (
@@ -6,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/cosmos-sdk/baseapp"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
@@ -19,6 +18,8 @@ import (
 	host "github.com/cosmos/ibc-go/v10/modules/core/24-host"
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+
+	"github.com/cosmos/cosmos-sdk/baseapp"
 )
 
 // Endpoint is a which represents a channel endpoint and its associated

@@ -4,13 +4,11 @@ import (
 	"math/big"
 	"testing"
 
-	"cosmossdk.io/math"
-	abcitypes "github.com/cometbft/cometbft/abci/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	abcitypes "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/cosmos/evm/contracts"
 	cmnfactory "github.com/cosmos/evm/testutil/integration/common/factory"
@@ -20,12 +18,15 @@ import (
 	"github.com/cosmos/evm/testutil/integration/os/network"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
 	evm "github.com/cosmos/evm/x/vm/types"
-
 	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v10/modules/core/exported"
+
+	"cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type KeeperTestSuite struct {

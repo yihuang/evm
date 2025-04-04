@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/evm/evmd"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 )
 
 var (
@@ -38,7 +38,7 @@ func NewCoordinator(t *testing.T, nEVMChains, mCosmosChains int) *Coordinator {
 		CurrentTime: globalStartTime,
 	}
 
-	evmd.EvmAppOptions("cosmos_9001-1")
+	require.NoError(t, evmd.EvmAppOptions("cosmos_9001-1"))
 	ibctesting.DefaultTestingAppInit = SetupExampleApp
 	for i := 1; i <= nEVMChains; i++ {
 		chainID := GetChainID(i)
