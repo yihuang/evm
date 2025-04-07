@@ -169,10 +169,10 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "no-op - base denomination",
 			malleate: func() {
 				// base denom should be prefixed
-				sourcePrefix := transfertypes.GetDenomPrefix(transfertypes.PortID, sourceChannel)
+				hop := transfertypes.NewHop(transfertypes.PortID, sourceChannel)
 				bondDenom, err := suite.network.App.StakingKeeper.BondDenom(ctx)
 				suite.Require().NoError(err)
-				prefixedDenom := sourcePrefix + bondDenom
+				prefixedDenom := transfertypes.NewDenom(bondDenom, hop).Path()
 				transfer := transfertypes.NewFungibleTokenPacketData(prefixedDenom, "100", secpAddrCosmos, ethsecpAddrEvmos, "")
 				bz := transfertypes.ModuleCdc.MustMarshalJSON(&transfer)
 				packet = channeltypes.NewPacket(bz, 1, transfertypes.PortID, sourceChannel, transfertypes.PortID, cosmosEVMChannel, timeoutHeight, 0)
@@ -200,8 +200,8 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "no-op - pair disabled",
 			malleate: func() {
 				pk1 := secp256k1.GenPrivKey()
-				sourcePrefix := transfertypes.GetDenomPrefix(transfertypes.PortID, sourceChannel)
-				prefixedDenom := sourcePrefix + registeredDenom
+				hop := transfertypes.NewHop(transfertypes.PortID, sourceChannel)
+				prefixedDenom := transfertypes.NewDenom(registeredDenom, hop).Path()
 				otherSecpAddrEvmos := sdk.AccAddress(pk1.PubKey().Address()).String()
 				transfer := transfertypes.NewFungibleTokenPacketData(prefixedDenom, "500", otherSecpAddrEvmos, ethsecpAddrEvmos, "")
 				bz := transfertypes.ModuleCdc.MustMarshalJSON(&transfer)

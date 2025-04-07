@@ -67,39 +67,29 @@ func GetTransferAmount(packet channeltypes.Packet) (string, error) {
 // If the receiving chain is the source chain of the tokens, it removes the prefix
 // path added by source (i.e sender) chain to the denom. Otherwise, it adds the
 // prefix path from the destination chain to the denom.
-func GetReceivedCoin(srcPort, srcChannel, dstPort, dstChannel, rawDenom, rawAmt string) sdk.Coin {
+func GetReceivedCoin(packet channeltypes.Packet, token transfertypes.Token) sdk.Coin {
 	// NOTE: Denom and amount are already validated
-	amount, _ := math.NewIntFromString(rawAmt)
+	amountInt, _ := math.NewIntFromString(token.Amount)
 
-	if transfertypes.ReceiverChainIsSource(srcPort, srcChannel, rawDenom) {
-		// remove prefix added by sender chain
-		voucherPrefix := transfertypes.GetDenomPrefix(srcPort, srcChannel)
-		unprefixedDenom := rawDenom[len(voucherPrefix):]
+	if token.Denom.HasPrefix(packet.SourcePort, packet.SourceChannel) {
+		token.Denom.Trace = token.Denom.Trace[1:]
 
 		// coin denomination used in sending from the escrow address
 		// The denomination used to send the coins is either the native denom or the hash of the path
 		// if the denomination is not native.
-		denomTrace := transfertypes.ParseDenomTrace(unprefixedDenom)
-		denom := denomTrace.IBCDenom()
-
 		return sdk.Coin{
-			Denom:  denom,
-			Amount: amount,
+			Denom:  token.Denom.IBCDenom(),
+			Amount: amountInt,
 		}
 	}
 
 	// since SendPacket did not prefix the denomination, we must prefix denomination here
-	sourcePrefix := transfertypes.GetDenomPrefix(dstPort, dstChannel)
-	// NOTE: sourcePrefix contains the trailing "/"
-	prefixedDenom := sourcePrefix + rawDenom
-
-	// construct the denomination trace from the full raw denomination
-	denomTrace := transfertypes.ParseDenomTrace(prefixedDenom)
-	voucherDenom := denomTrace.IBCDenom()
+	hop := []transfertypes.Hop{transfertypes.NewHop(packet.DestinationPort, packet.DestinationChannel)}
+	token.Denom.Trace = append(hop, token.Denom.Trace...)
 
 	return sdk.Coin{
-		Denom:  voucherDenom,
-		Amount: amount,
+		Denom:  token.Denom.IBCDenom(),
+		Amount: amountInt,
 	}
 }
 
@@ -107,10 +97,10 @@ func GetReceivedCoin(srcPort, srcChannel, dstPort, dstChannel, rawDenom, rawAmt 
 func GetSentCoin(rawDenom, rawAmt string) sdk.Coin {
 	// NOTE: Denom and amount are already validated
 	amount, _ := math.NewIntFromString(rawAmt)
-	trace := transfertypes.ParseDenomTrace(rawDenom)
+	denom := transfertypes.ExtractDenomFromPath(rawDenom)
 
 	return sdk.Coin{
-		Denom:  trace.IBCDenom(),
+		Denom:  denom.IBCDenom(),
 		Amount: amount,
 	}
 }

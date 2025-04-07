@@ -194,7 +194,7 @@ func TestGetReceivedCoin(t *testing.T) {
 		{
 			"transfer unwrapped coin to destination which is not its source",
 			"transfer",
-			"channel-0",
+			"channel-1",
 			"transfer",
 			"channel-0",
 			"uosmo",
@@ -206,7 +206,7 @@ func TestGetReceivedCoin(t *testing.T) {
 			"transfer",
 			"channel-0",
 			"transfer",
-			"channel-0",
+			"channel-2",
 			"transfer/channel-0/aatom",
 			"10",
 			sdk.Coin{Denom: "aatom", Amount: math.NewInt(10)},
@@ -224,7 +224,7 @@ func TestGetReceivedCoin(t *testing.T) {
 		{
 			"transfer ibc wrapped coin to destination which is not its source",
 			"transfer",
-			"channel-0",
+			"channel-2",
 			"transfer",
 			"channel-0",
 			"transfer/channel-1/uatom",
@@ -234,7 +234,17 @@ func TestGetReceivedCoin(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		coin := cosmosevmibc.GetReceivedCoin(tc.srcPort, tc.srcChannel, tc.dstPort, tc.dstChannel, tc.rawDenom, tc.rawAmount)
+		packet := channeltypes.Packet{
+			SourcePort:         tc.srcPort,
+			SourceChannel:      tc.srcChannel,
+			DestinationPort:    tc.dstPort,
+			DestinationChannel: tc.dstChannel,
+		}
+		token := transfertypes.Token{
+			Denom:  transfertypes.ExtractDenomFromPath(tc.rawDenom),
+			Amount: tc.rawAmount,
+		}
+		coin := cosmosevmibc.GetReceivedCoin(packet, token)
 		require.Equal(t, tc.expCoin, coin)
 	}
 }

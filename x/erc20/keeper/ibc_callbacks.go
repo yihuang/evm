@@ -81,11 +81,11 @@ func (k Keeper) OnRecvPacket(
 	}
 
 	// parse the transferred denom
-	coin := ibc.GetReceivedCoin(
-		packet.SourcePort, packet.SourceChannel,
-		packet.DestinationPort, packet.DestinationChannel,
-		data.Denom, data.Amount,
-	)
+	token := transfertypes.Token{
+		Denom:  transfertypes.ExtractDenomFromPath(data.Denom),
+		Amount: data.Amount,
+	}
+	coin := ibc.GetReceivedCoin(packet, token)
 
 	// If the coin denom starts with `factory/` then it is a token factory coin, and we should not convert it
 	// NOTE: Check https://docs.osmosis.zone/osmosis-core/modules/tokenfactory/ for more information
