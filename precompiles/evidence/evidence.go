@@ -52,7 +52,6 @@ func NewPrecompile(
 			ABI:                  abi,
 			KvGasConfig:          storetypes.KVGasConfig(),
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
-			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
 		evidenceKeeper: evidenceKeeper,
 	}

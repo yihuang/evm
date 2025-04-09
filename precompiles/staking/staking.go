@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/cosmos/evm/precompiles/authorization"
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/x/vm/core/vm"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -52,7 +51,6 @@ func NewPrecompile(
 			ABI:                  abi,
 			KvGasConfig:          storetypes.KVGasConfig(),
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
-			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
 		},
 		stakingKeeper: stakingKeeper,
 	}
@@ -146,12 +144,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 //   - Undelegate
 //   - Redelegate
 //   - CancelUnbondingDelegation
-//
-// Available authorization transactions are:
-//   - Approve
-//   - Revoke
-//   - IncreaseAllowance
-//   - DecreaseAllowance
 func (Precompile) IsTransaction(method *abi.Method) bool {
 	switch method.Name {
 	case CreateValidatorMethod,
@@ -159,11 +151,7 @@ func (Precompile) IsTransaction(method *abi.Method) bool {
 		DelegateMethod,
 		UndelegateMethod,
 		RedelegateMethod,
-		CancelUnbondingDelegationMethod,
-		authorization.ApproveMethod,
-		authorization.RevokeMethod,
-		authorization.IncreaseAllowanceMethod,
-		authorization.DecreaseAllowanceMethod:
+		CancelUnbondingDelegationMethod:
 		return true
 	default:
 		return false

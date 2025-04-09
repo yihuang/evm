@@ -3,7 +3,6 @@ package common
 import (
 	"errors"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,7 +19,6 @@ import (
 // precompile needs to run which includes the ABI, Gas config, approval expiration and the authz keeper.
 type Precompile struct {
 	abi.ABI
-	ApprovalExpiration   time.Duration
 	KvGasConfig          storetypes.GasConfig
 	TransientKVGasConfig storetypes.GasConfig
 	address              common.Address
