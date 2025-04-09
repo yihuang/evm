@@ -17,7 +17,6 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
@@ -45,7 +44,6 @@ func NewPrecompile(
 	stakingKeeper stakingkeeper.Keeper,
 	transferKeeper transferkeeper.Keeper,
 	channelKeeper channelkeeper.Keeper,
-	authzKeeper authzkeeper.Keeper,
 	evmKeeper *evmkeeper.Keeper,
 ) (*Precompile, error) {
 	newAbi, err := cmn.LoadABI(f, "abi.json")
@@ -56,7 +54,6 @@ func NewPrecompile(
 	p := &Precompile{
 		Precompile: cmn.Precompile{
 			ABI:                  newAbi,
-			AuthzKeeper:          authzKeeper,
 			KvGasConfig:          storetypes.KVGasConfig(),
 			TransientKVGasConfig: storetypes.TransientGasConfig(),
 			ApprovalExpiration:   cmn.DefaultExpirationDuration, // should be configurable in the future.
@@ -103,16 +100,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 	defer cmn.HandleGasError(ctx, contract, initialGas, &err)()
 
 	switch method.Name {
-	// TODO Approval transactions => need cosmos-sdk v0.46 & ibc-go v6.2.0
-	// Authorization Methods:
-	case authorization.ApproveMethod:
-		bz, err = p.Approve(ctx, evm.Origin, stateDB, method, args)
-	case authorization.RevokeMethod:
-		bz, err = p.Revoke(ctx, evm.Origin, stateDB, method, args)
-	case authorization.IncreaseAllowanceMethod:
-		bz, err = p.IncreaseAllowance(ctx, evm.Origin, stateDB, method, args)
-	case authorization.DecreaseAllowanceMethod:
-		bz, err = p.DecreaseAllowance(ctx, evm.Origin, stateDB, method, args)
 	// ICS20 transactions
 	case TransferMethod:
 		bz, err = p.Transfer(ctx, evm.Origin, contract, stateDB, method, args)
@@ -123,8 +110,6 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		bz, err = p.DenomTraces(ctx, contract, method, args)
 	case DenomHashMethod:
 		bz, err = p.DenomHash(ctx, contract, method, args)
-	case authorization.AllowanceMethod:
-		bz, err = p.Allowance(ctx, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
