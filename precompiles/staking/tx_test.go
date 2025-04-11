@@ -722,7 +722,6 @@ func (s *PrecompileTestSuite) TestDelegate() {
 			true,
 			fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 3, 0),
 		},
-		// TODO: check case if authorization does not exist
 		{
 			name: "fail - different origin than delegator",
 			malleate: func(_, _ testkeyring.Key, operatorAddress string) []interface{} {
@@ -784,29 +783,6 @@ func (s *PrecompileTestSuite) TestDelegate() {
 			true,
 			"insufficient funds",
 		},
-		// TODO: adjust tests to work with authorizations (currently does not work because origin == precompile caller which needs no authorization)
-		// {
-		//	"fail - delegation should not be possible to validators outside of the allow list",
-		//	func(string) []interface{} {
-		//		err := s.CreateAuthorization(validatorADdress, staking.DelegateAuthz, nil)
-		//		s.Require().NoError(err)
-		//
-		//		// Create new validator --> this is not included in the authorized allow list
-		//		testutil.CreateValidator(s.network.GetContext(), s.T(), s.privKey.PubKey(), s.network.App.StakingKeeper, math.NewInt(100))
-		//		newValAddr := sdk.ValAddress(s.keyring.GetAccAddr(0))
-		//
-		//		return []interface{}{
-		//			s.keyring.GetAddr(0),
-		//			newValAddr.String(),
-		//			big.NewInt(1e18),
-		//		}
-		//	},
-		//	200000,
-		//	big.NewInt(15),
-		//	func( []byte) {},
-		//	true,
-		//	"cannot delegate/undelegate",
-		// },
 		{
 			"success",
 			func(delegator, grantee testkeyring.Key, operatorAddress string) []interface{} {
@@ -833,49 +809,6 @@ func (s *PrecompileTestSuite) TestDelegate() {
 			false,
 			"",
 		},
-		// TODO: adjust tests to work with authorizations (currently does not work because origin == precompile caller which needs no authorization)
-		// {
-		//	"success - delegate and update the authorization for the delegator",
-		//	func(operatorAddress string) []interface{} {
-		//		err := s.CreateAuthorization(s.keyring.GetAddr(0), staking.DelegateAuthz, &sdk.Coin{Denom: testconstants.ExampleAttoDenom, Amount: math.NewInt(2e18)})
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			s.keyring.GetAddr(0),
-		//			operatorAddress,
-		//			big.NewInt(1e18),
-		//		}
-		//	},
-		//	20000,
-		//	big.NewInt(2),
-		//	func(data []byte) {
-		//		authorization, _ := s.network.App.AuthzKeeper.GetAuthorization(s.network.GetContext(), s.keyring.GetAccAddr(0), s.keyring.GetAccAddr(0), staking.DelegateMsg)
-		//		s.Require().NotNil(authorization)
-		//		stakeAuthorization := authorization.(*stakingtypes.StakeAuthorization)
-		//		s.Require().Equal(math.NewInt(1e18), stakeAuthorization.MaxTokens.Amount)
-		//	},
-		//	false,
-		//	"",
-		// },
-		// {
-		//	"success - delegate and delete the authorization for the delegator",
-		//	func(operatorAddress string) []interface{} {
-		//		err := s.CreateAuthorization(s.keyring.GetAddr(0), staking.DelegateAuthz, &sdk.Coin{Denom: testconstants.ExampleAttoDenom, Amount: math.NewInt(1e18)})
-		//		s.Require().NoError(err)
-		//		return []interface{}{
-		//			s.keyring.GetAddr(0),
-		//			operatorAddress,
-		//			big.NewInt(1e18),
-		//		}
-		//	},
-		//	20000,
-		//	big.NewInt(2),
-		//	func(data []byte) {
-		//		authorization, _ := s.network.App.AuthzKeeper.GetAuthorization(s.network.GetContext(), s.keyring.GetAccAddr(0), s.keyring.GetAccAddr(0), staking.DelegateMsg)
-		//		s.Require().Nil(authorization)
-		//	},
-		//	false,
-		//	"",
-		// },
 	}
 
 	for _, tc := range testCases {
@@ -946,7 +879,6 @@ func (s *PrecompileTestSuite) TestUndelegate() {
 			true,
 			fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 3, 0),
 		},
-		// TODO: check case if authorization does not exist
 		{
 			name: "fail - different origin than delegator",
 			malleate: func(_, _ testkeyring.Key, operatorAddress string) []interface{} {
@@ -1079,7 +1011,6 @@ func (s *PrecompileTestSuite) TestRedelegate() {
 			true,
 			fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 4, 0),
 		},
-		// TODO: check case if authorization does not exist
 		{
 			name: "fail - different origin than delegator",
 			malleate: func(_, _ testkeyring.Key, srcOperatorAddr, dstOperatorAddr string) []interface{} {

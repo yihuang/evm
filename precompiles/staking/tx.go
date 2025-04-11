@@ -13,7 +13,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 const (
@@ -33,17 +32,6 @@ const (
 	// CancelUnbondingDelegationMethod defines the ABI method name for the staking
 	// CancelUnbondingDelegation transaction.
 	CancelUnbondingDelegationMethod = "cancelUnbondingDelegation"
-)
-
-const (
-	// DelegateAuthz defines the authorization type for the staking Delegate
-	DelegateAuthz = stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE
-	// UndelegateAuthz defines the authorization type for the staking Undelegate
-	UndelegateAuthz = stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE
-	// RedelegateAuthz defines the authorization type for the staking Redelegate
-	RedelegateAuthz = stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE
-	// CancelUnbondingDelegationAuthz defines the authorization type for the staking
-	CancelUnbondingDelegationAuthz = stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_CANCEL_UNBONDING_DELEGATION
 )
 
 // CreateValidator performs create validator.
@@ -74,9 +62,7 @@ func (p Precompile) CreateValidator(
 		"value", msg.Value.Amount.String(),
 	)
 
-	// ATM there's no authorization type for the MsgCreateValidator
-	// and MsgEditValidator (source: https://github.com/cosmos/cosmos-sdk/blob/4bd73b667f8aed50ad4602ddf862a4ed6e1450a8/x/staking/proto/cosmos/staking/v1beta1/authz.proto#L39-L50)
-	// so, for the time being, we won't allow calls from smart contracts
+	// we won't allow calls from smart contracts
 	if contract.CallerAddress != origin {
 		return nil, errors.New(ErrCannotCallFromContract)
 	}
@@ -125,9 +111,7 @@ func (p Precompile) EditValidator(
 		"min_self_delegation", msg.MinSelfDelegation,
 	)
 
-	// ATM there's no authorization type for the MsgCreateValidator
-	// and MsgEditValidator (source: https://github.com/cosmos/cosmos-sdk/blob/4bd73b667f8aed50ad4602ddf862a4ed6e1450a8/x/staking/proto/cosmos/staking/v1beta1/authz.proto#L39-L50)
-	// so, for the time being, we won't allow calls from smart contracts
+	// we won't allow calls from smart contracts
 	if contract.CallerAddress != origin {
 		return nil, errors.New(ErrCannotCallFromContract)
 	}

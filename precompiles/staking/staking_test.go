@@ -9,7 +9,6 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	chainutil "github.com/cosmos/evm/evmd/testutil"
-	"github.com/cosmos/evm/precompiles/authorization"
 	"github.com/cosmos/evm/precompiles/staking"
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	testkeyring "github.com/cosmos/evm/testutil/integration/os/keyring"
@@ -29,21 +28,6 @@ func (s *PrecompileTestSuite) TestIsTransaction() {
 		method abi.Method
 		isTx   bool
 	}{
-		{
-			authorization.ApproveMethod,
-			s.precompile.Methods[authorization.ApproveMethod],
-			true,
-		},
-		{
-			authorization.IncreaseAllowanceMethod,
-			s.precompile.Methods[authorization.IncreaseAllowanceMethod],
-			true,
-		},
-		{
-			authorization.DecreaseAllowanceMethod,
-			s.precompile.Methods[authorization.DecreaseAllowanceMethod],
-			true,
-		},
 		{
 			staking.CreateValidatorMethod,
 			s.precompile.Methods[staking.CreateValidatorMethod],

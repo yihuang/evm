@@ -16,7 +16,7 @@ import (
 )
 
 // Precompile is a common struct for all precompiles that holds the common data each
-// precompile needs to run which includes the ABI, Gas config, approval expiration and the authz keeper.
+// precompile needs to run which includes the ABI, Gas config.
 type Precompile struct {
 	abi.ABI
 	KvGasConfig          storetypes.GasConfig
