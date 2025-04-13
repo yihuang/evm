@@ -34,6 +34,9 @@ import (
 	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
 	"github.com/cosmos/evm/x/ibc/transfer"
 	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
+	"github.com/cosmos/evm/x/precisebank"
+	precisebankkeeper "github.com/cosmos/evm/x/precisebank/keeper"
+	precisebanktypes "github.com/cosmos/evm/x/precisebank/types"
 	"github.com/cosmos/evm/x/vm"
 	evmkeeper "github.com/cosmos/evm/x/vm/keeper"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -158,9 +161,10 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 
 		// Cosmos EVM modules
-		evmtypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
-		feemarkettypes.ModuleName: nil,
-		erc20types.ModuleName:     {authtypes.Minter, authtypes.Burner},
+		evmtypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
+		feemarkettypes.ModuleName:   nil,
+		erc20types.ModuleName:       {authtypes.Minter, authtypes.Burner},
+		precisebanktypes.ModuleName: {authtypes.Minter, authtypes.Burner},
 	}
 )
 
@@ -208,9 +212,10 @@ type EVMD struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 
 	// Cosmos EVM keepers
-	FeeMarketKeeper feemarketkeeper.Keeper
-	EVMKeeper       *evmkeeper.Keeper
-	Erc20Keeper     erc20keeper.Keeper
+	FeeMarketKeeper   feemarketkeeper.Keeper
+	EVMKeeper         *evmkeeper.Keeper
+	Erc20Keeper       erc20keeper.Keeper
+	PreciseBankKeeper precisebankkeeper.Keeper
 
 	// the module manager
 	ModuleManager      *module.Manager
@@ -293,7 +298,7 @@ func NewExampleApp(
 		// ibc keys
 		ibcexported.StoreKey, ibctransfertypes.StoreKey,
 		// Cosmos EVM store keys
-		evmtypes.StoreKey, feemarkettypes.StoreKey, erc20types.StoreKey,
+		evmtypes.StoreKey, feemarkettypes.StoreKey, erc20types.StoreKey, precisebanktypes.StoreKey,
 	)
 
 	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
@@ -520,6 +525,13 @@ func NewExampleApp(
 		&app.TransferKeeper,
 	)
 
+	app.PreciseBankKeeper = precisebankkeeper.NewKeeper(
+		appCodec,
+		keys[precisebanktypes.StoreKey],
+		app.BankKeeper,
+		app.AccountKeeper,
+	)
+
 	// instantiate IBC transfer keeper AFTER the ERC-20 keeper to use it in the instantiation
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
@@ -608,6 +620,7 @@ func NewExampleApp(
 		vm.NewAppModule(app.EVMKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
+		precisebank.NewAppModule(app.PreciseBankKeeper, app.BankKeeper, app.AccountKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager which is in charge of setting up basic,
@@ -657,6 +670,7 @@ func NewExampleApp(
 		authtypes.ModuleName, banktypes.ModuleName, govtypes.ModuleName, genutiltypes.ModuleName,
 		authz.ModuleName, feegrant.ModuleName,
 		paramstypes.ModuleName, consensusparamtypes.ModuleName,
+		precisebanktypes.ModuleName,
 	)
 
 	// NOTE: the feemarket module should go last in order of end blockers that are actually doing something,
@@ -674,6 +688,7 @@ func NewExampleApp(
 		slashingtypes.ModuleName, minttypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
 		feegrant.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName, consensusparamtypes.ModuleName,
+		precisebanktypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -695,6 +710,7 @@ func NewExampleApp(
 		evmtypes.ModuleName,
 		feemarkettypes.ModuleName,
 		erc20types.ModuleName,
+		precisebanktypes.ModuleName,
 
 		ibctransfertypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, authz.ModuleName,
