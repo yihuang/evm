@@ -55,6 +55,9 @@ func EvmAppOptions(chainID string) error {
 	if !found {
 		return fmt.Errorf("unknown chain id: %s", id)
 	}
+	if err := coinInfo.Decimals.Validate(); err != nil {
+		return err
+	}
 
 	// set the denom info for the chain
 	if err := setBaseDenom(coinInfo); err != nil {

@@ -139,11 +139,8 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 				suite.Require().Equal(uint64(100000), tx.GetGas())
 
 				expFeeAmt := sdkmath.NewIntFromBigInt(evmTx.GasPrice).MulRaw(int64(evmTx.GasLimit)) //#nosec
-				expFee := sdk.NewCoins(sdk.NewCoin(baseDenom, expFeeAmt))
-				if cfg.Decimals == types.SixDecimals {
-					scaledAmt := expFeeAmt.QuoRaw(1e12)
-					expFee = sdk.NewCoins(sdk.NewCoin(baseDenom, scaledAmt))
-				}
+				scaledAmt := expFeeAmt.Quo(cfg.Decimals.ConversionFactor())
+				expFee := sdk.NewCoins(sdk.NewCoin(baseDenom, scaledAmt))
 				suite.Require().Equal(expFee, tx.GetFee())
 			}
 		}
