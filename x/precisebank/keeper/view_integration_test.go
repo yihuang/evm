@@ -1,10 +1,12 @@
 package keeper_test
 
 import (
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {

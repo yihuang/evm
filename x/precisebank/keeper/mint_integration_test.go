@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/evm/x/precisebank/keeper"
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	"github.com/cosmos/evm/x/precisebank/keeper"
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestBlockedRecipient() {

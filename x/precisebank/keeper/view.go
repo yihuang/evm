@@ -3,9 +3,11 @@ package keeper
 import (
 	"context"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/evm/x/precisebank/types"
+
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // GetBalance returns the balance of a specific denom for an address. This will

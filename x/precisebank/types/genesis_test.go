@@ -3,11 +3,14 @@ package types_test
 import (
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/evm/x/precisebank/testutil"
 	"github.com/cosmos/evm/x/precisebank/types"
-	"github.com/stretchr/testify/require"
+
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesisStateValidate_Basic(t *testing.T) {

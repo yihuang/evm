@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
-
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 // randRange returns a random number in the range [min, max)

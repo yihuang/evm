@@ -4,10 +4,12 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestQueryTotalFractionalBalance() {

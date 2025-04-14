@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cosmos/evm/evmd"
+	"github.com/cosmos/evm/x/precisebank/keeper"
+	"github.com/cosmos/evm/x/precisebank/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/cosmos/evm/evmd"
-	"github.com/cosmos/evm/x/precisebank/keeper"
-	"github.com/cosmos/evm/x/precisebank/types"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule_MatchingErrors() {

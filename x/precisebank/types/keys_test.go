@@ -3,9 +3,11 @@ package types_test
 import (
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/evm/x/precisebank/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/evm/x/precisebank/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestFractionalBalanceKey(t *testing.T) {

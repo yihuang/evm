@@ -3,13 +3,14 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
-
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 func TestSetGetFractionalBalance(t *testing.T) {

@@ -1,10 +1,10 @@
 package keeper_test
 
 import (
+	precisebanktypes "github.com/cosmos/evm/x/precisebank/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-
-	precisebanktypes "github.com/cosmos/evm/x/precisebank/types"
 )
 
 // MintToAccount mints coins to an account with the x/precisebank methods. This

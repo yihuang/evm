@@ -3,16 +3,17 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/evm/x/precisebank/keeper"
+	"github.com/cosmos/evm/x/precisebank/types"
+	"github.com/cosmos/evm/x/precisebank/types/mocks"
+
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/cosmos/evm/x/precisebank/keeper"
-	"github.com/cosmos/evm/x/precisebank/types"
-	"github.com/cosmos/evm/x/precisebank/types/mocks"
-	"github.com/stretchr/testify/require"
 )
 
 func TestBalancedFractionalTotalInvariant(t *testing.T) {

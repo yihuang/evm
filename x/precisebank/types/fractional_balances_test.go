@@ -6,10 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/evm/x/precisebank/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/evm/x/precisebank/types"
+
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestFractionalBalances_Validate(t *testing.T) {

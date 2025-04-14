@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cosmos/evm/x/precisebank/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/evm/x/precisebank/types"
 )
 
 // IsSendEnabledCoins uses the parent x/bank keeper to check the coins provided

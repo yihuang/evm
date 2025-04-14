@@ -4,9 +4,11 @@ import (
 	"math/big"
 	"testing"
 
-	sdkmath "cosmossdk.io/math"
-	"github.com/cosmos/evm/x/precisebank/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/evm/x/precisebank/types"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 func TestConversionFactor_Immutable(t *testing.T) {
