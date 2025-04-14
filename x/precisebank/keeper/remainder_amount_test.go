@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetSetRemainderAmount(t *testing.T) {
-	tk := NewMockedTestData(t)
+	tk := newMockedTestData(t)
 	ctx, k, storeKey := tk.ctx, tk.keeper, tk.storeKey
 
 	// Set amount
@@ -33,7 +33,7 @@ func TestGetSetRemainderAmount(t *testing.T) {
 }
 
 func TestInvalidRemainderAmount(t *testing.T) {
-	tk := NewMockedTestData(t)
+	tk := newMockedTestData(t)
 	ctx, k := tk.ctx, tk.keeper
 
 	// Set negative amount
@@ -48,7 +48,7 @@ func TestInvalidRemainderAmount(t *testing.T) {
 }
 
 func TestDeleteRemainderAmount(t *testing.T) {
-	tk := NewMockedTestData(t)
+	tk := newMockedTestData(t)
 	ctx, k, storeKey := tk.ctx, tk.keeper, tk.storeKey
 
 	require.NotPanics(t, func() {

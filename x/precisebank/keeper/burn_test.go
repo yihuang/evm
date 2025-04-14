@@ -93,7 +93,7 @@ func TestBurnCoins_PanicValidations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			td := NewMockedTestData(t)
+			td := newMockedTestData(t)
 			tt.setupFn(td)
 
 			if tt.wantPanic != "" {
@@ -146,7 +146,7 @@ func TestBurnCoins_Errors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			td := NewMockedTestData(t)
+			td := newMockedTestData(t)
 			tt.setupFn(td)
 
 			require.NotPanics(t, func() {

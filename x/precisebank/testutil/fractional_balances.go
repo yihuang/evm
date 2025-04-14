@@ -15,10 +15,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/address"
 )
 
-// randRange returns a random number in the range [min, max)
-// meaning max is never returned
-func randRange(min, max int64) int64 {
-	return rand.Int63n(max-min) + min
+// randRange returns a random number in the range [minVal, maxVal)
+// meaning maxVal is never returned
+func randRange(minVal, maxVal int64) int64 {
+	return rand.Int63n(maxVal-minVal) + minVal
 }
 
 func randAccAddress() sdk.AccAddress {

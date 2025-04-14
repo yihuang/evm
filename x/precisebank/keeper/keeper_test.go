@@ -25,9 +25,11 @@ type testData struct {
 	ak       *mocks.MockAccountKeeper
 }
 
-// NewMockedTestData creates a new testData instance with mocked bank and
+// newMockedTestData creates a new testData instance with mocked bank and
 // account keepers.
-func NewMockedTestData(t *testing.T) testData {
+func newMockedTestData(t *testing.T) testData {
+	t.Helper()
+
 	storeKey := storetypes.NewKVStoreKey(types.ModuleName)
 	// Not required by module, but needs to be non-nil for context
 	tKey := storetypes.NewTransientStoreKey("transient_test")

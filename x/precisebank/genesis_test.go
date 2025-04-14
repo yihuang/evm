@@ -208,9 +208,7 @@ func (suite *GenesisTestSuite) TestExportGenesis() {
 	}{
 		{
 			"InitGenesis(DefaultGenesisState)",
-			func() *types.GenesisState {
-				return types.DefaultGenesisState()
-			},
+			types.DefaultGenesisState,
 		},
 		{
 			"balances, no remainder",

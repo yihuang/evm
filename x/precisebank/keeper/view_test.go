@@ -89,7 +89,7 @@ func TestKeeper_GetBalance(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tk := NewMockedTestData(t)
+			tk := newMockedTestData(t)
 			addr := sdk.AccAddress([]byte("test-address"))
 
 			// Set fractional balance in store before query
@@ -204,7 +204,7 @@ func TestKeeper_SpendableCoin(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tk := NewMockedTestData(t)
+			tk := newMockedTestData(t)
 			addr := sdk.AccAddress([]byte("test-address"))
 
 			// Set fractional balance in store before query
@@ -248,7 +248,7 @@ func TestHiddenReserve(t *testing.T) {
 	// Reserve balances should not be shown to consumers of x/precisebank, as it
 	// represents the fractional balances of accounts.
 
-	tk := NewMockedTestData(t)
+	tk := newMockedTestData(t)
 
 	moduleAddr := authtypes.NewModuleAddress(types.ModuleName)
 

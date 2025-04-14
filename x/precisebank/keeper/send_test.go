@@ -15,7 +15,7 @@ func TestSendCoinsFromAccountToModule_BlockedReserve(t *testing.T) {
 	// Other modules shouldn't be able to send x/precisebank coins as the module
 	// account balance is for internal reserve use only.
 
-	td := NewMockedTestData(t)
+	td := newMockedTestData(t)
 	td.ak.EXPECT().
 		GetModuleAccount(td.ctx, types.ModuleName).
 		Return(authtypes.NewModuleAccount(
@@ -35,7 +35,7 @@ func TestSendCoinsFromModuleToAccount_BlockedReserve(t *testing.T) {
 	// Other modules shouldn't be able to send x/precisebank module account
 	// funds.
 
-	td := NewMockedTestData(t)
+	td := newMockedTestData(t)
 	td.ak.EXPECT().
 		GetModuleAddress(types.ModuleName).
 		Return(sdk.AccAddress{100}).

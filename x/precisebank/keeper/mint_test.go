@@ -90,7 +90,7 @@ func TestMintCoins_PanicValidations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			td := NewMockedTestData(t)
+			td := newMockedTestData(t)
 			tt.setupFn(td)
 
 			if tt.wantPanic != "" {
@@ -143,7 +143,7 @@ func TestMintCoins_Errors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			td := NewMockedTestData(t)
+			td := newMockedTestData(t)
 			tt.setupFn(td)
 
 			require.NotPanics(t, func() {
@@ -229,7 +229,7 @@ func TestMintCoins_ExpectedCalls(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			td := NewMockedTestData(t)
+			td := newMockedTestData(t)
 
 			// Set initial fractional balance
 			// Initial integer balance doesn't matter for this test

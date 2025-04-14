@@ -53,11 +53,13 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule_Matchi
 			suite.Require().NotEmpty(tt.wantPanic, "test case must have a wantPanic")
 
 			suite.Require().PanicsWithError(tt.wantPanic, func() {
-				suite.network.App.BankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), tt.sender, tt.recipientModule, tt.sendAmount)
+				err := suite.network.App.BankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), tt.sender, tt.recipientModule, tt.sendAmount)
+				suite.Require().Error(err)
 			}, "wantPanic should match x/bank SendCoinsFromAccountToModule panic")
 
 			suite.Require().PanicsWithError(tt.wantPanic, func() {
-				suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), tt.sender, tt.recipientModule, tt.sendAmount)
+				err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), tt.sender, tt.recipientModule, tt.sendAmount)
+				suite.Require().Error(err)
 			}, "x/precisebank panic should match x/bank SendCoinsFromAccountToModule panic")
 		})
 	}
@@ -185,11 +187,13 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 				suite.Require().Empty(tt.wantErr, "test case must not have a wantErr if wantPanic is set")
 
 				suite.Require().PanicsWithError(tt.wantPanic, func() {
-					suite.network.App.BankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), tt.senderModule, tt.recipient, tt.sendAmount)
+					err := suite.network.App.BankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), tt.senderModule, tt.recipient, tt.sendAmount)
+					suite.Require().Error(err)
 				}, "wantPanic should match x/bank SendCoinsFromModuleToAccount panic")
 
 				suite.Require().PanicsWithError(tt.wantPanic, func() {
-					suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), tt.senderModule, tt.recipient, tt.sendAmount)
+					err := suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), tt.senderModule, tt.recipient, tt.sendAmount)
+					suite.Require().Error(err)
 				}, "x/precisebank panic should match x/bank SendCoinsFromModuleToAccount panic")
 			}
 
@@ -735,11 +739,11 @@ func FuzzSendCoins(f *testing.F) {
 		recipient := sdk.AccAddress([]byte{2})
 
 		// Initial balances
-		suite.MintToAccount(sender, cs(c(types.ExtendedCoinDenom, int64(startBalSender))))
-		suite.MintToAccount(recipient, cs(c(types.ExtendedCoinDenom, int64(startBalReceiver))))
+		suite.MintToAccount(sender, cs(c(types.ExtendedCoinDenom, int64(startBalSender))))      //nolint:gosec // G115
+		suite.MintToAccount(recipient, cs(c(types.ExtendedCoinDenom, int64(startBalReceiver)))) //nolint:gosec // G115
 
 		// Send amount
-		sendCoins := cs(c(types.ExtendedCoinDenom, int64(sendAmount)))
+		sendCoins := cs(c(types.ExtendedCoinDenom, int64(sendAmount))) //nolint:gosec // G115
 		err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendCoins)
 		if startBalSender < sendAmount {
 			suite.Require().Error(err, "expected insufficient funds error")
