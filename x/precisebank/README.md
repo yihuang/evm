@@ -4,54 +4,68 @@
 
 This document specifies the precisebank module of Cosmos EVM.
 
-The precisebank module is responsible for extending the precision of `x/bank`, intended to be used for the `x/evm`. It serves as a wrapper of `x/bank` to increase the precision of ATOM from 6 to 18 decimals, while preserving the behavior of existing `x/bank` balances.
+The precisebank module is responsible for extending the precision of `x/bank`, intended to be used for the `x/evm`.
+It serves as a wrapper of `x/bank` to increase the precision of ATOM from 6 to 18 decimals,
+while preserving the behavior of existing `x/bank` balances.
 
 This module is used only by `x/evm` where 18 decimal points are expected.
 
 ## Contents
 
 - [Background](#background)
-  - [Adding](#adding)
-  - [Subtracting](#subtracting)
-  - [Transfer](#transfer)
-    - [Setup](#setup)
-    - [Remainder does not change](#remainder-does-not-change)
-    - [Reserve](#reserve)
-  - [Burn](#burn)
-  - [Mint](#mint)
+    - [Adding](#adding)
+    - [Subtracting](#subtracting)
+    - [Transfer](#transfer)
+        - [Setup](#setup)
+        - [Remainder does not change](#remainder-does-not-change)
+        - [Reserve](#reserve)
+    - [Burn](#burn)
+    - [Mint](#mint)
 - [State](#state)
 - [Keepers](#keepers)
 - [Messages](#messages)
 - [Events](#events)
-  - [Keeper Events](#keeper-events)
-    - [SendCoins](#sendcoins)
-    - [MintCoins](#mintcoins)
-    - [BurnCoins](#burncoins)
+    - [Keeper Events](#keeper-events)
+        - [SendCoins](#sendcoins)
+        - [MintCoins](#mintcoins)
+        - [BurnCoins](#burncoins)
 - [Client](#client)
-  - [gRPC](#grpc)
-    - [TotalFractionalBalances](#totalfractionalbalances)
-    - [Remainder](#remainder)
-    - [FractionalBalance](#fractionalbalance)
+    - [gRPC](#grpc)
+        - [TotalFractionalBalances](#totalfractionalbalances)
+        - [Remainder](#remainder)
+        - [FractionalBalance](#fractionalbalance)
 
 ## Background
 
-The standard unit of currency on the Cosmos Chain is `ATOM`.  This is denominated by the atomic unit `uatom`, which represents $10^{-6}$ `ATOM` and there are $10^6$ `uatom` per `ATOM`.
+The standard unit of currency on the Cosmos Chain is `ATOM`.  This is denominated by the atomic unit `uatom`,
+which represents $10^{-6}$ `ATOM` and there are $10^6$ `uatom` per `ATOM`.
 
-In order to support 18 decimals of precision while maintaining `uatom` as the cosmos-native atomic unit, we further split each `uatom` unit into $10^{12}$ `aatom` units, the native currency of the Cosmos EVM.
+In order to support 18 decimals of precision while maintaining `uatom` as the cosmos-native atomic unit,
+we further split each `uatom` unit into $10^{12}$ `aatom` units, the native currency of the Cosmos EVM.
 
-This gives a full $10^{18}$ precision on the EVM. In order to avoid confusion with atomic `uatom` units, we will refer to `aatom` as "sub-atomic units".
+This gives a full $10^{18}$ precision on the EVM. In order to avoid confusion with atomic `uatom` units,
+we will refer to `aatom` as "sub-atomic units".
 
 To review we have:
- - `uatom`, the cosmos-native unit and atomic unit of the Cosmos chain
- - `aatom`, the evm-native unit and sub-atomic unit of the Cosmos chain
+    - `uatom`, the cosmos-native unit and atomic unit of the Cosmos chain
+    - `aatom`, the evm-native unit and sub-atomic unit of the Cosmos chain
 
-In order to maintain consistency between the `aatom` supply and the `uatom` supply, we add the constraint that each sub-atomic `aatom`, may only exist as part of an atomic `uatom`. Every `aatom` is fully backed by a `uatom` in the `x/bank` module.
+In order to maintain consistency between the `aatom` supply and the `uatom` supply,
+we add the constraint that each sub-atomic `aatom`, may only exist as part of an atomic `uatom`.
+Every `aatom` is fully backed by a `uatom` in the `x/bank` module.
 
-This is a requirement since `uatom` balances in `x/bank` are shared between the cosmos modules and the EVM.  We are wrapping and extending the `x/bank` module with the `x/precisebank` module to add an extra $10^{12}$ units of precision.  If $10^{12}$ `aatom` is transferred in the EVM, the cosmos modules will see a 1 `uatom` transfer and vice versa.  If `aatom` was not fully backed by `uatom`, then balance changes would not be fully consistent across the cosmos and the EVM.
+This is a requirement since `uatom` balances in `x/bank` are shared between the cosmos modules and the EVM.
+We are wrapping and extending the `x/bank` module with the `x/precisebank` module to add an extra $10^{12}$ units
+of precision. If $10^{12}$ `aatom` is transferred in the EVM, the cosmos modules will see a 1 `uatom` transfer
+and vice versa. If `aatom` was not fully backed by `uatom`, then balance changes would not be fully consistent
+across the cosmos and the EVM.
 
-This brings us to how account balances are extended to represent `aatom` balances larger than $10^{12}$.  First, we define $a(n)$, $b(n)$, and $C$ where $a(n)$ is the `aatom` balance of account `n`, $b(n)$ is the `uatom` balance of account `n` stored in the `x/bank` module, and $C$ is the conversion factor equal to $10^{12}$.
+This brings us to how account balances are extended to represent `aatom` balances larger than $10^{12}$.
+First, we define $a(n)$, $b(n)$, and $C$ where $a(n)$ is the `aatom` balance of account `n`, $b(n)$ is the
+`uatom` balance of account `n` stored in the `x/bank` module, and $C$ is the conversion factor equal to $10^{12}$.
 
-Any $a(n)$ divisible by $C$, can be represented by $C$ * $b(n)$.  Any remainder not divisible by $C$, we define the "fractional balance" as $f(n)$ and store this in the `x/precisebank` store.
+Any $a(n)$ divisible by $C$, can be represented by $C$ * $b(n)$.  Any remainder not divisible by $C$,
+we define the "fractional balance" as $f(n)$ and store this in the `x/precisebank` store.
 
 Thus,
 
@@ -71,19 +85,22 @@ $$f(n) = a(n)\bmod{C}$$
 
 With this definition in mind we will refer to $b(n)$ units as integer units, and $f(n)$ as fractional units.
 
-Now since $f(n)$ is stored in the `x/precisebank` and not tracked by the `x/bank` keeper, these are not counted in the `uatom` supply, so if we define
+Now since $f(n)$ is stored in the `x/precisebank` and not tracked by the `x/bank` keeper, these are not counted
+in the `uatom` supply, so if we define
 
 $$T_a \equiv \sum_{n \in \mathcal{A}}{a(n)}$$
 
 $$T_b \equiv \sum_{n \in \mathcal{A}}{b(n)}$$
 
-where $\mathcal{A}$ is the set of all accounts, $T_a$ is the total `aatom` supply, and $T_b$ is the total `uatom` supply, then a reserve account $R$ is added such that
+where $\mathcal{A}$ is the set of all accounts, $T_a$ is the total `aatom` supply, and $T_b$ is the total `uatom` supply,
+then a reserve account $R$ is added such that
 
 $$a(R) = 0$$
 
 $$b(R) \cdot C = \sum_{n \in \mathcal{A}}{f(n)} + r$$
 
-where $R$ is the module account of the `x/precisebank`, and $r$ is the remainder or fractional amount backed by $b(R)$, but not yet in circulation such that
+where $R$ is the module account of the `x/precisebank`, and $r$ is the remainder or fractional amount backed by $b(R)$,
+but not yet in circulation such that
 
 $$T_a = T_b \cdot C - r$$
 
@@ -91,9 +108,13 @@ and
 
 $$ 0 <= r < C$$
 
-We see that $0 \le T_b \cdot C - T_a < C$. If we mint, burn, or transfer `aatom` such that this inequality would be invalid after updates to account balances, we adjust the $T_b$ supply by minting or burning to the reserve account which holds `uatom` equal to that of all `aatom` balances less than `C` plus the remainder.
+We see that $0 \le T_b \cdot C - T_a < C$. If we mint, burn, or transfer `aatom` such that this inequality would be
+invalid after updates to account balances, we adjust the $T_b$ supply by minting or burning to the reserve account
+which holds `uatom` equal to that of all `aatom` balances less than `C` plus the remainder.
 
-If we didn't add these constraints, then the total supply of `uatom` reported by the bank keeper would not account for the `aatom` units.  We would incorrectly increase the supply of `aatom` without increasing the reported total supply of ATOM.
+If we didn't add these constraints, then the total supply of `uatom` reported by the bank keeper would not account
+for the `aatom` units.  We would incorrectly increase the supply of `aatom` without increasing the reported
+total supply of ATOM.
 
 ### Adding
 
@@ -259,7 +280,8 @@ f(2) + a\bmod{C} - C & f'(2) < f(2) \end{cases}$$
 
 Bringing the two cases for the two accounts together to determine the change in the reserve account:
 
-$$b'(R) - b(R) \cdot C = \begin{cases} f(1) - a\bmod{C} + C - f(1) + f(2) + a\bmod{C} - C + f(2) & f'(1) > f(1) \land f'(2) < f(2) \\
+$$b'(R) - b(R) \cdot C = \begin{cases}
+f(1) - a\bmod{C} + C - f(1) + f(2) + a\bmod{C} - C + f(2) & f'(1) > f(1) \land f'(2) < f(2) \\
 f(1) - a\bmod{C} - f(1) + f(2) + a\bmod{C} - C + f(2) & f'(1) \leq f(1) \land f'(2) < f(2) \\
 f(1) - a\bmod{C} + C - f(1) + f(2) + a\bmod{C} + f(2) & f'(1) > f(1) \land f'(2) \geq f(2) \\
 f(1) - a\bmod{C} - f(1) + f(2) + a\bmod{C} + f(2) & f'(1) \leq f(1) \land f'(2) \geq f(2) \\
@@ -312,7 +334,8 @@ f(1) - a\bmod{C} + C & f'(1) > f(1) \end{cases}$$
 
 The second case occurs when we need to borrow from the integer units.
 
-We update the remainder by adding $a$ to $r$ as burning increases the amount no longer in circulation but still backed by the reserve.
+We update the remainder by adding $a$ to $r$ as burning increases the amount no longer in circulation
+but still backed by the reserve.
 
 $$r' = r + a \mod{C}$$
 
@@ -361,7 +384,8 @@ f(1) + a\bmod{C} - C & f'(1) < f(1) \end{cases}$$
 
 The second case occurs when we need to carry to the integer unit.
 
-We update the remainder by subtracting $a$ from $r$ as minting decreases the amount no longer in circulation but still backed by the reserve.
+We update the remainder by subtracting $a$ from $r$ as minting decreases the amount no longer in circulation
+but still backed by the reserve.
 
 $$r' = r - a \mod{C}$$
 
