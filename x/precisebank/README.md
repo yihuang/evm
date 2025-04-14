@@ -407,7 +407,9 @@ $$b'(R) - b(R) = \begin{cases} 0 & r' > r \land f'(1) < f(1) \\
 ## State
 
 The `x/precisebank` module keeps state of the following:
+
 1. Account fractional balances.
+
 2. Remainder amount. This amount represents the fractional amount that is backed
    by the reserve account but not yet in circulation. This can be non-zero if
    a fractional amount less than `1uatom` is minted.
