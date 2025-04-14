@@ -89,12 +89,14 @@ func NewKeeper(
 	// ensure that use
 	// - precisebank module, when 0 < decimals < 18
 	// - bank module, when decimals == 18
-	_, isPreciseBank := bankKeeper.(precisebankkeeper.Keeper)
-	isEighteenDecimals := types.GetEVMCoinDecimals() == types.EighteenDecimals
-	if isPreciseBank && isEighteenDecimals {
-		panic("When PrecisebankKeeper is used, EVM coin decimals must not be 18")
-	} else if !isPreciseBank && !isEighteenDecimals {
-		panic("When BankKeeper is used, EVM coin decimals must be 18")
+	if types.IsSetEVMCoinInfo() {
+		_, isPreciseBank := bankKeeper.(precisebankkeeper.Keeper)
+		isEighteenDecimals := types.GetEVMCoinDecimals() == types.EighteenDecimals
+		if isPreciseBank && isEighteenDecimals {
+			panic("When PrecisebankKeeper is used, EVM coin decimals must not be 18")
+		} else if !isPreciseBank && !isEighteenDecimals {
+			panic("When BankKeeper is used, EVM coin decimals must be 18")
+		}
 	}
 
 	bankWrapper := wrappers.NewBankWrapper(bankKeeper)

@@ -510,7 +510,7 @@ func NewExampleApp(
 	// NOTE: it's required to set up the EVM keeper before the ERC-20 keeper, because it is used in its instantiation.
 	var bankKeeper evmtypes.BankKeeper
 	bankKeeper = app.PreciseBankKeeper
-	if evmtypes.GetEVMCoinDecimals() == evmtypes.EighteenDecimals {
+	if evmtypes.IsSetEVMCoinInfo() && evmtypes.GetEVMCoinDecimals() == evmtypes.EighteenDecimals {
 		bankKeeper = app.BankKeeper
 	}
 	app.EVMKeeper = evmkeeper.NewKeeper(
