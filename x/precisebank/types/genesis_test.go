@@ -68,7 +68,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 				},
 				sdkmath.ZeroInt(),
 			),
-			"invalid balances: invalid fractional balance for cosmos1qg7c45n6: non-positive amount -1",
+			"invalid balances: invalid fractional balance for cosmos1qgcgaq4k: non-positive amount -1",
 		},
 		{
 			"invalid - calls (slice) FractionalBalances.Validate()",

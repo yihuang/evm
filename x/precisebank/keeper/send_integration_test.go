@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/evm/evmd"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule_MatchingErrors() {
@@ -155,7 +156,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			senderModuleName,
 			sdk.AccAddress([]byte{2}),
 			cs(c(types.IntegerCoinDenom, 1000)),
-			"spendable balance  is smaller than 1000uatom: insufficient funds",
+			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
 			"",
 		},
 		{
@@ -165,7 +166,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
 			cs(c(types.ExtendedCoinDenom, 1000)),
-			"spendable balance  is smaller than 1000aatom: insufficient funds",
+			"spendable balance 0aatom is smaller than 1000aatom: insufficient funds",
 			"",
 		},
 	}
@@ -228,7 +229,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_MatchingErrors() {
 			"insufficient empty balance - passthrough",
 			cs(),
 			cs(c(types.IntegerCoinDenom, 1000)),
-			"spendable balance  is smaller than 1000uatom: insufficient funds",
+			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
 		},
 		{
 			"insufficient empty balance - extended",
@@ -236,7 +237,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_MatchingErrors() {
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
 			cs(c(types.ExtendedCoinDenom, 1000)),
-			"spendable balance  is smaller than 1000aatom: insufficient funds",
+			"spendable balance 0aatom is smaller than 1000aatom: insufficient funds",
 		},
 		{
 			"insufficient non-empty balance - passthrough",
@@ -675,14 +676,14 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 	// of SendCoinsFromAccountToModule, so we are only checking the correct
 	// addresses are being used.
 
-	senderModule := "community"
+	senderModule := evmtypes.ModuleName
 	senderAddr := suite.network.App.AccountKeeper.GetModuleAddress(senderModule)
 
 	recipient := sdk.AccAddress([]byte{1})
 
 	sendAmt := cs(c(types.ExtendedCoinDenom, 1000))
 
-	suite.MintToAccount(senderAddr, sendAmt)
+	suite.MintToModuleAccount(senderModule, sendAmt)
 
 	err := suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(
 		suite.network.GetContext(),

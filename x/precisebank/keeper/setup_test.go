@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/testutil/integration/os/network"
 	"github.com/cosmos/evm/x/precisebank/types"
 )
@@ -21,7 +22,10 @@ func TestKeeperIntegrationTestSuite(t *testing.T) {
 }
 
 func (suite *KeeperIntegrationTestSuite) SetupTest() {
-	nw := network.NewUnitTestNetwork()
+	// TODO(dudong2): prevent using precisebank module if 18 decimals chain
+	nw := network.NewUnitTestNetwork(
+		network.WithChainID(testconstants.SixDecimalsChainID),
+	)
 	suite.network = nw
 	suite.queryClient = nw.GetPreciseBankClient()
 }

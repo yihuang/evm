@@ -6,6 +6,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/testutil/integration/os/network"
 	"github.com/cosmos/evm/x/precisebank"
 	"github.com/cosmos/evm/x/precisebank/keeper"
@@ -24,7 +25,9 @@ func TestGenesisTestSuite(t *testing.T) {
 }
 
 func (suite *GenesisTestSuite) SetupTest() {
-	suite.network = network.NewUnitTestNetwork()
+	suite.network = network.NewUnitTestNetwork(
+		network.WithChainID(testconstants.SixDecimalsChainID),
+	)
 }
 
 func (suite *GenesisTestSuite) TestInitGenesis() {

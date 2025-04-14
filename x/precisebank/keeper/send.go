@@ -331,6 +331,36 @@ func (k Keeper) SendCoinsFromModuleToAccount(
 	return k.SendCoins(ctx, senderAddr, recipientAddr, amt)
 }
 
+// SendCoinsFromModuleToModule transfers coins from a ModuleAccount to another.
+// It will panic if either module account does not exist. An error is returned
+// if the recipient module is the x/precisebank module account or if sending the
+// tokens fails.
+func (k Keeper) SendCoinsFromModuleToModule(
+	goCtx context.Context,
+	senderModule string,
+	recipientModule string,
+	amt sdk.Coins,
+) error {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Identical panics to x/bank
+	senderAddr := k.ak.GetModuleAddress(senderModule)
+	if senderAddr == nil {
+		panic(errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", senderModule))
+	}
+
+	recipientAcc := k.ak.GetModuleAccount(ctx, recipientModule)
+	if recipientAcc == nil {
+		panic(errorsmod.Wrapf(sdkerrors.ErrUnknownAddress, "module account %s does not exist", recipientModule))
+	}
+
+	if recipientModule == types.ModuleName {
+		return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "module account %s is not allowed to receive funds", types.ModuleName)
+	}
+
+	return k.SendCoins(ctx, senderAddr, recipientAcc.GetAddress(), amt)
+}
+
 // updateInsufficientFundsError returns a modified ErrInsufficientFunds with
 // extended coin amounts if the error is due to insufficient funds. Otherwise,
 // it returns the original error. This is used since x/bank transfers will
@@ -355,9 +385,7 @@ func (k Keeper) updateInsufficientFundsError(
 	// full, including locked, balance then this should be updated to deduct
 	// locked coins.
 
-	// Use sdk.NewCoins() so that it removes empty balances - ie. prints
-	// empty string if balance is 0. This is to match x/bank behavior.
-	spendable := sdk.NewCoins(bal)
+	spendable := sdk.Coins{bal}
 
 	return errorsmod.Wrapf(
 		sdkerrors.ErrInsufficientFunds,

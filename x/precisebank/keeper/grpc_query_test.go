@@ -50,7 +50,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryTotalFractionalBalance() {
 				total.Amount = total.Amount.Add(balance)
 			}
 
-			res, err := suite.queryClient.TotalFractionalBalances(
+			res, err := suite.network.GetPreciseBankClient().TotalFractionalBalances(
 				context.Background(),
 				&types.QueryTotalFractionalBalancesRequest{},
 			)
@@ -62,7 +62,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryTotalFractionalBalance() {
 }
 
 func (suite *KeeperIntegrationTestSuite) TestQueryRemainder() {
-	res, err := suite.queryClient.Remainder(
+	res, err := suite.network.GetPreciseBankClient().Remainder(
 		context.Background(),
 		&types.QueryRemainderRequest{},
 	)
@@ -83,7 +83,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryRemainder() {
 	)
 	suite.Require().NoError(err)
 
-	res, err = suite.queryClient.Remainder(
+	res, err = suite.network.GetPreciseBankClient().Remainder(
 		context.Background(),
 		&types.QueryRemainderRequest{},
 	)
@@ -129,7 +129,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryFractionalBalance() {
 			coin := sdk.NewCoin(types.ExtendedCoinDenom, tc.giveBalance)
 			suite.MintToAccount(addr, sdk.NewCoins(coin))
 
-			res, err := suite.queryClient.FractionalBalance(
+			res, err := suite.network.GetPreciseBankClient().FractionalBalance(
 				context.Background(),
 				&types.QueryFractionalBalanceRequest{
 					Address: addr.String(),

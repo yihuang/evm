@@ -57,7 +57,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			ibctransfertypes.ModuleName,
 			func() {},
 			cs(c("uatom", 1000)),
-			"spendable balance  is smaller than 1000uatom: insufficient funds",
+			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
 			"",
 		},
 	}

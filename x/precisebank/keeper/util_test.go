@@ -28,6 +28,28 @@ func (suite *KeeperIntegrationTestSuite) MintToAccount(addr sdk.AccAddress, amt 
 	suite.T().Logf("minted %s to %s", amt, addr)
 }
 
+// MintToModuleAccount mints coins to an account with the x/precisebank methods. This
+// must be used when minting extended coins, ie. aatom coins. This depends on
+// the methods to be properly tested to be implemented correctly.
+func (suite *KeeperIntegrationTestSuite) MintToModuleAccount(moduleName string, amt sdk.Coins) {
+	moduleAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
+	accBalancesBefore := suite.GetAllBalances(moduleAddr)
+
+	err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), minttypes.ModuleName, amt)
+	suite.Require().NoError(err)
+
+	err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToModule(suite.network.GetContext(), minttypes.ModuleName, moduleName, amt)
+	suite.Require().NoError(err)
+
+	// Double check balances are correctly minted and sent to account
+	accBalancesAfter := suite.GetAllBalances(moduleAddr)
+
+	netIncrease := accBalancesAfter.Sub(accBalancesBefore...)
+	suite.Require().Equal(ConvertCoinsToExtendedCoinDenom(amt), netIncrease)
+
+	suite.T().Logf("minted %s to %s", amt, moduleName)
+}
+
 // GetAllBalances returns all the account balances for the given account address.
 // This returns the extended coin balance if the account has a non-zero balance,
 // WITHOUT the integer coin balance.
