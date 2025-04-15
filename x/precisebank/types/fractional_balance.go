@@ -1,23 +1,25 @@
 package types
 
 import (
-	fmt "fmt"
+	"fmt"
 
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-)
 
-// conversionFactor is used to convert the fractional balance to integer
-// balances.
-var conversionFactor = sdkmath.NewInt(1_000_000_000_000)
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+)
 
 // ConversionFactor returns a copy of the conversionFactor used to convert the
 // fractional balance to integer balances. This is also 1 greater than the max
 // valid fractional amount (999_999_999_999):
 // 0 < FractionalBalance < conversionFactor
 func ConversionFactor() sdkmath.Int {
-	return sdkmath.NewIntFromBigIntMut(conversionFactor.BigInt())
+	if !evmtypes.IsSetEVMCoinInfo() {
+		panic("ConversionFactor should not be called if evmtypes.IsSetEVMCoinInfo() is false")
+	}
+
+	return sdkmath.NewIntFromBigIntMut(evmtypes.GetEVMCoinDecimals().ConversionFactor().BigInt())
 }
 
 // FractionalBalance returns a new FractionalBalance with the given address and
@@ -52,8 +54,8 @@ func ValidateFractionalAmount(amt sdkmath.Int) error {
 		return fmt.Errorf("non-positive amount %v", amt)
 	}
 
-	if amt.GTE(conversionFactor) {
-		return fmt.Errorf("amount %v exceeds max of %v", amt, conversionFactor.SubRaw(1))
+	if amt.GTE(ConversionFactor()) {
+		return fmt.Errorf("amount %v exceeds max of %v", amt, ConversionFactor().SubRaw(1))
 	}
 
 	return nil

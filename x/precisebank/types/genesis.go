@@ -39,8 +39,8 @@ func (gs *GenesisState) Validate() error {
 		return fmt.Errorf("negative remainder amount %s", gs.Remainder)
 	}
 
-	if gs.Remainder.GTE(conversionFactor) {
-		return fmt.Errorf("remainder %v exceeds max of %v", gs.Remainder, conversionFactor.SubRaw(1))
+	if gs.Remainder.GTE(ConversionFactor()) {
+		return fmt.Errorf("remainder %v exceeds max of %v", gs.Remainder, ConversionFactor().SubRaw(1))
 	}
 
 	// Determine if sum(fractionalBalances) + remainder = whole integer value
@@ -48,14 +48,14 @@ func (gs *GenesisState) Validate() error {
 	sum := gs.Balances.SumAmount()
 	sumWithRemainder := sum.Add(gs.Remainder)
 
-	offBy := sumWithRemainder.Mod(conversionFactor)
+	offBy := sumWithRemainder.Mod(ConversionFactor())
 
 	if !offBy.IsZero() {
 		return fmt.Errorf(
 			"sum of fractional balances %v + remainder %v is not a multiple of %v",
 			sum,
 			gs.Remainder,
-			conversionFactor,
+			ConversionFactor(),
 		)
 	}
 

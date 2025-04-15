@@ -11,7 +11,7 @@ import (
 // events.
 func SumExtendedCoin(amt sdk.Coins) sdk.Coin {
 	// uatom converted to aatom
-	integerAmount := amt.AmountOf(IntegerCoinDenom).Mul(conversionFactor)
+	integerAmount := amt.AmountOf(IntegerCoinDenom).Mul(ConversionFactor())
 	// aatom as is
 	extendedAmount := amt.AmountOf(ExtendedCoinDenom)
 

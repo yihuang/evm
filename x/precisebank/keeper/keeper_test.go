@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/testutil/integration/os/network"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
@@ -38,7 +39,9 @@ func newMockedTestData(t *testing.T) testData {
 	bk := mocks.NewMockBankKeeper(t)
 	ak := mocks.NewMockAccountKeeper(t)
 
-	nw := network.NewUnitTestNetwork()
+	nw := network.NewUnitTestNetwork(
+		network.WithChainID(testconstants.SixDecimalsChainID),
+	)
 	cdc := nw.App.AppCodec()
 	k := keeper.NewKeeper(cdc, storeKey, bk, ak)
 
