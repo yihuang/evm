@@ -322,6 +322,40 @@ func (_c *MockBankKeeper_IsSendEnabledCoins_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// IterateAllBalances provides a mock function with given fields: ctx, cb
+func (_m *MockBankKeeper) IterateAllBalances(ctx context.Context, cb func(types.AccAddress, types.Coin) bool) {
+	_m.Called(ctx, cb)
+}
+
+// MockBankKeeper_IterateAllBalances_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IterateAllBalances'
+type MockBankKeeper_IterateAllBalances_Call struct {
+	*mock.Call
+}
+
+// IterateAllBalances is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cb func(types.AccAddress , types.Coin) bool
+func (_e *MockBankKeeper_Expecter) IterateAllBalances(ctx interface{}, cb interface{}) *MockBankKeeper_IterateAllBalances_Call {
+	return &MockBankKeeper_IterateAllBalances_Call{Call: _e.mock.On("IterateAllBalances", ctx, cb)}
+}
+
+func (_c *MockBankKeeper_IterateAllBalances_Call) Run(run func(ctx context.Context, cb func(types.AccAddress, types.Coin) bool)) *MockBankKeeper_IterateAllBalances_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(func(types.AccAddress, types.Coin) bool))
+	})
+	return _c
+}
+
+func (_c *MockBankKeeper_IterateAllBalances_Call) Return() *MockBankKeeper_IterateAllBalances_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockBankKeeper_IterateAllBalances_Call) RunAndReturn(run func(context.Context, func(types.AccAddress, types.Coin) bool)) *MockBankKeeper_IterateAllBalances_Call {
+	_c.Run(run)
+	return _c
+}
+
 // MintCoins provides a mock function with given fields: ctx, moduleName, amt
 func (_m *MockBankKeeper) MintCoins(ctx context.Context, moduleName string, amt types.Coins) error {
 	ret := _m.Called(ctx, moduleName, amt)

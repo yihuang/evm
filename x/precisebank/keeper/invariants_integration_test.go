@@ -1,10 +1,13 @@
 package keeper_test
 
 import (
-	"github.com/cosmos/evm/x/precisebank/keeper"
-	"github.com/cosmos/evm/x/precisebank/types"
+	"fmt"
 
 	sdkmath "cosmossdk.io/math"
+	"github.com/cosmos/evm/evmd"
+	"github.com/cosmos/evm/x/precisebank/keeper"
+	"github.com/cosmos/evm/x/precisebank/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -109,6 +112,145 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 				suite.Require().Equal(tt.wantMsg, msg)
 			} else {
 				suite.Require().Falsef(broken, "invariant should not be broken but is: %s", msg)
+			}
+		})
+	}
+}
+
+func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
+	tests := []struct {
+		name       string
+		setupFn    func(ctx sdk.Context, k keeper.Keeper)
+		wantBroken bool
+		wantMsg    string
+	}{
+		{
+			"valid - empty state",
+			func(_ sdk.Context, _ keeper.Keeper) {},
+			false,
+			"",
+		},
+		{
+			"valid - mint fractional coins",
+			func(ctx sdk.Context, k keeper.Keeper) {
+				// Mint fractional coins equivalent to 1 uatom
+				err := k.MintCoins(
+					ctx,
+					evmtypes.ModuleName,
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+				)
+				suite.Require().NoError(err)
+			},
+			false,
+			"",
+		},
+		{
+			"valid - mint and send fractional coins",
+			func(ctx sdk.Context, k keeper.Keeper) {
+				// Mint fractional coins equivalent to 1 uatom
+				err := k.MintCoins(
+					ctx,
+					evmtypes.ModuleName,
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+				)
+				suite.Require().NoError(err)
+
+				// Send 0.4 uatom worth to another account
+				senderAddr := suite.network.App.AccountKeeper.GetModuleAddress(evmtypes.ModuleName)
+				err = k.SendCoins(
+					ctx,
+					senderAddr,
+					sdk.AccAddress{1},
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(4))),
+				)
+				suite.Require().NoError(err)
+			},
+			false,
+			"",
+		},
+		{
+			"valid - mint, send, and burn operations",
+			func(ctx sdk.Context, k keeper.Keeper) {
+				// Mint fractional coins equivalent to 1 uatom
+				err := k.MintCoins(
+					ctx,
+					evmtypes.ModuleName,
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+				)
+				suite.Require().NoError(err)
+
+				// Send 0.4 uatom worth to another account
+				senderAddr := suite.network.App.AccountKeeper.GetModuleAddress(evmtypes.ModuleName)
+				err = k.SendCoins(
+					ctx,
+					senderAddr,
+					sdk.AccAddress{1},
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(4))),
+				)
+				suite.Require().NoError(err)
+
+				// Burn fractional coins equivalent to 0.2 uatom
+				err = k.BurnCoins(
+					ctx,
+					evmtypes.ModuleName,
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(2))),
+				)
+				suite.Require().NoError(err)
+			},
+			false,
+			"",
+		},
+		{
+			"invalid - mismatch due to incorrect balance manipulation",
+			func(ctx sdk.Context, k keeper.Keeper) {
+				// Mint fractional coins equivalent to 1000 aatom
+				err := k.MintCoins(
+					ctx,
+					evmtypes.ModuleName,
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.NewInt(1000))),
+				)
+				suite.Require().NoError(err)
+
+				// Directly modify fractional balance to create mismatch
+				// (this should never happen in practice)
+				k.SetFractionalBalance(
+					ctx,
+					sdk.AccAddress{1},
+					types.ConversionFactor().QuoRaw(10).MulRaw(7),
+				)
+			},
+			true,
+			"precisebank: total-supply\ntotal supply 700000000000 does not match integer total supply 1000000000000",
+		},
+	}
+
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			// Reset each time
+			suite.SetupTest()
+
+			suite.network.App.BankKeeper.IterateAllBalances(
+				suite.network.GetContext(),
+				func(address sdk.AccAddress, coin sdk.Coin) (stop bool) {
+					fmt.Println("address", address.String(), "coin", coin)
+					return false
+				},
+			)
+
+			for accPerm := range evmd.BlockedAddresses() {
+				fmt.Println("blocked address", accPerm)
+			}
+
+			tt.setupFn(suite.network.GetContext(), suite.network.App.PreciseBankKeeper)
+
+			invariantFn := keeper.TotalSupplyInvariant(suite.network.App.PreciseBankKeeper)
+			msg, broken := invariantFn(suite.network.GetContext())
+
+			if tt.wantBroken {
+				suite.Require().True(broken, "invariant should be broken but is not")
+				suite.Require().Equal(tt.wantMsg, msg)
+			} else {
+				suite.Require().False(broken, "invariant should not be broken but is")
 			}
 		})
 	}

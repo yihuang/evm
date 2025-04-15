@@ -21,6 +21,7 @@ func RegisterInvariants(
 	ir.RegisterRoute(types.ModuleName, "valid-fractional-balances", ValidFractionalAmountsInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "valid-remainder-amount", ValidRemainderAmountInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "fractional-denom-not-in-bank", FractionalDenomNotInBankInvariant(k))
+	ir.RegisterRoute(types.ModuleName, "total-supply", TotalSupplyInvariant(k))
 }
 
 // AllInvariants runs all invariants of the X/precisebank module.
@@ -47,6 +48,11 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		}
 
 		res, stop = FractionalDenomNotInBankInvariant(k)(ctx)
+		if stop {
+			return res, stop
+		}
+
+		res, stop = TotalSupplyInvariant(k)(ctx)
 		if stop {
 			return res, stop
 		}
@@ -201,6 +207,46 @@ func FractionalDenomNotInBankInvariant(k Keeper) sdk.Invariant {
 
 		return sdk.FormatInvariant(
 			types.ModuleName, "fractional-denom-not-in-bank",
+			msg,
+		), broken
+	}
+}
+
+// TotalSupplyInvariant checks that the total supply of the asset is equal to the sum of the fractional balances and the remainder amount.
+func TotalSupplyInvariant(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		totalSupply := sdkmath.ZeroInt()
+
+		k.IterateFractionalBalances(ctx, func(addr sdk.AccAddress, amount sdkmath.Int) bool {
+			totalSupply = totalSupply.Add(amount)
+			return false
+		})
+
+		totalSupply = totalSupply.Add(k.GetRemainderAmount(ctx))
+
+		precisebankModuleAddr := k.ak.GetModuleAddress(types.ModuleName)
+		k.bk.IterateAllBalances(ctx, func(addr sdk.AccAddress, coin sdk.Coin) bool {
+			if addr.Equals(precisebankModuleAddr) {
+				return false
+			}
+
+			if coin.Denom == types.IntegerCoinDenom {
+				totalSupply = totalSupply.Add(coin.Amount.Mul(types.ConversionFactor()))
+			}
+			return false
+		})
+
+		integerTotalSupply := k.bk.GetSupply(ctx, types.IntegerCoinDenom).Amount.Mul(types.ConversionFactor())
+
+		broken := !totalSupply.Equal(integerTotalSupply)
+		msg := ""
+
+		if broken {
+			msg = fmt.Sprintf("total supply %s does not match integer total supply %s", totalSupply, integerTotalSupply)
+		}
+
+		return sdk.FormatInvariant(
+			types.ModuleName, "total-supply",
 			msg,
 		), broken
 	}
