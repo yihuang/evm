@@ -1,9 +1,6 @@
 package staking
 
 const (
-	// ErrDecreaseAmountTooBig is raised when the amount by which the allowance should be decreased is greater
-	// than the authorization limit.
-	ErrDecreaseAmountTooBig = "amount by which the allowance should be decreased is greater than the authorization limit: %s > %s"
 	// ErrDifferentOriginFromDelegator is raised when the origin address is not the same as the delegator address.
 	ErrDifferentOriginFromDelegator = "origin address %s is not the same as delegator address %s"
 	// ErrDifferentCallerFromDelegator is raised when the caller address is not the same as the delegator address.

@@ -90,4 +90,3 @@ func (p Precompile) DenomHash(
 
 	return method.Outputs.Pack(res.Hash)
 }
-

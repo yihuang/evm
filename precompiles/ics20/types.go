@@ -45,13 +45,6 @@ type EventIBCTransfer struct {
 	Memo          string
 }
 
-// EventTransferAuthorization is the event type emitted when a transfer authorization is created.
-type EventTransferAuthorization struct {
-	Grantee     common.Address
-	Granter     common.Address
-	Allocations []cmn.ICS20Allocation
-}
-
 // DenomTraceResponse defines the data for the denom trace response.
 type DenomTraceResponse struct {
 	DenomTrace transfertypes.DenomTrace
@@ -72,12 +65,6 @@ type DenomTracesResponse struct {
 // used as input in the transfer method
 type height struct {
 	TimeoutHeight clienttypes.Height
-}
-
-// allocs is a struct used to parse the Allocations parameter
-// used as input in the transfer authorization method
-type allocs struct {
-	Allocations []cmn.ICS20Allocation
 }
 
 // NewMsgTransfer returns a new transfer message from the given arguments.

@@ -196,4 +196,3 @@ func (p Precompile) Redelegations(
 
 	return out.Pack(method.Outputs)
 }
-
