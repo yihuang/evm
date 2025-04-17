@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/evm/evmd"
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -714,6 +717,11 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 }
 
 func FuzzSendCoins(f *testing.F) {
+	evmConfigurator := evmtypes.NewEVMConfigurator()
+	evmConfigurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
+	err := evmConfigurator.Configure()
+	require.NoError(f, err)
+
 	f.Add(uint64(100), uint64(0), uint64(2))
 	f.Add(uint64(100), uint64(100), uint64(5))
 	f.Add(types.ConversionFactor().Uint64(), uint64(0), uint64(500))

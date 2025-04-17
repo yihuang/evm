@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	sdkmath "cosmossdk.io/math"
@@ -437,6 +441,11 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 }
 
 func FuzzBurnCoins(f *testing.F) {
+	evmConfigurator := evmtypes.NewEVMConfigurator()
+	evmConfigurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
+	err := evmConfigurator.Configure()
+	require.NoError(f, err)
+
 	f.Add(int64(0))
 	f.Add(int64(100))
 	f.Add(types.ConversionFactor().Int64())
