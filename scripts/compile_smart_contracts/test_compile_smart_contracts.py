@@ -82,6 +82,7 @@ def test_find_solidity_files(setup_example_contracts_files):
         tmp_path / "precompiles" / "staking" / "abi.json"
     )
 
+
 def test_copy_to_contracts_directory(
     tmp_path,
 ):
