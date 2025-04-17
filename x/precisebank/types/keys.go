@@ -20,6 +20,7 @@ var (
 // Keys for store that are not prefixed
 var (
 	RemainderBalanceKey = []byte{0x02} // fractional balance remainder
+	CoinInfoKey         = []byte{0x03} // coin info
 )
 
 // FractionalBalanceKey returns a key from an address

@@ -69,6 +69,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				},
 				// 2 leftover from 0.999... + 0.999...
 				sdkmath.NewInt(2),
+				types.DefaultCoinInfo(),
 			),
 			"",
 		},
@@ -82,6 +83,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 					types.NewFractionalBalance(sdk.AccAddress{1}.String(), sdkmath.NewInt(1)),
 				},
 				sdkmath.ZeroInt(),
+				types.DefaultCoinInfo(),
 			),
 			"failed to validate precisebank genesis state: invalid balances: duplicate address cosmos1qyfkm2y3",
 		},
@@ -95,6 +97,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				},
 				// 2 leftover from 0.999... + 0.999...
 				sdkmath.NewInt(2),
+				types.DefaultCoinInfo(),
 			),
 			"module account balance does not match sum of fractional balances and remainder, balance is 0uatom but expected 2000000000000aatom (2uatom)",
 		},
@@ -115,6 +118,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 					types.NewFractionalBalance(sdk.AccAddress{2}.String(), types.ConversionFactor().SubRaw(1)),
 				},
 				sdkmath.NewInt(2),
+				types.DefaultCoinInfo(),
 			),
 			"module account balance does not match sum of fractional balances and remainder, balance is 100uatom but expected 2000000000000aatom (2uatom)",
 		},
@@ -226,6 +230,7 @@ func (suite *GenesisTestSuite) TestExportGenesis() {
 						types.NewFractionalBalance(sdk.AccAddress{2}.String(), types.ConversionFactor().QuoRaw(2)),
 					},
 					sdkmath.ZeroInt(),
+					types.DefaultCoinInfo(),
 				)
 			},
 		},
@@ -245,6 +250,7 @@ func (suite *GenesisTestSuite) TestExportGenesis() {
 						types.NewFractionalBalance(sdk.AccAddress{2}.String(), types.ConversionFactor().QuoRaw(2).SubRaw(1)),
 					},
 					sdkmath.OneInt(),
+					types.DefaultCoinInfo(),
 				)
 			},
 		},

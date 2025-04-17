@@ -3,6 +3,7 @@ package cosmos.evm.precisebank.v1;
 
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
+import "amino/amino.proto";
 
 option go_package = "github.com/cosmos/evm/x/precisebank/types";
 
@@ -21,6 +22,9 @@ message GenesisState {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+
+  // coin_info is the coin info for the precisebank module.
+  CoinInfo coin_info = 3 [ (gogoproto.nullable) = false ];
 }
 
 // FractionalBalance defines the fractional portion of an account balance
@@ -35,6 +39,25 @@ message FractionalBalance {
   // address. FractionalBalance currently only supports tracking 1 single asset,
   // e.g. fractional balances of uatom.
   string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// CoinInfo holds parameters for the precisebank module.
+message CoinInfo {
+  option (amino.name) = "evm/x/precisebank/CoinInfo";
+
+  // integer_coin_denom is the base asset of the precisebank module.
+  string integer_coin_denom = 1;
+
+  // extended_coin_denom is the extended asset of the precisebank module.
+  string extended_coin_denom = 2;
+
+  // conversion_factor is the number of fractional digits to convert to the
+  // base asset.
+  string conversion_factor = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

@@ -1,10 +1,7 @@
 package keeper_test
 
 import (
-	"fmt"
-
 	sdkmath "cosmossdk.io/math"
-	"github.com/cosmos/evm/evmd"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -201,7 +198,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 			"",
 		},
 		{
-			"invalid - mismatch due to incorrect balance manipulation",
+			"invalid - mismatch due to incorrect balance manipulation", // !
 			func(ctx sdk.Context, k keeper.Keeper) {
 				// Mint fractional coins equivalent to 1000 aatom
 				err := k.MintCoins(
@@ -220,7 +217,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				)
 			},
 			true,
-			"precisebank: total-supply\ntotal supply 700000000000 does not match integer total supply 1000000000000",
+			"precisebank: total-supply invariant\ntotal supply 100003000001700000000000 does not match integer total supply 100003000001000000000000\n",
 		},
 	}
 
@@ -232,14 +229,9 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 			suite.network.App.BankKeeper.IterateAllBalances(
 				suite.network.GetContext(),
 				func(address sdk.AccAddress, coin sdk.Coin) (stop bool) {
-					fmt.Println("address", address.String(), "coin", coin)
 					return false
 				},
 			)
-
-			for accPerm := range evmd.BlockedAddresses() {
-				fmt.Println("blocked address", accPerm)
-			}
 
 			tt.setupFn(suite.network.GetContext(), suite.network.App.PreciseBankKeeper)
 

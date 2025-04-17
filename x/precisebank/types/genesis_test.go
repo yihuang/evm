@@ -5,15 +5,21 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	sdkmath "cosmossdk.io/math"
+	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/testutil"
 	"github.com/cosmos/evm/x/precisebank/types"
-
-	sdkmath "cosmossdk.io/math"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesisStateValidate_Basic(t *testing.T) {
+	configurator := evmtypes.NewEVMConfigurator()
+	configurator.ResetTestConfig()
+	err := configurator.WithEVMCoinInfo(testconstants.ExampleAttoDenom, uint8(evmtypes.SixDecimals)).Configure()
+	require.NoError(t, err)
+
 	testCases := []struct {
 		name         string
 		genesisState *types.GenesisState
@@ -26,14 +32,16 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 		},
 		{
 			"valid - empty balances, zero remainder",
-			&types.GenesisState{
-				Remainder: sdkmath.ZeroInt(),
-			},
+			types.NewGenesisState(
+				types.FractionalBalances{},
+				sdkmath.ZeroInt(),
+				types.DefaultCoinInfo(),
+			),
 			"",
 		},
 		{
 			"valid - nil balances",
-			types.NewGenesisState(nil, sdkmath.ZeroInt()),
+			types.NewGenesisState(nil, sdkmath.ZeroInt(), types.DefaultCoinInfo()),
 			"",
 		},
 		{
@@ -43,6 +51,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{1}.String(), sdkmath.NewInt(1)),
 				},
 				types.ConversionFactor().SubRaw(1),
+				types.DefaultCoinInfo(),
 			),
 			"",
 		},
@@ -59,6 +68,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{1}.String(), sdkmath.NewInt(1)),
 				},
 				sdkmath.ZeroInt(),
+				types.DefaultCoinInfo(),
 			),
 			"invalid balances: duplicate address cosmos1qyfkm2y3",
 		},
@@ -70,6 +80,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{2}.String(), sdkmath.NewInt(-1)),
 				},
 				sdkmath.ZeroInt(),
+				types.DefaultCoinInfo(),
 			),
 			"invalid balances: invalid fractional balance for cosmos1qgcgaq4k: non-positive amount -1",
 		},
@@ -81,6 +92,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{1}.String(), sdkmath.NewInt(1)),
 				},
 				sdkmath.ZeroInt(),
+				types.DefaultCoinInfo(),
 			),
 			"invalid balances: duplicate address cosmos1qyfkm2y3",
 		},
@@ -92,6 +104,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{2}.String(), sdkmath.NewInt(1)),
 				},
 				sdkmath.NewInt(-1),
+				types.DefaultCoinInfo(),
 			),
 			"negative remainder amount -1",
 		},
@@ -103,6 +116,7 @@ func TestGenesisStateValidate_Basic(t *testing.T) {
 					types.NewFractionalBalance(sdk.AccAddress{2}.String(), sdkmath.NewInt(1)),
 				},
 				types.ConversionFactor(),
+				types.DefaultCoinInfo(),
 			),
 			"remainder 1000000000000 exceeds max of 999999999999",
 		},
@@ -131,7 +145,7 @@ func TestGenesisStateValidate_Total(t *testing.T) {
 		{
 			"valid - empty balances, zero remainder",
 			func() *types.GenesisState {
-				return types.NewGenesisState(nil, sdkmath.ZeroInt())
+				return types.NewGenesisState(nil, sdkmath.ZeroInt(), types.DefaultCoinInfo())
 			},
 			"",
 		},
@@ -141,7 +155,7 @@ func TestGenesisStateValidate_Total(t *testing.T) {
 				fbs := testutil.GenerateEqualFractionalBalances(t, 100)
 				require.Len(t, fbs, 100)
 
-				return types.NewGenesisState(fbs, sdkmath.ZeroInt())
+				return types.NewGenesisState(fbs, sdkmath.ZeroInt(), types.DefaultCoinInfo())
 			},
 			"",
 		},
@@ -155,7 +169,7 @@ func TestGenesisStateValidate_Total(t *testing.T) {
 
 				t.Log("remainder:", remainder)
 
-				return types.NewGenesisState(fbs, remainder)
+				return types.NewGenesisState(fbs, remainder, types.DefaultCoinInfo())
 			},
 			"",
 		},
@@ -168,7 +182,7 @@ func TestGenesisStateValidate_Total(t *testing.T) {
 				require.NotZero(t, remainder.Int64())
 
 				// Wrong remainder - should be non-zero
-				return types.NewGenesisState(fbs, sdkmath.ZeroInt())
+				return types.NewGenesisState(fbs, sdkmath.ZeroInt(), types.DefaultCoinInfo())
 			},
 			// balances are randomly generated so we can't set the exact value in the error message
 			// "sum of fractional balances 52885778295370 ... "
@@ -177,7 +191,7 @@ func TestGenesisStateValidate_Total(t *testing.T) {
 		{
 			"invalid - empty balances, non-zero remainder",
 			func() *types.GenesisState {
-				return types.NewGenesisState(types.FractionalBalances{}, sdkmath.NewInt(1))
+				return types.NewGenesisState(types.FractionalBalances{}, sdkmath.NewInt(1), types.DefaultCoinInfo())
 			},
 			"sum of fractional balances 0 + remainder 1 is not a multiple of 1000000000000",
 		},
@@ -202,12 +216,14 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 		name                         string
 		giveBalances                 types.FractionalBalances
 		giveRemainder                sdkmath.Int
+		giveCoinInfo                 types.CoinInfo
 		wantTotalAmountWithRemainder sdkmath.Int
 	}{
 		{
 			"empty balances, zero remainder",
 			types.FractionalBalances{},
 			sdkmath.ZeroInt(),
+			types.DefaultCoinInfo(),
 			sdkmath.ZeroInt(),
 		},
 		{
@@ -217,6 +233,7 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 				types.NewFractionalBalance(sdk.AccAddress{2}.String(), types.ConversionFactor().QuoRaw(2)),
 			},
 			sdkmath.ZeroInt(),
+			types.DefaultCoinInfo(),
 			types.ConversionFactor(),
 		},
 		{
@@ -226,6 +243,7 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 				types.NewFractionalBalance(sdk.AccAddress{2}.String(), types.ConversionFactor().QuoRaw(2).SubRaw(1)),
 			},
 			sdkmath.OneInt(),
+			types.DefaultCoinInfo(),
 			types.ConversionFactor(),
 		},
 		{
@@ -234,6 +252,7 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 				types.NewFractionalBalance(sdk.AccAddress{1}.String(), sdkmath.OneInt()),
 			},
 			types.ConversionFactor().SubRaw(1),
+			types.DefaultCoinInfo(),
 			types.ConversionFactor(),
 		},
 	}
@@ -243,6 +262,7 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 			gs := types.NewGenesisState(
 				tt.giveBalances,
 				tt.giveRemainder,
+				tt.giveCoinInfo,
 			)
 
 			require.NoError(t, gs.Validate(), "genesis state should be valid before testing total amount")
@@ -269,7 +289,7 @@ func FuzzGenesisStateValidate_NonZeroRemainder(f *testing.F) {
 		t.Logf("count: %v", count)
 		t.Logf("remainder: %v", remainder)
 
-		gs := types.NewGenesisState(fbs, remainder)
+		gs := types.NewGenesisState(fbs, remainder, types.DefaultCoinInfo())
 		require.NoError(t, gs.Validate())
 	})
 }
@@ -287,7 +307,7 @@ func FuzzGenesisStateValidate_ZeroRemainder(f *testing.F) {
 
 		fbs := testutil.GenerateEqualFractionalBalances(t, count)
 
-		gs := types.NewGenesisState(fbs, sdkmath.ZeroInt())
+		gs := types.NewGenesisState(fbs, sdkmath.ZeroInt(), types.DefaultCoinInfo())
 		require.NoError(t, gs.Validate())
 	})
 }
