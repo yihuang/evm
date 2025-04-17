@@ -361,9 +361,10 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 }
 
 func FuzzMintCoins(f *testing.F) {
-	evmConfigurator := evmtypes.NewEVMConfigurator()
-	evmConfigurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
-	err := evmConfigurator.Configure()
+	configurator := evmtypes.NewEVMConfigurator()
+	configurator.ResetTestConfig()
+	configurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
+	err := configurator.Configure()
 	require.NoError(f, err)
 
 	f.Add(int64(0))

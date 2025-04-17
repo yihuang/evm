@@ -717,9 +717,10 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 }
 
 func FuzzSendCoins(f *testing.F) {
-	evmConfigurator := evmtypes.NewEVMConfigurator()
-	evmConfigurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
-	err := evmConfigurator.Configure()
+	configurator := evmtypes.NewEVMConfigurator()
+	configurator.ResetTestConfig()
+	configurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
+	err := configurator.Configure()
 	require.NoError(f, err)
 
 	f.Add(uint64(100), uint64(0), uint64(2))
