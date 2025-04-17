@@ -3,11 +3,11 @@ package types
 import (
 	"fmt"
 
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
 // ConversionFactor returns a copy of the conversionFactor used to convert the

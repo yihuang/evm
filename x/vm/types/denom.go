@@ -6,7 +6,6 @@ package types
 
 import (
 	"fmt"
-	// "math"
 
 	sdkmath "cosmossdk.io/math"
 )
