@@ -62,6 +62,7 @@ import (
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/evidence"
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
@@ -136,6 +137,9 @@ import (
 func init() {
 	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
 	sdk.DefaultPowerReduction = cosmosevmtypes.AttoPowerReduction
+
+	// set the conversion factor for the precisebank module
+	precisebanktypes.ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
 
 	// get the user's home directory
 	var err error

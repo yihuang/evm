@@ -221,7 +221,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				)
 			},
 			true,
-			"precisebank: total-supply\ntotal supply 700000000000 does not match integer total supply 1000000000000",
+			"precisebank: total-supply invariant\ntotal supply 100003000001700000000000 does not match integer total supply 100003000001000000000000\n",
 		},
 	}
 

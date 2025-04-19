@@ -10,13 +10,17 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// ConversionFactorVal is used to convert the fractional balance to integer
+// balances.
+var ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
+
 // ConversionFactor returns a copy of the conversionFactor used to convert the
 // fractional balance to integer balances. This is also 1 greater than the max
 // valid fractional amount (999_999_999_999):
 // 0 < FractionalBalance < conversionFactor
 func ConversionFactor() sdkmath.Int {
 	if !evmtypes.IsSetEVMCoinInfo() {
-		panic("ConversionFactor should not be called if evmtypes.IsSetEVMCoinInfo() is false")
+		return sdkmath.NewIntFromBigIntMut(ConversionFactorVal.BigInt())
 	}
 
 	return sdkmath.NewIntFromBigIntMut(evmtypes.GetEVMCoinDecimals().ConversionFactor().BigInt())
