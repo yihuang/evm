@@ -1,12 +1,15 @@
 package keeper
 
 import (
+	"context"
+
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Enforce that Keeper implements the expected keeper interfaces
@@ -34,4 +37,12 @@ func NewKeeper(
 		bk:       bk,
 		ak:       ak,
 	}
+}
+
+func (k Keeper) IterateTotalSupply(ctx context.Context, cb func(coin sdk.Coin) bool) {
+	k.bk.IterateTotalSupply(ctx, cb)
+}
+
+func (k Keeper) GetSupply(ctx context.Context, denom string) sdk.Coin {
+	return k.bk.GetSupply(ctx, denom)
 }

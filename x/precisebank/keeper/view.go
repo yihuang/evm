@@ -48,6 +48,10 @@ func (k Keeper) GetBalance(
 	return sdk.NewCoin(types.ExtendedCoinDenom, fullAmount)
 }
 
+func (k Keeper) IterateAccountBalances(ctx context.Context, account sdk.AccAddress, cb func(coin sdk.Coin) bool) {
+	k.bk.IterateAccountBalances(ctx, account, cb)
+}
+
 func (k Keeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
 	allBalances := k.bk.GetAllBalances(ctx, addr)
 

@@ -32,4 +32,6 @@ type BankKeeper interface {
 	BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 
 	IterateAllBalances(ctx context.Context, cb func(address sdk.AccAddress, coin sdk.Coin) (stop bool))
+	IterateAccountBalances(ctx context.Context, account sdk.AccAddress, cb func(coin sdk.Coin) bool)
+	IterateTotalSupply(ctx context.Context, cb func(coin sdk.Coin) bool)
 }
