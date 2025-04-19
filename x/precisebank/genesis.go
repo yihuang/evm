@@ -3,7 +3,6 @@ package precisebank
 import (
 	"fmt"
 
-	appcfg "github.com/cosmos/evm/evmd/config"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 
@@ -30,17 +29,6 @@ func InitGenesis(
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
-	found := false
-	for _, v := range appcfg.ChainsCoinInfo {
-		if v.Denom == gs.CoinInfo.IntegerCoinDenom && v.Decimals.ConversionFactor().Equal(gs.CoinInfo.ConversionFactor) {
-			found = true
-			break
-		}
-	}
-	if !found {
-		panic(fmt.Sprintf("integer coin denom %s not found in appcfg.ChainsCoinInfo", gs.CoinInfo.IntegerCoinDenom))
-	}
-
 	// Check module balance matches sum of fractional balances + remainder
 	// This is always a whole integer amount, as previously verified in
 	// GenesisState.Validate()
@@ -48,7 +36,7 @@ func InitGenesis(
 
 	moduleAddr := ak.GetModuleAddress(types.ModuleName)
 	moduleBal := bk.GetBalance(ctx, moduleAddr, types.IntegerCoinDenom)
-	moduleBalExtended := moduleBal.Amount.Mul(gs.CoinInfo.ConversionFactor)
+	moduleBalExtended := moduleBal.Amount.Mul(types.ConversionFactor())
 
 	// Compare balances in full precise extended amounts
 	if !totalAmt.Equal(moduleBalExtended) {
@@ -56,7 +44,7 @@ func InitGenesis(
 			"module account balance does not match sum of fractional balances and remainder, balance is %s but expected %v%s (%v%s)",
 			moduleBal,
 			totalAmt, types.ExtendedCoinDenom,
-			totalAmt.Quo(gs.CoinInfo.ConversionFactor), types.IntegerCoinDenom,
+			totalAmt.Quo(types.ConversionFactor()), types.IntegerCoinDenom,
 		))
 	}
 
@@ -79,8 +67,8 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 
 		return false
 	})
-	remainder := keeper.GetRemainderAmount(ctx)
-	coinInfo := keeper.GetCoinInfo(ctx)
 
-	return types.NewGenesisState(balances, remainder, coinInfo)
+	remainder := keeper.GetRemainderAmount(ctx)
+
+	return types.NewGenesisState(balances, remainder)
 }

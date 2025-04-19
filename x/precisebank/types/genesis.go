@@ -10,18 +10,16 @@ import (
 func NewGenesisState(
 	balances FractionalBalances,
 	remainder sdkmath.Int,
-	coinInfo CoinInfo,
 ) *GenesisState {
 	return &GenesisState{
 		Balances:  balances,
 		Remainder: remainder,
-		CoinInfo:  coinInfo,
 	}
 }
 
 // DefaultGenesisState returns a default genesis state.
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(FractionalBalances{}, sdkmath.ZeroInt(), DefaultCoinInfo())
+	return NewGenesisState(FractionalBalances{}, sdkmath.ZeroInt())
 }
 
 // Validate performs basic validation of genesis data returning an  error for
@@ -41,13 +39,8 @@ func (gs *GenesisState) Validate() error {
 		return fmt.Errorf("negative remainder amount %s", gs.Remainder)
 	}
 
-	// Validate coin info
-	if err := gs.CoinInfo.Validate(); err != nil {
-		return fmt.Errorf("invalid coin info: %w", err)
-	}
-
-	if gs.Remainder.GTE(gs.CoinInfo.ConversionFactor) {
-		return fmt.Errorf("remainder %v exceeds max of %v", gs.Remainder, gs.CoinInfo.ConversionFactor.SubRaw(1))
+	if gs.Remainder.GTE(ConversionFactor()) {
+		return fmt.Errorf("remainder %v exceeds max of %v", gs.Remainder, ConversionFactor().SubRaw(1))
 	}
 
 	// Determine if sum(fractionalBalances) + remainder = whole integer value
@@ -55,14 +48,14 @@ func (gs *GenesisState) Validate() error {
 	sum := gs.Balances.SumAmount()
 	sumWithRemainder := sum.Add(gs.Remainder)
 
-	offBy := sumWithRemainder.Mod(gs.CoinInfo.ConversionFactor)
+	offBy := sumWithRemainder.Mod(ConversionFactor())
 
 	if !offBy.IsZero() {
 		return fmt.Errorf(
 			"sum of fractional balances %v + remainder %v is not a multiple of %v",
 			sum,
 			gs.Remainder,
-			gs.CoinInfo.ConversionFactor,
+			ConversionFactor(),
 		)
 	}
 
