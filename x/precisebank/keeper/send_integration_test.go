@@ -2,7 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
+	"math/big"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -716,11 +719,108 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 	)
 }
 
+func (suite *KeeperIntegrationTestSuite) TestRandomFractionalSends() {
+	tests := []struct {
+		name    string
+		chainId string
+	}{
+		{
+			"6 decimals",
+			testconstants.SixDecimalsChainID,
+		},
+		{
+			"2 decimals",
+			testconstants.TwoDecimalsChainID,
+		},
+		{
+			"12 decimals",
+			testconstants.TwelveDecimalsChainID,
+		},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			denom := coinInfo.Denom
+			decimals := coinInfo.Decimals
+
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			suite.Require().NoError(err)
+
+			suite.SetupTest()
+
+			ctx := suite.network.GetContext()
+			sender := sdk.AccAddress([]byte{1})
+			recipient := sdk.AccAddress([]byte{2})
+
+			// Initial balance large enough to cover many small sends
+			initialBalance := types.ConversionFactor().MulRaw(100)
+			suite.MintToAccount(sender, cs(ci(types.ExtendedCoinDenom, initialBalance)))
+
+			// Setup test parameters
+			maxSendUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+			totalSent := sdkmath.ZeroInt()
+			sentCount := 0
+
+			// Continue transfers as long as sender has balance remaining
+			for {
+				// Check current sender balance
+				senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+				if senderAmount.IsZero() {
+					break
+				}
+
+				// Generate random amount within the range of max possible send amount
+				maxPossibleSend := maxSendUnit
+				if maxPossibleSend.GT(senderAmount) {
+					maxPossibleSend = senderAmount
+				}
+				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleSend.BigInt())).AddRaw(1)
+
+				sendAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
+				err := suite.network.App.PreciseBankKeeper.SendCoins(ctx, sender, recipient, sendAmount)
+				suite.NoError(err)
+				totalSent = totalSent.Add(randAmount)
+				sentCount++
+			}
+
+			suite.T().Logf("Completed %d random sends, total sent: %s", sentCount, totalSent.String())
+
+			// Check sender balance
+			senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+			suite.Equal(senderAmount.BigInt().Cmp(big.NewInt(0)), 0, "sender balance should be zero")
+
+			// Check recipient balance
+			recipientBal := suite.GetAllBalances(recipient)
+			intReceived := recipientBal.AmountOf(types.ExtendedCoinDenom).Quo(types.ConversionFactor())
+			fracReceived := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, recipient)
+
+			expectedInt := totalSent.Quo(types.ConversionFactor())
+			expectedFrac := totalSent.Mod(types.ConversionFactor())
+
+			suite.Equal(expectedInt.BigInt().Cmp(intReceived.BigInt()), 0, "integer carry mismatch (expected: %s, received: %s)", expectedInt, intReceived)
+			suite.Equal(expectedFrac.BigInt().Cmp(fracReceived.BigInt()), 0, "fractional balance mismatch (expected: %s, received: %s)", expectedFrac, fracReceived)
+
+			// Check invariants
+			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
+			res, stop := inv(ctx)
+			suite.False(stop, "invariant broken")
+			suite.Empty(res, "unexpected invariant error: %s", res)
+		})
+	}
+}
+
 func FuzzSendCoins(f *testing.F) {
+	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	denom := coinInfo.Denom
+	decimals := coinInfo.Decimals
+
 	configurator := evmtypes.NewEVMConfigurator()
 	configurator.ResetTestConfig()
-	configurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
-	err := configurator.Configure()
+	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
 	require.NoError(f, err)
 
 	f.Add(uint64(100), uint64(0), uint64(2))
@@ -761,7 +861,7 @@ func FuzzSendCoins(f *testing.F) {
 
 		suite.Require().NoError(err)
 
-		// Check FULL balances
+		// Check full balances
 		balSender := suite.GetAllBalances(sender)
 		balReceiver := suite.GetAllBalances(recipient)
 

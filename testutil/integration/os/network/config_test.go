@@ -18,6 +18,9 @@ import (
 )
 
 func TestWithChainID(t *testing.T) {
+	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
+	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+
 	testCases := []struct {
 		name            string
 		chainID         string
@@ -29,16 +32,16 @@ func TestWithChainID(t *testing.T) {
 		{
 			name:            "18 decimals",
 			chainID:         testconstants.ExampleChainID,
-			denom:           testconstants.ExampleAttoDenom,
-			decimals:        evmtypes.EighteenDecimals,
+			denom:           eighteenDecimalsCoinInfo.Denom,
+			decimals:        eighteenDecimalsCoinInfo.Decimals,
 			expBaseFee:      math.LegacyNewDec(875_000_000),
 			expCosmosAmount: network.GetInitialAmount(evmtypes.EighteenDecimals),
 		},
 		{
 			name:            "6 decimals",
 			chainID:         testconstants.SixDecimalsChainID,
-			denom:           testconstants.ExampleMicroDenom,
-			decimals:        evmtypes.SixDecimals,
+			denom:           sixDecimalsCoinInfo.Denom,
+			decimals:        sixDecimalsCoinInfo.Decimals,
 			expBaseFee:      math.LegacyNewDecWithPrec(875, 6),
 			expCosmosAmount: network.GetInitialAmount(evmtypes.SixDecimals),
 		},

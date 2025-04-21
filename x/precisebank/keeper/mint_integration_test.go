@@ -2,7 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
+	"math/big"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -17,7 +20,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestBlockedRecipient() {
@@ -72,7 +74,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_MatchingErrors() {
 		},
 		{
 			"invalid amount",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-100)}},
 			"-100uatom: invalid coins",
 			"",
@@ -136,7 +138,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 	}{
 		{
 			"passthrough - unrelated",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount:  cs(c("busd", 1000)),
@@ -146,7 +148,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"passthrough - integer denom",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount:  cs(c(types.IntegerCoinDenom, 1000)),
@@ -156,7 +158,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"fractional only",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount:  cs(c(types.ExtendedCoinDenom, 1000)),
@@ -170,7 +172,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"fractional only with carry",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					// Start with (1/4 * 3) = 0.75
@@ -186,7 +188,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"fractional only, resulting in exact carry and 0 remainder",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				// mint 0.5, acc = 0.5, reserve = 1
 				{
@@ -203,7 +205,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"exact carry",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount:  cs(ci(types.ExtendedCoinDenom, types.ConversionFactor())),
@@ -218,7 +220,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"carry with extra",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				// MintCoins(C + 100)
 				{
@@ -234,7 +236,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"integer with fractional",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount:  cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5).AddRaw(100))),
@@ -248,7 +250,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 		},
 		{
 			"with passthrough",
-			minttypes.ModuleName,
+			evmtypes.ModuleName,
 			[]mintTest{
 				{
 					mintAmount: cs(
@@ -360,11 +362,107 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 	}
 }
 
+func (suite *KeeperIntegrationTestSuite) TestRandomFractionalMints() {
+	tests := []struct {
+		name    string
+		chainId string
+	}{
+		{
+			"6 decimals",
+			testconstants.SixDecimalsChainID,
+		},
+		{
+			"2 decimals",
+			testconstants.TwoDecimalsChainID,
+		},
+		{
+			"12 decimals",
+			testconstants.TwelveDecimalsChainID,
+		},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			denom := coinInfo.Denom
+			decimals := coinInfo.Decimals
+
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			suite.Require().NoError(err)
+
+			suite.SetupTest()
+
+			ctx := suite.network.GetContext()
+
+			// Has mint permissions
+			minterModuleName := evmtypes.ModuleName
+			minterModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(minterModuleName)
+
+			// Target balance
+			targetBalance := types.ConversionFactor().MulRaw(100)
+
+			// Setup test parameters
+			maxMintUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+			totalMinted := sdkmath.ZeroInt()
+			mintCount := 0
+
+			// Continue mints as long as minter module has balance remaining
+			for {
+				// Check current minter module balance
+				minterAmount := suite.GetAllBalances(minterModuleAddr).AmountOf(types.ExtendedCoinDenom)
+				if minterAmount.BigInt().Cmp(targetBalance.BigInt()) == 0 {
+					break
+				}
+
+				// Generate random amount within the range of max possible mint amount
+				remainingAmount := targetBalance.Sub(minterAmount)
+				maxPossibleMint := maxMintUnit
+				if maxPossibleMint.GT(remainingAmount) {
+					maxPossibleMint = remainingAmount
+				}
+				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleMint.BigInt())).AddRaw(1)
+
+				mintAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
+				err := suite.network.App.PreciseBankKeeper.MintCoins(ctx, minterModuleName, mintAmount)
+				suite.NoError(err)
+
+				totalMinted = totalMinted.Add(randAmount)
+				mintCount++
+			}
+
+			suite.T().Logf("Completed %d random mints, total minted: %s", mintCount, totalMinted.String())
+
+			// Check minter module balance
+			moduleAmount := suite.GetAllBalances(minterModuleAddr).AmountOf(types.ExtendedCoinDenom)
+			suite.Equal(moduleAmount.BigInt().Cmp(targetBalance.BigInt()), 0, "minter balance should be %s", targetBalance)
+
+			// Check backing asserts(fractional balance and remainder)
+			precisebankModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
+			fractionalBalance := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, precisebankModuleAddr)
+			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
+			suite.Equal(fractionalBalance.BigInt().Cmp(big.NewInt(0)), 0, "fractional balance should be zero")
+			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero")
+
+			// Check invariants
+			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
+			res, stop := inv(ctx)
+			suite.False(stop, "invariant broken")
+			suite.Empty(res, "unexpected invariant error: %s", res)
+		})
+	}
+}
+
 func FuzzMintCoins(f *testing.F) {
+	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	denom := coinInfo.Denom
+	decimals := coinInfo.Decimals
+
 	configurator := evmtypes.NewEVMConfigurator()
 	configurator.ResetTestConfig()
-	configurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
-	err := configurator.Configure()
+	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
 	require.NoError(f, err)
 
 	f.Add(int64(0))
@@ -394,14 +492,14 @@ func FuzzMintCoins(f *testing.F) {
 		for i := int64(0); i < mintCount; i++ {
 			err := suite.network.App.PreciseBankKeeper.MintCoins(
 				suite.network.GetContext(),
-				minttypes.ModuleName,
+				evmtypes.ModuleName,
 				cs(c(types.ExtendedCoinDenom, amount)),
 			)
 			suite.Require().NoError(err)
 		}
 
-		// Check FULL balances
-		recipientAddr := suite.network.App.AccountKeeper.GetModuleAddress(minttypes.ModuleName)
+		// Check full balances
+		recipientAddr := suite.network.App.AccountKeeper.GetModuleAddress(evmtypes.ModuleName)
 		bal := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), recipientAddr, types.ExtendedCoinDenom)
 
 		suite.Require().Equalf(

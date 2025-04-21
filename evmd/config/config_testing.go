@@ -9,7 +9,6 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	testconstants "github.com/cosmos/evm/testutil/constants"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
@@ -19,13 +18,23 @@ import (
 var ChainsCoinInfo = map[string]evmtypes.EvmCoinInfo{
 	EighteenDecimalsChainID: {
 		Denom:        ExampleChainDenom,
-		DisplayDenom: ExampleChainDenom,
+		DisplayDenom: ExampleDisplayDenom,
 		Decimals:     evmtypes.EighteenDecimals,
 	},
 	SixDecimalsChainID: {
-		Denom:        testconstants.ExampleMicroDenom,
-		DisplayDenom: testconstants.ExampleDisplayDenom,
+		Denom:        "utest",
+		DisplayDenom: "test",
 		Decimals:     evmtypes.SixDecimals,
+	},
+	TwelveDecimalsChainID: {
+		Denom:        "ptest2",
+		DisplayDenom: "test2",
+		Decimals:     evmtypes.TwelveDecimals,
+	},
+	TwoDecimalsChainID: {
+		Denom:        "ctest3",
+		DisplayDenom: "test3",
+		Decimals:     evmtypes.TwoDecimals,
 	},
 }
 

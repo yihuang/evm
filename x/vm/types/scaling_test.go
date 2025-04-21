@@ -216,6 +216,9 @@ func TestConvertCoinsFrom18Decimals(t *testing.T) {
 }
 
 func TestZeroExtraDecimalsBigInt(t *testing.T) {
+	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
+
 	testCases := []struct {
 		name string
 		amt  *big.Int
@@ -254,8 +257,8 @@ func TestZeroExtraDecimalsBigInt(t *testing.T) {
 	}
 
 	for _, cfg := range []evmtypes.EvmCoinInfo{
-		{Denom: testconstants.ExampleAttoDenom, Decimals: evmtypes.SixDecimals},
-		{Denom: testconstants.ExampleAttoDenom, Decimals: evmtypes.EighteenDecimals},
+		{Denom: sixDecimalsCoinInfo.Denom, Decimals: sixDecimalsCoinInfo.Decimals},
+		{Denom: eighteenDecimalsCoinInfo.Denom, Decimals: eighteenDecimalsCoinInfo.Decimals},
 	} {
 		for _, tc := range testCases {
 			t.Run(fmt.Sprintf("%d dec - %s", cfg.Decimals, tc.name), func(t *testing.T) {
@@ -274,6 +277,9 @@ func TestZeroExtraDecimalsBigInt(t *testing.T) {
 }
 
 func TestConvertBigIntFrom18DecimalsToLegacyDec(t *testing.T) {
+	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
+
 	testCases := []struct {
 		name    string
 		amt     *big.Int
@@ -307,8 +313,8 @@ func TestConvertBigIntFrom18DecimalsToLegacyDec(t *testing.T) {
 	}
 
 	for _, cfg := range []evmtypes.EvmCoinInfo{
-		{Denom: testconstants.ExampleMicroDenom, Decimals: evmtypes.SixDecimals},
-		{Denom: testconstants.ExampleAttoDenom, Decimals: evmtypes.EighteenDecimals},
+		{Denom: sixDecimalsCoinInfo.Denom, Decimals: sixDecimalsCoinInfo.Decimals},
+		{Denom: eighteenDecimalsCoinInfo.Denom, Decimals: eighteenDecimalsCoinInfo.Decimals},
 	} {
 		for _, tc := range testCases {
 			t.Run(fmt.Sprintf("%d dec - %s", cfg.Decimals, tc.name), func(t *testing.T) {

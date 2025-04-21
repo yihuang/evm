@@ -138,8 +138,10 @@ func init() {
 	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
 	sdk.DefaultPowerReduction = cosmosevmtypes.AttoPowerReduction
 
-	// set the conversion factor for the precisebank module
+	// set the values for the precisebank module
 	precisebanktypes.ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
+	precisebanktypes.IntegerCoinDenom = "uatom"
+	precisebanktypes.ExtendedCoinDenom = "aatom"
 
 	// get the user's home directory
 	var err error

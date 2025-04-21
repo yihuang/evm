@@ -22,7 +22,6 @@ func TestKeeperIntegrationTestSuite(t *testing.T) {
 }
 
 func (suite *KeeperIntegrationTestSuite) SetupTest() {
-	// TODO(dudong2): prevent using precisebank module if 18 decimals chain
 	nw := network.NewUnitTestNetwork(
 		network.WithChainID(testconstants.SixDecimalsChainID),
 	)

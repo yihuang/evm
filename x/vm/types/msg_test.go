@@ -89,6 +89,9 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_Constructor() {
 }
 
 func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
+	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
+
 	evmTx := &types.EvmTxArgs{
 		Nonce:     0,
 		To:        &suite.to,
@@ -115,8 +118,8 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 		},
 	}
 	for _, cfg := range []types.EvmCoinInfo{
-		{Denom: testconstants.ExampleMicroDenom, Decimals: types.SixDecimals},
-		{Denom: testconstants.ExampleAttoDenom, Decimals: types.EighteenDecimals},
+		{Denom: sixDecimalsCoinInfo.Denom, Decimals: sixDecimalsCoinInfo.Decimals},
+		{Denom: eighteenDecimalsCoinInfo.Denom, Decimals: eighteenDecimalsCoinInfo.Decimals},
 	} {
 		for _, tc := range testCases {
 			configurator := types.NewEVMConfigurator()

@@ -2,7 +2,10 @@ package keeper_test
 
 import (
 	"fmt"
+	"math/big"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -10,7 +13,6 @@ import (
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -52,7 +54,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 		{
 			"invalid amount",
 			// Has burn permissions so it goes to the amt check
-			ibctransfertypes.ModuleName,
+			evmtypes.ModuleName,
 			func() {},
 			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-100)}},
 			"-100uatom: invalid coins",
@@ -60,7 +62,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 		},
 		{
 			"insufficient balance - empty",
-			ibctransfertypes.ModuleName,
+			evmtypes.ModuleName,
 			func() {},
 			cs(c("uatom", 1000)),
 			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
@@ -168,7 +170,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins() {
 			// Reset
 			suite.SetupTest()
 
-			moduleName := ibctransfertypes.ModuleName
+			moduleName := evmtypes.ModuleName
 			recipientAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
 
 			// Start balance
@@ -237,7 +239,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Remainder() {
 
 	reserveAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
 
-	moduleName := ibctransfertypes.ModuleName
+	moduleName := evmtypes.ModuleName
 	moduleAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
 
 	startCoins := cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5)))
@@ -331,7 +333,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	// by multiple accounts.
 
 	reserveAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
-	burnerModuleName := ibctransfertypes.ModuleName
+	burnerModuleName := evmtypes.ModuleName
 	burnerAddr := suite.network.App.AccountKeeper.GetModuleAddress(burnerModuleName)
 
 	accCount := 20
@@ -440,11 +442,108 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	}
 }
 
+func (suite *KeeperIntegrationTestSuite) TestRandomFractionalBurns() {
+	tests := []struct {
+		name    string
+		chainId string
+	}{
+		{
+			"6 decimals",
+			testconstants.SixDecimalsChainID,
+		},
+		{
+			"2 decimals",
+			testconstants.TwoDecimalsChainID,
+		},
+		{
+			"12 decimals",
+			testconstants.TwelveDecimalsChainID,
+		},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			denom := coinInfo.Denom
+			decimals := coinInfo.Decimals
+
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			suite.Require().NoError(err)
+
+			suite.SetupTest()
+
+			ctx := suite.network.GetContext()
+
+			// Has both mint & burn permissions
+			burnerModuleName := evmtypes.ModuleName
+			burnerModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(burnerModuleName)
+
+			// Initial balance large enough to cover many small burns
+			initialBalance := types.ConversionFactor().MulRaw(100)
+			err = suite.network.App.PreciseBankKeeper.MintCoins(ctx, burnerModuleName, cs(ci(types.ExtendedCoinDenom, initialBalance)))
+			suite.Require().NoError(err)
+
+			// Setup test parameters
+			maxBurnUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
+			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+			totalBurned := sdkmath.ZeroInt()
+			burnCount := 0
+
+			// Continue burns as long as burner module has balance remaining
+			for {
+				// Check current burner module balance
+				burnerAmount := suite.GetAllBalances(burnerModuleAddr).AmountOf(types.ExtendedCoinDenom)
+				if burnerAmount.IsZero() {
+					break
+				}
+
+				// Generate random amount within the range of max possible burn amount
+				maxPossibleBurn := maxBurnUnit
+				if maxPossibleBurn.GT(burnerAmount) {
+					maxPossibleBurn = burnerAmount
+				}
+				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleBurn.BigInt())).AddRaw(1)
+
+				burnAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
+				err := suite.network.App.PreciseBankKeeper.BurnCoins(ctx, burnerModuleName, burnAmount)
+				suite.NoError(err)
+
+				totalBurned = totalBurned.Add(randAmount)
+				burnCount++
+			}
+
+			suite.T().Logf("Completed %d random burns, total burned: %s", burnCount, totalBurned.String())
+
+			// Check burner module balance
+			moduleAmount := suite.GetAllBalances(burnerModuleAddr).AmountOf(types.ExtendedCoinDenom)
+			suite.Equal(moduleAmount.BigInt().Cmp(big.NewInt(0)), 0, "burner balance should be zero")
+
+			// Check backing asserts(fractional balance and remainder)
+			precisebankModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
+			fractionalBalance := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, precisebankModuleAddr)
+			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
+			suite.Equal(fractionalBalance.BigInt().Cmp(big.NewInt(0)), 0, "fractional balance should be zero")
+			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero")
+
+			// Check invariants
+			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
+			res, stop := inv(ctx)
+			suite.False(stop, "invariant broken")
+			suite.Empty(res, "unexpected invariant error: %s", res)
+		})
+	}
+}
+
 func FuzzBurnCoins(f *testing.F) {
+	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+	denom := coinInfo.Denom
+	decimals := coinInfo.Decimals
+
 	configurator := evmtypes.NewEVMConfigurator()
 	configurator.ResetTestConfig()
-	configurator.WithEVMCoinInfo(testconstants.ExampleMicroDenom, uint8(evmtypes.SixDecimals))
-	err := configurator.Configure()
+	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
 	require.NoError(f, err)
 
 	f.Add(int64(0))
@@ -468,8 +567,8 @@ func FuzzBurnCoins(f *testing.F) {
 		burnCount := int64(10)
 
 		// Has both mint & burn permissions
-		moduleName := ibctransfertypes.ModuleName
-		recipientAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
+		moduleName := evmtypes.ModuleName
+		moduleAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
 
 		// Start balance
 		err := suite.network.App.PreciseBankKeeper.MintCoins(
@@ -489,8 +588,8 @@ func FuzzBurnCoins(f *testing.F) {
 			suite.Require().NoError(err)
 		}
 
-		// Check FULL balances
-		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), recipientAddr, types.ExtendedCoinDenom)
+		// Check full balances
+		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), moduleAddr, types.ExtendedCoinDenom)
 
 		suite.Require().Equalf(
 			int64(0),

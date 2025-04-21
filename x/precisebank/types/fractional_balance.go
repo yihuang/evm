@@ -10,9 +10,21 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ConversionFactorVal is used to convert the fractional balance to integer
-// balances.
-var ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
+var (
+	// ConversionFactorVal is used to convert the fractional balance to integer
+	// balances.
+	ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
+
+	// IntegerCoinDenom is the denomination for integer coins that are managed by
+	// x/bank. This is the "true" denomination of the coin, and is also used for
+	// the reserve to back all fractional coins.
+	IntegerCoinDenom = "uatom"
+
+	// ExtendedCoinDenom is the denomination for the extended IntegerCoinDenom. This
+	// not only represents the fractional balance, but the total balance of
+	// integer + fractional balances.
+	ExtendedCoinDenom = "aatom"
+)
 
 // ConversionFactor returns a copy of the conversionFactor used to convert the
 // fractional balance to integer balances. This is also 1 greater than the max
