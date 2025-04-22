@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 
 	//nolint:revive // dot imports are fine for Ginkgo
 	. "github.com/onsi/ginkgo/v2"
@@ -20,7 +21,6 @@ import (
 	"github.com/cosmos/evm/testutil/integration/os/factory"
 	testutils "github.com/cosmos/evm/testutil/integration/os/utils"
 	testutiltx "github.com/cosmos/evm/testutil/tx"
-	"github.com/cosmos/evm/x/vm/core/vm"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	"cosmossdk.io/math"

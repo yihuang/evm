@@ -4,12 +4,12 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/precompiles/staking"
 	testkeyring "github.com/cosmos/evm/testutil/integration/os/keyring"
-	"github.com/cosmos/evm/x/vm/core/vm"
 	"github.com/cosmos/evm/x/vm/statedb"
 
 	"cosmossdk.io/math"

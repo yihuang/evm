@@ -5,11 +5,11 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/precompiles/staking"
 	testutiltx "github.com/cosmos/evm/testutil/tx"
-	"github.com/cosmos/evm/x/vm/core/vm"
 
 	"cosmossdk.io/math"
 

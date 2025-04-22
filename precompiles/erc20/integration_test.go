@@ -10,6 +10,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/vm"
 
 	//nolint:revive // dot imports are fine for Ginkgo
 	. "github.com/onsi/ginkgo/v2"
@@ -28,7 +29,6 @@ import (
 	integrationutils "github.com/cosmos/evm/testutil/integration/os/utils"
 	utiltx "github.com/cosmos/evm/testutil/tx"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
-	"github.com/cosmos/evm/x/vm/core/vm"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
