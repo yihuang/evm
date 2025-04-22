@@ -47,26 +47,22 @@ var (
 	erc20CallTypes  = []CallType{erc20Call, erc20CallerCall, erc20V5Call, erc20V5CallerCall}
 )
 
-// setupSendAuthz is a helper function to set up a SendAuthorization for
-// a given grantee and granter combination for a given amount.
+// setAllowance is a helper function to set up a SendAuthorization for
+// a given owner and spender combination for a given amount.
 //
 // NOTE: A default expiration of 1 hour after the current block time is used.
-func (s *PrecompileTestSuite) setupSendAuthz(
-	erc20Addr common.Address, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
+func (s *PrecompileTestSuite) setAllowance(
+	erc20Addr common.Address, ownerPriv cryptotypes.PrivKey, spender common.Address, amount *big.Int,
 ) {
-	granter := common.BytesToAddress(granterPriv.PubKey().Address().Bytes())
-	err := s.network.App.Erc20Keeper.SetAllowance(s.network.GetContext(), erc20Addr, granter, grantee, amount)
+	owner := common.BytesToAddress(ownerPriv.PubKey().Address().Bytes())
+	err := s.network.App.Erc20Keeper.SetAllowance(s.network.GetContext(), erc20Addr, owner, spender, amount)
 	s.Require().NoError(err, "failed to set set allowance")
 }
 
-// setupSendAuthzForContract is a helper function which executes an approval
+// setAllowanceForContract is a helper function which executes an approval
 // for the given contract data.
-//
-// If:
-//   - the classic ERC20 contract is used, it calls the `approve` method on the contract.
-//   - in other cases, it sends a `MsgGrant` to set up the authorization.
-func (is *IntegrationTestSuite) setupSendAuthzForContract(
-	callType CallType, contractData ContractsData, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
+func (is *IntegrationTestSuite) setAllowanceForContract(
+	callType CallType, contractData ContractsData, ownerPriv cryptotypes.PrivKey, spender common.Address, amount *big.Int,
 ) {
 	// NOTE: When using the caller contract, erc20 contract must be called instead of caller contract.
 	// This is because caller of erc20 contract becomes the owner of allowance.
@@ -81,7 +77,7 @@ func (is *IntegrationTestSuite) setupSendAuthzForContract(
 
 	abiEvents := contractData.GetContractData(callType).ABI.Events
 
-	txArgs, callArgs := is.getTxAndCallArgs(callType, contractData, erc20.ApproveMethod, grantee, amount)
+	txArgs, callArgs := is.getTxAndCallArgs(callType, contractData, erc20.ApproveMethod, spender, amount)
 
 	approveCheck := testutil.LogCheckArgs{
 		ABIEvents: abiEvents,
@@ -89,7 +85,7 @@ func (is *IntegrationTestSuite) setupSendAuthzForContract(
 		ExpPass:   true,
 	}
 
-	_, _, err := is.factory.CallContractAndCheckLogs(granterPriv, txArgs, callArgs, approveCheck)
+	_, _, err := is.factory.CallContractAndCheckLogs(ownerPriv, txArgs, callArgs, approveCheck)
 	Expect(err).ToNot(HaveOccurred(), "failed to execute approve")
 
 	// commit changes to the chain state
@@ -136,12 +132,10 @@ func (s *PrecompileTestSuite) requireOut(
 	}
 }
 
-// requireSendAuthz is a helper function to check that a SendAuthorization
-// exists for a given grantee and granter combination for a given amount.
-//
-// NOTE: This helper expects only one authorization to exist.
-func (s *PrecompileTestSuite) requireSendAuthz(erc20Addr, granter, grantee common.Address, amount *big.Int) {
-	allowance, err := s.network.App.Erc20Keeper.GetAllowance(s.network.GetContext(), erc20Addr, granter, grantee)
+// requireAllowance is a helper function to check that a SendAuthorization
+// exists for a given owner and spender combination for a given amount.
+func (s *PrecompileTestSuite) requireAllowance(erc20Addr, owner, spender common.Address, amount *big.Int) {
+	allowance, err := s.network.App.Erc20Keeper.GetAllowance(s.network.GetContext(), erc20Addr, owner, spender)
 	s.Require().NoError(err, "expected no error unpacking the allowance")
 	s.Require().Equal(allowance.Int64(), amount.Int64(), "expected different allowance")
 }
@@ -328,16 +322,14 @@ func (is *IntegrationTestSuite) ExpectBalancesForERC20(callType CallType, contra
 	}
 }
 
-// ExpectSendAuthzForContract is a helper function to check that a SendAuthorization
-// exists for a given grantee and granter combination for a given amount and optionally an access list.
-//
-// NOTE: This helper expects only one authorization to exist.
-func (is *IntegrationTestSuite) ExpectSendAuthzForContract(
-	callType CallType, contractData ContractsData, granter, grantee common.Address, expAmount *big.Int,
+// ExpectAllowanceForContract is a helper function to check that a SendAuthorization
+// exists for a given owner and spender combination for a given amount and optionally an access list.
+func (is *IntegrationTestSuite) ExpectAllowanceForContract(
+	callType CallType, contractData ContractsData, owner, spender common.Address, expAmount *big.Int,
 ) {
 	contractABI := contractData.GetContractData(callType).ABI
 
-	txArgs, callArgs := is.getTxAndCallArgs(callType, contractData, erc20.AllowanceMethod, granter, grantee)
+	txArgs, callArgs := is.getTxAndCallArgs(callType, contractData, erc20.AllowanceMethod, owner, spender)
 
 	passCheck := testutil.LogCheckArgs{ExpPass: true}
 

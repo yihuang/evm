@@ -86,7 +86,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -97,7 +97,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 		{
 			name: "pass - approve with existing allowance",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -110,7 +110,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -121,7 +121,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 		{
 			name: "pass - delete existing allowance",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -134,7 +134,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -251,7 +251,7 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -262,7 +262,7 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 		{
 			name: "pass - increase allowance with existing allowance",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -275,7 +275,7 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -286,9 +286,9 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 		{
 			name: "fail - uint256 overflow when increasing allowance",
 			malleate: func() []interface{} {
-				// NOTE: We are setting up a grant with a spend limit of the maximum uint256 value
+				// NOTE: We are setting up a allowance with the maximum uint256 value
 				// and then trying to approve an amount that would overflow the uint256 value
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -301,7 +301,7 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			},
 			errContains: erc20.ConvertErrToERC20Error(errors.New(cmn.ErrIntegerOverflow)).Error(),
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -421,7 +421,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 		{
 			name: "pass - decrease allowance with existing allowane",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -434,7 +434,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			},
 			expPass: true,
 			postCheck: func() {
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -445,7 +445,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 		{
 			name: "pass - decrease to zero and delete existing allowane",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),
@@ -459,7 +459,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			expPass: true,
 			postCheck: func() {
 				// Check that the allowane was deleted
-				s.requireSendAuthz(
+				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
@@ -470,7 +470,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 		{
 			name: "fail - decrease allowance with existing allowane but decreased amount too high",
 			malleate: func() []interface{} {
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
 					s.keyring.GetAddr(1),

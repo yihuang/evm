@@ -515,17 +515,17 @@ func (s *PrecompileTestSuite) TestAllowance() {
 		{
 			name: "pass - allowance exists for precompile token pair denom",
 			malleate: func(_ sdk.Context, _ *app.EVMD, amount *big.Int) []interface{} {
-				granterIdx := 0
-				granteeIdx := 1
+				ownerIdx := 0
+				spenderIdx := 1
 
-				s.setupSendAuthz(
+				s.setAllowance(
 					s.precompile.Address(),
-					s.keyring.GetPrivKey(granterIdx),
-					s.keyring.GetAddr(granteeIdx),
+					s.keyring.GetPrivKey(ownerIdx),
+					s.keyring.GetAddr(spenderIdx),
 					amount,
 				)
 
-				return []interface{}{s.keyring.GetAddr(granterIdx), s.keyring.GetAddr(granteeIdx)}
+				return []interface{}{s.keyring.GetAddr(ownerIdx), s.keyring.GetAddr(spenderIdx)}
 			},
 			expPass:  true,
 			expAllow: big.NewInt(100),

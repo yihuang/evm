@@ -40,19 +40,18 @@ func (p Precompile) Approve(
 		return nil, err
 	}
 
-	grantee := spender
-	granter := contract.CallerAddress
+	owner := contract.CallerAddress
 
-	// NOTE: We do not support approvals if the grantee is the granter.
+	// NOTE: We do not support approvals if the spender is the owner.
 	// This is different from the ERC20 standard but there is no reason to
-	// do so, since in that case the grantee can just transfer the tokens
+	// do so, since in that case the spender can just transfer the tokens
 	// without allowance.
-	if bytes.Equal(grantee.Bytes(), granter.Bytes()) {
+	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
 		return nil, ErrSpenderIsOwner
 	}
 
 	// TODO: owner should be the owner of the contract
-	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), granter, grantee)
+	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, fmt.Sprintf(ErrNoAllowanceForToken, p.tokenPair.Denom))
 	}
@@ -63,13 +62,13 @@ func (p Precompile) Approve(
 		err = ErrNegativeAmount
 	case allowance.Sign() == 0 && amount != nil && amount.Sign() > 0:
 		// case 2: no allowance, amount positive -> create a new allowance
-		err = p.setAllowance(ctx, granter, grantee, amount)
+		err = p.setAllowance(ctx, owner, spender, amount)
 	case allowance.Sign() > 0 && amount != nil && amount.Sign() <= 0:
 		// case 3: allowance exists, amount 0 or negative -> remove from spend limit and delete allowance if no spend limit left
-		err = p.erc20Keeper.DeleteAllowance(ctx, p.Address(), granter, grantee)
+		err = p.erc20Keeper.DeleteAllowance(ctx, p.Address(), owner, spender)
 	case allowance.Sign() > 0 && amount != nil && amount.Sign() > 0:
 		// case 4: allowance exists, amount positive -> update allowance
-		err = p.setAllowance(ctx, granter, grantee, amount)
+		err = p.setAllowance(ctx, owner, spender, amount)
 	}
 
 	if err != nil {
@@ -105,15 +104,14 @@ func (p Precompile) IncreaseAllowance(
 		return nil, err
 	}
 
-	grantee := spender
-	granter := contract.CallerAddress
+	owner := contract.CallerAddress
 
-	if bytes.Equal(grantee.Bytes(), granter.Bytes()) {
+	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
 		return nil, ErrSpenderIsOwner
 	}
 
 	// TODO: owner should be the owner of the contract
-	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), granter, grantee)
+	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, fmt.Sprintf(ErrNoAllowanceForToken, p.tokenPair.Denom))
 	}
@@ -128,10 +126,10 @@ func (p Precompile) IncreaseAllowance(
 	case allowance.Sign() == 0 && addedValue != nil && addedValue.Sign() > 0:
 		// case 2: no allowance, amount positive -> create a new allowance
 		amount = addedValue
-		err = p.setAllowance(ctx, granter, grantee, addedValue)
+		err = p.setAllowance(ctx, owner, spender, addedValue)
 	case allowance.Sign() > 0 && addedValue != nil && addedValue.Sign() > 0:
 		// case 3: allowance exists, amount positive -> update allowance
-		amount, err = p.increaseAllowance(ctx, granter, grantee, allowance, addedValue)
+		amount, err = p.increaseAllowance(ctx, owner, spender, allowance, addedValue)
 	}
 
 	if err != nil {
@@ -170,15 +168,14 @@ func (p Precompile) DecreaseAllowance(
 		return nil, err
 	}
 
-	grantee := spender
-	granter := contract.CallerAddress
+	owner := contract.CallerAddress
 
-	if bytes.Equal(grantee.Bytes(), granter.Bytes()) {
+	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
 		return nil, ErrSpenderIsOwner
 	}
 	// TODO: owner should be the owner of the contract
 
-	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), granter, grantee)
+	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, fmt.Sprintf(ErrNoAllowanceForToken, p.tokenPair.Denom))
 	}
@@ -195,10 +192,10 @@ func (p Precompile) DecreaseAllowance(
 		err = fmt.Errorf(ErrNoAllowanceForToken, p.tokenPair.Denom)
 	case subtractedValue != nil && subtractedValue.Cmp(allowance) < 0:
 		// case 3. subtractedValue positive and subtractedValue less than allowance -> update allowance
-		amount, err = p.decreaseAllowance(ctx, granter, grantee, allowance, subtractedValue)
+		amount, err = p.decreaseAllowance(ctx, owner, spender, allowance, subtractedValue)
 	case subtractedValue != nil && subtractedValue.Cmp(allowance) == 0:
 		// case 4. subtractedValue positive and subtractedValue equal to allowance -> remove spend limit for token and delete allowance if no other denoms are approved for
-		err = p.erc20Keeper.DeleteAllowance(ctx, p.Address(), granter, grantee)
+		err = p.erc20Keeper.DeleteAllowance(ctx, p.Address(), owner, spender)
 		amount = common.Big0
 	case subtractedValue != nil && allowance.Sign() == 0:
 		// case 5. subtractedValue positive but no allowance for given denomination -> return error
@@ -213,7 +210,7 @@ func (p Precompile) DecreaseAllowance(
 	}
 
 	// TODO: check owner?
-	if err := p.EmitApprovalEvent(ctx, stateDB, granter, grantee, amount); err != nil {
+	if err := p.EmitApprovalEvent(ctx, stateDB, owner, spender, amount); err != nil {
 		return nil, err
 	}
 
@@ -222,19 +219,19 @@ func (p Precompile) DecreaseAllowance(
 
 func (p Precompile) setAllowance(
 	ctx sdk.Context,
-	granter, grantee common.Address,
+	owner, spender common.Address,
 	allowance *big.Int,
 ) error {
 	if allowance.BitLen() > sdkmath.MaxBitLen {
 		return fmt.Errorf(ErrIntegerOverflow, allowance)
 	}
 
-	return p.erc20Keeper.SetAllowance(ctx, p.Address(), granter, grantee, allowance)
+	return p.erc20Keeper.SetAllowance(ctx, p.Address(), owner, spender, allowance)
 }
 
 func (p Precompile) increaseAllowance(
 	ctx sdk.Context,
-	granter, grantee common.Address,
+	owner, spender common.Address,
 	allowance, addedValue *big.Int,
 ) (amount *big.Int, err error) {
 	sdkAllowance := sdkmath.NewIntFromBigInt(allowance)
@@ -244,7 +241,7 @@ func (p Precompile) increaseAllowance(
 		return nil, ConvertErrToERC20Error(errors.New(cmn.ErrIntegerOverflow))
 	}
 
-	if err := p.erc20Keeper.SetAllowance(ctx, p.Address(), granter, grantee, amount); err != nil {
+	if err := p.erc20Keeper.SetAllowance(ctx, p.Address(), owner, spender, amount); err != nil {
 		return nil, err
 	}
 
@@ -253,7 +250,7 @@ func (p Precompile) increaseAllowance(
 
 func (p Precompile) decreaseAllowance(
 	ctx sdk.Context,
-	granter, grantee common.Address,
+	owner, spender common.Address,
 	allowance, subtractedValue *big.Int,
 ) (amount *big.Int, err error) {
 	amount = new(big.Int).Sub(allowance, subtractedValue)
@@ -262,7 +259,7 @@ func (p Precompile) decreaseAllowance(
 		return nil, ConvertErrToERC20Error(fmt.Errorf(ErrSubtractMoreThanAllowance, p.tokenPair.Denom, subtractedValue, allowance))
 	}
 
-	if err := p.erc20Keeper.SetAllowance(ctx, p.Address(), granter, grantee, amount); err != nil {
+	if err := p.erc20Keeper.SetAllowance(ctx, p.Address(), owner, spender, amount); err != nil {
 		return nil, err
 	}
 

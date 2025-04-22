@@ -92,7 +92,7 @@ func (p *Precompile) transfer(
 	isTransferFrom := method.Name == TransferFromMethod
 	owner := sdk.AccAddress(from.Bytes())
 	spenderAddr := contract.CallerAddress
-	spender := sdk.AccAddress(spenderAddr.Bytes()) // aka. grantee
+	spender := sdk.AccAddress(spenderAddr.Bytes())
 	ownerIsSpender := spender.Equals(owner)
 
 	newAllowance := big.NewInt(0)
