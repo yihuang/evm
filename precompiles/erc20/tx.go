@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/evm/x/vm/core/vm"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
-	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -96,16 +95,18 @@ func (p *Precompile) transfer(
 	spender := sdk.AccAddress(spenderAddr.Bytes()) // aka. grantee
 	ownerIsSpender := spender.Equals(owner)
 
-	var prevAllowance, newAllowance *big.Int
+	newAllowance := big.NewInt(0)
+	// NOTES: Since the Approve method does not support the case where the owner and spender are the same,
+	// the allowance is always zero when owner == spender. Therefore, in this case, there’s no need to modify the allowance separately.
 	if !ownerIsSpender {
-		prevAllowance, err = p.erc20Keeper.GetAllowance(ctx, p.Address(), from, spenderAddr)
+		prevAllowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), from, spenderAddr)
 		if err != nil {
 			return nil, ConvertErrToERC20Error(err)
 		}
 
 		newAllowance := new(big.Int).Sub(prevAllowance, amount)
 		if newAllowance.Sign() < 0 {
-			return nil, ConvertErrToERC20Error(errorsmod.Wrap(err, ErrInsufficientAllowance.Error()))
+			return nil, ConvertErrToERC20Error(ErrInsufficientAllowance)
 		}
 
 		if newAllowance.Sign() == 0 {

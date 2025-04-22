@@ -108,6 +108,9 @@ func (k Keeper) setAllowance(
 		store.Delete(allowanceKey)
 	case value.Sign() < 0:
 		return errorsmod.Wrapf(types.ErrInvalidAllowance, "value '%s' is less than zero", value)
+	case value.BitLen() > 256:
+		// check overflow
+		return errorsmod.Wrapf(types.ErrInvalidAllowance, "value '%s' is greater than max value of uint256", value)
 	default:
 		allowance := types.NewAllowance(erc20, owner, spender, value)
 		bz := k.cdc.MustMarshal(&allowance)

@@ -2,7 +2,8 @@ package erc20_test
 
 import (
 	"math/big"
-	"time"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/evm/precompiles/erc20"
 	"github.com/cosmos/evm/precompiles/testutil"
@@ -10,11 +11,6 @@ import (
 	erc20types "github.com/cosmos/evm/x/erc20/types"
 	"github.com/cosmos/evm/x/vm/core/vm"
 	"github.com/cosmos/evm/x/vm/statedb"
-
-	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 var (
@@ -178,15 +174,8 @@ func (s *PrecompileTestSuite) TestTransferFrom() {
 		{
 			"fail - not enough balance",
 			func() []interface{} {
-				expiration := time.Now().Add(time.Hour)
-				err := s.network.App.AuthzKeeper.SaveGrant(
-					ctx,
-					spender.AccAddr,
-					owner.AccAddr,
-					&banktypes.SendAuthorization{SpendLimit: sdk.Coins{sdk.Coin{Denom: s.tokenDenom, Amount: math.NewInt(5e18)}}},
-					&expiration,
-				)
-				s.Require().NoError(err, "failed to save grant")
+				err := s.network.App.Erc20Keeper.SetAllowance(ctx, s.precompile.Address(), owner.Addr, spender.Addr, big.NewInt(5e18))
+				s.Require().NoError(err, "failed to set allowance")
 
 				return []interface{}{owner.Addr, toAddr, big.NewInt(2e18)}
 			},
@@ -197,15 +186,8 @@ func (s *PrecompileTestSuite) TestTransferFrom() {
 		{
 			"pass - spend on behalf of other account",
 			func() []interface{} {
-				expiration := time.Now().Add(time.Hour)
-				err := s.network.App.AuthzKeeper.SaveGrant(
-					ctx,
-					spender.AccAddr,
-					owner.AccAddr,
-					&banktypes.SendAuthorization{SpendLimit: sdk.Coins{sdk.Coin{Denom: tokenDenom, Amount: math.NewInt(300)}}},
-					&expiration,
-				)
-				s.Require().NoError(err, "failed to save grant")
+				err := s.network.App.Erc20Keeper.SetAllowance(ctx, s.precompile.Address(), owner.Addr, spender.Addr, big.NewInt(300))
+				s.Require().NoError(err, "failed to set allowance")
 
 				return []interface{}{owner.Addr, toAddr, big.NewInt(100)}
 			},
@@ -225,7 +207,7 @@ func (s *PrecompileTestSuite) TestTransferFrom() {
 				err = s.network.App.BankKeeper.SendCoinsFromModuleToAccount(ctx, erc20types.ModuleName, spender.AccAddr, XMPLCoin)
 				s.Require().NoError(err, "failed to send coins from module to account")
 
-				// NOTE: no authorization is necessary to spend on behalf of the same account
+				// NOTE: no allowance is necessary to spend on behalf of the same account
 				return []interface{}{spender.Addr, toAddr, big.NewInt(100)}
 			},
 			func() {

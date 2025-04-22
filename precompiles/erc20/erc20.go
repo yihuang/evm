@@ -6,15 +6,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
-	cmn "github.com/cosmos/evm/precompiles/common"
-	erc20types "github.com/cosmos/evm/x/erc20/types"
-	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
-	"github.com/cosmos/evm/x/vm/core/vm"
-
 	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
+	cmn "github.com/cosmos/evm/precompiles/common"
+	erc20types "github.com/cosmos/evm/x/erc20/types"
+	transferkeeper "github.com/cosmos/evm/x/ibc/transfer/keeper"
+	"github.com/cosmos/evm/x/vm/core/vm"
 )
 
 const (
@@ -45,7 +45,7 @@ type Precompile struct {
 	cmn.Precompile
 	tokenPair      erc20types.TokenPair
 	transferKeeper transferkeeper.Keeper
-	erc20Keeper   Erc20Keeper
+	erc20Keeper    Erc20Keeper
 	// BankKeeper is a public field so that the werc20 precompile can use it.
 	BankKeeper bankkeeper.Keeper
 }
@@ -71,7 +71,7 @@ func NewPrecompile(
 		},
 		tokenPair:      tokenPair,
 		BankKeeper:     bankKeeper,
-		erc20Keeper:   erc20Keeper,
+		erc20Keeper:    erc20Keeper,
 		transferKeeper: transferKeeper,
 	}
 	// Address defines the address of the ERC-20 precompile contract.

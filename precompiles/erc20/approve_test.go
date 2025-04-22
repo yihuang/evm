@@ -2,7 +2,6 @@ package erc20_test
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -14,8 +13,6 @@ import (
 	"github.com/cosmos/evm/x/vm/core/vm"
 
 	"cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 //nolint:dupl // tests are not duplicate between the functions
@@ -81,37 +78,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 			errContains: "causes integer overflow",
 		},
 		{
-			name: "fail - approve to zero with existing authorization only for other denominations",
-			malleate: func() []interface{} {
-				// NOTE: We are setting up a grant with a spend limit for a different denomination
-				// and then trying to approve an amount of zero for the token denomination
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-					),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), common.Big0,
-				}
-			},
-			errContains: fmt.Sprintf(erc20.ErrNoAllowanceForToken, s.tokenDenom),
-			postCheck: func() {
-				// NOTE: Here we check that the authorization was not adjusted
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-					),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "pass - approve without existing authorization",
+			name: "pass - approve without existing allowance",
 			malleate: func() []interface{} {
 				return []interface{}{
 					s.keyring.GetAddr(1), big.NewInt(amount),
@@ -120,20 +87,21 @@ func (s *PrecompileTestSuite) TestApprove() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 			},
 		},
 		{
-			name: "pass - approve with existing authorization",
+			name: "pass - approve with existing allowance",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, 1)),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
 				)
 
 				return []interface{}{
@@ -143,67 +111,21 @@ func (s *PrecompileTestSuite) TestApprove() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 			},
 		},
 		{
-			name: "pass - approve with existing authorization in different denomination",
+			name: "pass - delete existing allowance",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, 1)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(amount),
-				}
-			},
-			expPass: true,
-			postCheck: func() {
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					// Check that the approval is extended with the new denomination instead of overwritten
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, 1), sdk.NewInt64Coin(s.tokenDenom, amount)),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "pass - delete existing authorization",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, 1)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), common.Big0,
-				}
-			},
-			expPass: true,
-			postCheck: func() {
-				grants, err := s.grpcHandler.GetGrantsByGrantee(s.keyring.GetAccAddr(1).String())
-				s.Require().NoError(err, "expected no error querying the grants")
-				s.Require().Len(grants, 0, "expected grant to be deleted")
-			},
-		},
-		{
-			name: "pass - delete denomination from spend limit but leave other denoms",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.tokenDenom, 1),
-						sdk.NewInt64Coin(s.bondDenom, 1),
-					),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
 				)
 
 				return []interface{}{
@@ -213,12 +135,10 @@ func (s *PrecompileTestSuite) TestApprove() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					// Check that the approval does not have a spend limit for the deleted denomination
-					// but still contains the other denom
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, 1)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					common.Big0,
 				)
 			},
 		},
@@ -323,7 +243,7 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			errContains: erc20.ErrIncreaseNonPositiveValue.Error(),
 		},
 		{
-			name: "pass - increase allowance without existing authorization",
+			name: "pass - increase allowance without existing allowance",
 			malleate: func() []interface{} {
 				return []interface{}{
 					s.keyring.GetAddr(1), big.NewInt(increaseAmount),
@@ -332,20 +252,21 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, increaseAmount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(increaseAmount),
 				)
 			},
 		},
 		{
-			name: "pass - increase allowance with existing authorization",
+			name: "pass - increase allowance with existing allowance",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 
 				return []interface{}{
@@ -355,10 +276,10 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount+increaseAmount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount+increaseAmount),
 				)
 			},
 		},
@@ -368,12 +289,10 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 				// NOTE: We are setting up a grant with a spend limit of the maximum uint256 value
 				// and then trying to approve an amount that would overflow the uint256 value
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-						sdk.NewCoin(s.tokenDenom, math.NewIntFromBigInt(abi.MaxUint256)),
-					),
+					s.keyring.GetAddr(1),
+					abi.MaxUint256,
 				)
 
 				return []interface{}{
@@ -383,39 +302,10 @@ func (s *PrecompileTestSuite) TestIncreaseAllowance() {
 			errContains: erc20.ConvertErrToERC20Error(errors.New(cmn.ErrIntegerOverflow)).Error(),
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					// NOTE: The amounts should not have been adjusted after failing the overflow check.
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-						sdk.NewCoin(s.tokenDenom, math.NewIntFromBigInt(abi.MaxUint256)),
-					),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "pass - increase allowance with existing authorization in different denomination",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(increaseAmount),
-				}
-			},
-			expPass: true,
-			postCheck: func() {
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					// NOTE: The approval in the precompile denomination is added to the existing
-					// approval for the different denomination.
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount), sdk.NewInt64Coin(s.tokenDenom, increaseAmount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					math.NewIntFromBigInt(abi.MaxUint256).BigInt(),
 				)
 			},
 		},
@@ -520,51 +410,22 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			errContains: erc20.ErrDecreaseNonPositiveValue.Error(),
 		},
 		{
-			name: "fail - decrease allowance without existing authorization",
+			name: "fail - decrease allowance without existing allowane",
 			malleate: func() []interface{} {
 				return []interface{}{
 					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
 				}
 			},
-			errContains: "does not exist or is expired",
+			errContains: "does not exist",
 		},
 		{
-			name: "fail - decrease allowance with existing authorization only for other denominations",
-			malleate: func() []interface{} {
-				// NOTE: We are setting up a grant with a spend limit for a different denomination
-				// and then trying to decrease the allowance for the token denomination
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-					),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
-				}
-			},
-			errContains: fmt.Sprintf("allowance for token %s does not exist", s.tokenDenom),
-			postCheck: func() {
-				// NOTE: Here we check that the authorization was not adjusted
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, 1),
-					),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "pass - decrease allowance with existing authorization",
+			name: "pass - decrease allowance with existing allowane",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 
 				return []interface{}{
@@ -574,20 +435,21 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			expPass: true,
 			postCheck: func() {
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, decreaseAmount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount-decreaseAmount),
 				)
 			},
 		},
 		{
-			name: "pass - decrease to zero and delete existing authorization",
+			name: "pass - decrease to zero and delete existing allowane",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 
 				return []interface{}{
@@ -596,71 +458,23 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			},
 			expPass: true,
 			postCheck: func() {
-				// Check that the authorization was deleted
-				grants, err := s.grpcHandler.GetGrantsByGrantee(s.keyring.GetAccAddr(1).String())
-				s.Require().NoError(err, "expected no error querying the grants")
-				s.Require().Len(grants, 0, "expected grant to be deleted")
-			},
-		},
-		{
-			name: "pass - decrease allowance with existing authorization in different denomination",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount), sdk.NewInt64Coin(s.tokenDenom, amount)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
-				}
-			},
-			expPass: true,
-			postCheck: func() {
-				// NOTE: Here we check that the authorization for the other denom was not deleted and the spend limit
-				// for token denom was adjusted as expected
+				// Check that the allowane was deleted
 				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount), sdk.NewInt64Coin(s.tokenDenom, amount-decreaseAmount)),
-					[]string{},
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					common.Big0,
 				)
 			},
 		},
 		{
-			name: "pass - decrease allowance to zero for denom with existing authorization in other denominations",
+			name: "fail - decrease allowance with existing allowane but decreased amount too high",
 			malleate: func() []interface{} {
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(
-						sdk.NewInt64Coin(s.bondDenom, amount),
-						sdk.NewInt64Coin(s.tokenDenom, amount),
-					),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(amount),
-				}
-			},
-			expPass: true,
-			postCheck: func() {
-				// NOTE: Here we check that the authorization for the other denom was not deleted
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount)),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "fail - decrease allowance with existing authorization but decreased amount too high",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.tokenDenom, amount)),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 
 				return []interface{}{
@@ -668,54 +482,6 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 				}
 			},
 			errContains: erc20.ConvertErrToERC20Error(errors.New("subtracted value cannot be greater than existing allowance")).Error(),
-		},
-		{
-			name: "fail - decrease allowance with existing authorization in different denomination",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
-				}
-			},
-			errContains: fmt.Sprintf(erc20.ErrNoAllowanceForToken, s.tokenDenom),
-			postCheck: func() {
-				// NOTE: Here we check that the authorization for the other denom was not deleted
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount)),
-					[]string{},
-				)
-			},
-		},
-		{
-			name: "fail - decrease allowance with existing authorization in different denomination but decreased amount too high",
-			malleate: func() []interface{} {
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetPrivKey(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount), sdk.NewInt64Coin(s.tokenDenom, 1)),
-				)
-
-				return []interface{}{
-					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
-				}
-			},
-			errContains: erc20.ConvertErrToERC20Error(errors.New("subtracted value cannot be greater than existing allowance")).Error(),
-			postCheck: func() {
-				// NOTE: Here we check that the authorization was not adjusted
-				s.requireSendAuthz(
-					s.keyring.GetAccAddr(1),
-					s.keyring.GetAccAddr(0),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, amount), sdk.NewInt64Coin(s.tokenDenom, 1)),
-					[]string{},
-				)
-			},
 		},
 	}
 

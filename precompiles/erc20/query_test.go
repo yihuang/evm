@@ -118,11 +118,6 @@ func (s *PrecompileTestSuite) TestNameSymbol() {
 		expSymbol   string
 	}{
 		{
-			name:        "fail - empty denom",
-			denom:       "",
-			errContains: vm.ErrExecutionReverted.Error(),
-		},
-		{
 			name:        "fail - invalid denom trace",
 			denom:       tooShortTrace.IBCDenom()[:len(tooShortTrace.IBCDenom())-1],
 			errContains: "odd length hex string",
@@ -232,11 +227,6 @@ func (s *PrecompileTestSuite) TestDecimals() {
 		errContains string
 		expDecimals uint8
 	}{
-		{
-			name:        "fail - empty denom",
-			denom:       "",
-			errContains: vm.ErrExecutionReverted.Error(),
-		},
 		{
 			name:        "fail - invalid denom trace",
 			denom:       tooShortTrace.IBCDenom()[:len(tooShortTrace.IBCDenom())-1],
@@ -523,32 +513,16 @@ func (s *PrecompileTestSuite) TestAllowance() {
 			expAllow: common.Big0,
 		},
 		{
-			name: "pass - allowance exists but not for precompile token pair denom",
-			malleate: func(_ sdk.Context, _ *app.EVMD, _ *big.Int) []interface{} {
-				granterIdx := 0
-				granteeIdx := 1
-
-				s.setupSendAuthz(
-					s.keyring.GetAccAddr(granteeIdx),
-					s.keyring.GetPrivKey(granterIdx),
-					sdk.NewCoins(sdk.NewInt64Coin(s.bondDenom, 100)),
-				)
-
-				return []interface{}{s.keyring.GetAddr(granterIdx), s.keyring.GetAddr(granteeIdx)}
-			},
-			expPass:  true,
-			expAllow: common.Big0,
-		},
-		{
 			name: "pass - allowance exists for precompile token pair denom",
 			malleate: func(_ sdk.Context, _ *app.EVMD, amount *big.Int) []interface{} {
 				granterIdx := 0
 				granteeIdx := 1
 
 				s.setupSendAuthz(
-					s.keyring.GetAccAddr(granteeIdx),
+					s.precompile.Address(),
 					s.keyring.GetPrivKey(granterIdx),
-					sdk.NewCoins(sdk.NewCoin(s.tokenDenom, sdkmath.NewIntFromBigInt(amount))),
+					s.keyring.GetAddr(granteeIdx),
+					amount,
 				)
 
 				return []interface{}{s.keyring.GetAddr(granterIdx), s.keyring.GetAddr(granteeIdx)}
@@ -567,9 +541,7 @@ func (s *PrecompileTestSuite) TestAllowance() {
 				allowanceArgs = tc.malleate(s.network.GetContext(), s.network.App, tc.expAllow)
 			}
 
-			precompile := s.setupERC20Precompile(s.tokenDenom)
-
-			bz, err := precompile.Allowance(
+			bz, err := s.precompile.Allowance(
 				s.network.GetContext(),
 				nil,
 				nil,
