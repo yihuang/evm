@@ -713,9 +713,9 @@ var _ = Describe("ERC20 Extension -", func() {
 					)
 
 					// Check that the allowance was removed since we authorized only the transferred amount
-					is.ExpectNoSendAuthzForContract(
+					is.ExpectSendAuthzForContract(
 						callType, contractsData,
-						spender.Addr, owner.Addr,
+						spender.Addr, owner.Addr, common.Big0,
 					)
 				},
 					Entry(" - direct call", directCall),
@@ -834,9 +834,9 @@ var _ = Describe("ERC20 Extension -", func() {
 						// Check that the allowance was removed since we authorized only the transferred amount
 						// FIXME: This is not working for the case where we transfer from the own account
 						// because the allowance is not removed on the SDK side.
-						is.ExpectNoSendAuthzForContract(
+						is.ExpectSendAuthzForContract(
 							callType, contractsData,
-							owner.Addr, owner.Addr,
+							owner.Addr, owner.Addr, common.Big0,
 						)
 					},
 						Entry(" - through erc20 contract", erc20Call),
@@ -1012,9 +1012,9 @@ var _ = Describe("ERC20 Extension -", func() {
 					)
 
 					// Check that the allowance was removed since we authorized only the transferred amount
-					is.ExpectNoSendAuthzForContract(
+					is.ExpectSendAuthzForContract(
 						callType, contractsData,
-						spender, owner.Addr,
+						spender, owner.Addr, common.Big0,
 					)
 				},
 					// Entry(" - direct call", directCall),
@@ -1074,9 +1074,9 @@ var _ = Describe("ERC20 Extension -", func() {
 					)
 
 					// Check that the allowance was removed since we authorized only the transferred amount
-					is.ExpectNoSendAuthzForContract(
+					is.ExpectSendAuthzForContract(
 						callType, contractsData,
-						spender, owner.Addr,
+						spender, owner.Addr, common.Big0,
 					)
 				},
 					// NOTE: we are not passing the direct call here because this test is specific to the contract calls
@@ -1451,7 +1451,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					Expect(err).ToNot(HaveOccurred(), "error while calling NextBlock")
 
 					// Check allowance is set to zero
-					is.expectSendAuthz(callType, contractsData, granter.Addr, grantee.Addr, big.NewInt(0))
+					is.ExpectSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr, common.Big0)
 				},
 					Entry(" - direct call", directCall),
 					// NOTE: we are not passing the erc20 contract call here because the ERC20 contract
@@ -1480,7 +1480,7 @@ var _ = Describe("ERC20 Extension -", func() {
 
 					is.ExpectTrueToBeReturned(ethRes, erc20.ApproveMethod)
 					// Check allowance was deleted
-					is.expectNoSendAuthz(callType, contractsData, granter.Addr, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr, common.Big0)
 				},
 					Entry(" - direct call", directCall),
 					Entry(" - through erc20 contract", erc20Call),
@@ -1506,7 +1506,7 @@ var _ = Describe("ERC20 Extension -", func() {
 
 					is.ExpectTrueToBeReturned(ethRes, erc20.ApproveMethod)
 					// Check still no authorization exists
-					is.ExpectNoSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr, common.Big0)
 				},
 					Entry(" - direct call", directCall),
 					Entry(" - through erc20 contract", erc20Call),
@@ -1541,9 +1541,9 @@ var _ = Describe("ERC20 Extension -", func() {
 						err = is.network.NextBlock()
 						Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
 
-						is.ExpectNoSendAuthzForContract(
+						is.ExpectSendAuthzForContract(
 							directCall, contractsData,
-							granter.Addr, grantee.Addr,
+							granter.Addr, grantee.Addr, abi.MaxUint256,
 						)
 					})
 
@@ -1685,7 +1685,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					is.ExpectTrueToBeReturned(ethRes, erc20.ApproveMethod)
 
 					// Check allowance was deleted from the keeper / is returning 0 for smart contracts
-					is.ExpectNoSendAuthzForContract(callType, contractsData, granter, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granter, grantee.Addr, common.Big0)
 				},
 					Entry(" - through contract", contractCall),
 					Entry(" - through erc20 v5 caller contract", erc20V5CallerCall),
@@ -1711,7 +1711,7 @@ var _ = Describe("ERC20 Extension -", func() {
 
 					is.ExpectTrueToBeReturned(ethRes, erc20.ApproveMethod)
 					// Check still no authorization exists
-					is.ExpectNoSendAuthzForContract(callType, contractsData, granter, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granter, grantee.Addr, common.Big0)
 				},
 					Entry(" - through contract", contractCall),
 					Entry(" - through erc20 v5 caller contract", erc20V5CallerCall),
@@ -1745,9 +1745,9 @@ var _ = Describe("ERC20 Extension -", func() {
 						err = is.network.NextBlock()
 						Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
 
-						is.ExpectNoSendAuthzForContract(
+						is.ExpectSendAuthzForContract(
 							callType, contractsData,
-							granter, grantee,
+							granter, grantee, abi.MaxUint256,
 						)
 					})
 
@@ -2020,9 +2020,9 @@ var _ = Describe("ERC20 Extension -", func() {
 					err = is.network.NextBlock()
 					Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
 
-					is.ExpectNoSendAuthzForContract(
+					is.ExpectSendAuthzForContract(
 						directCall, contractsData,
-						granter.Addr, grantee.Addr,
+						granter.Addr, grantee.Addr, abi.MaxUint256,
 					)
 				})
 
@@ -2075,9 +2075,9 @@ var _ = Describe("ERC20 Extension -", func() {
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 					Expect(ethRes).To(BeNil(), "expected empty result")
 
-					is.ExpectNoSendAuthzForContract(
+					is.ExpectSendAuthzForContract(
 						directCall, contractsData,
-						granter.Addr, grantee.Addr,
+						granter.Addr, grantee.Addr, abi.MaxUint256,
 					)
 					// commit the changes to state
 					err = is.network.NextBlock()
@@ -2288,7 +2288,7 @@ var _ = Describe("ERC20 Extension -", func() {
 				Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
 
 				// Check that only the spend limit in the network denomination remains
-				expAllowance := big.NewInt(0)
+				expAllowance := common.Big0
 				is.ExpectSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr, expAllowance)
 			},
 				Entry(" - direct call", directCall),
@@ -2385,7 +2385,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					Expect(err).ToNot(HaveOccurred(), "error while calling NextBlock")
 
 					is.ExpectTrueToBeReturned(ethRes, erc20.DecreaseAllowanceMethod)
-					is.ExpectNoSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granter.Addr, grantee.Addr, common.Big0)
 				},
 					Entry(" - direct call", directCall),
 					Entry(" - through erc20 contract", erc20Call),
@@ -2552,7 +2552,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					Expect(err).ToNot(HaveOccurred(), "error while calling NextBlock")
 
 					is.ExpectTrueToBeReturned(ethRes, erc20.DecreaseAllowanceMethod)
-					is.ExpectNoSendAuthzForContract(callType, contractsData, granterAddr, grantee.Addr)
+					is.ExpectSendAuthzForContract(callType, contractsData, granterAddr, grantee.Addr, common.Big0)
 				},
 					Entry(" - contract call", contractCall),
 					Entry(" - through erc20 caller contract", erc20CallerCall),

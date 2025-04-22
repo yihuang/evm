@@ -96,8 +96,9 @@ func (p *Precompile) transfer(
 	ownerIsSpender := spender.Equals(owner)
 
 	newAllowance := big.NewInt(0)
-	// NOTES: Since the Approve method does not support the case where the owner and spender are the same,
-	// the allowance is always zero when owner == spender. Therefore, in this case, there’s no need to modify the allowance separately.
+	// NOTES: Approve method does not support the case where the owner and spender are the same,
+	// But, Allowance method return infinite amount(abi.MaxUint256) when owner is spender.
+	// Therefore, in this case, owner can spend infinite amount of tokens. without modifying the allowance.
 	if !ownerIsSpender {
 		prevAllowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), from, spenderAddr)
 		if err != nil {
