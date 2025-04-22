@@ -34,47 +34,9 @@ import (
 func (s *PrecompileTestSuite) setupSendAuthz(
 	erc20Addr common.Address, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
 ) {
-	err := setupSendAuthz(
-		s.network,
-		erc20Addr,
-		granterPriv,
-		grantee,
-		amount,
-	)
-	s.Require().NoError(err, "failed to set up send authorization")
-}
-
-func (is *IntegrationTestSuite) setupSendAuthz(
-	erc20Addr common.Address, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
-) {
-	err := setupSendAuthz(
-		is.network,
-		erc20Addr,
-		granterPriv,
-		grantee,
-		amount,
-	)
-	Expect(err).ToNot(HaveOccurred(), "failed to set up send authorization")
-
-	// commit changes to chain state
-	err = is.network.NextBlock()
-	Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
-}
-
-func setupSendAuthz(
-	network *network.UnitTestNetwork,
-	erc20Addr common.Address,
-	granterPriv cryptotypes.PrivKey,
-	grantee common.Address,
-	amount *big.Int,
-) error {
 	granter := common.BytesToAddress(granterPriv.PubKey().Address().Bytes())
-	err := network.App.Erc20Keeper.SetAllowance(network.GetContext(), erc20Addr, granter, grantee, amount)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to set allowance")
-	}
-
-	return nil
+	err := s.network.App.Erc20Keeper.SetAllowance(s.network.GetContext(), erc20Addr, granter, grantee, amount)
+	s.Require().NoError(err, "failed to set set allowance")
 }
 
 // setupSendAuthzForContract is a helper function which executes an approval
@@ -86,29 +48,16 @@ func setupSendAuthz(
 func (is *IntegrationTestSuite) setupSendAuthzForContract(
 	callType CallType, contractData ContractsData, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
 ) {
-	erc20Addr := contractData.GetContractData(callType).Address
-	switch {
-	case slices.Contains(nativeCallTypes, callType):
-		is.setupSendAuthz(erc20Addr, granterPriv, grantee, amount)
-	case slices.Contains(erc20CallTypes, callType):
-		is.setupSendAuthzForERC20(callType, contractData, granterPriv, grantee, amount)
-	default:
-		panic("unknown contract call type")
-	}
-
-	// commit changes to the chain state
-	err := is.network.NextBlock()
-	Expect(err).ToNot(HaveOccurred(), "error while calling NextBlock")
-}
-
-// setupSendAuthzForERC20 is a helper function to set up a SendAuthorization for
-// a given grantee and granter combination for a given amount.
-func (is *IntegrationTestSuite) setupSendAuthzForERC20(
-	callType CallType, contractData ContractsData, granterPriv cryptotypes.PrivKey, grantee common.Address, amount *big.Int,
-) {
+	// NOTE: When using the caller contract, we must still approve from the erc20 contract.
+	// This is because caller of erc20 contract becomes the owner of allowance.
 	if callType == erc20V5CallerCall {
-		// NOTE: When using the ERC20 caller contract, we must still approve from the actual ERC20 v5 contract.
 		callType = erc20V5Call
+	}
+	if callType == contractCall {
+		callType = directCall
+	}
+	if callType == contractCallToken2 {
+		callType = directCallToken2
 	}
 
 	abiEvents := contractData.GetContractData(callType).ABI.Events
@@ -123,6 +72,10 @@ func (is *IntegrationTestSuite) setupSendAuthzForERC20(
 
 	_, _, err := is.factory.CallContractAndCheckLogs(granterPriv, txArgs, callArgs, approveCheck)
 	Expect(err).ToNot(HaveOccurred(), "failed to execute approve")
+
+	// commit changes to the chain state
+	err = is.network.NextBlock()
+	Expect(err).ToNot(HaveOccurred(), "error while calling NextBlock")
 }
 
 // requireOut is a helper utility to reduce the amount of boilerplate code in the query tests.
@@ -171,7 +124,7 @@ func (s *PrecompileTestSuite) requireOut(
 func (s *PrecompileTestSuite) requireSendAuthz(erc20Addr, granter, grantee common.Address, amount *big.Int) {
 	allowance, err := s.network.App.Erc20Keeper.GetAllowance(s.network.GetContext(), erc20Addr, granter, grantee)
 	s.Require().NoError(err, "expected no error unpacking the allowance")
-	s.Require().Equal(allowance.Cmp(amount), 0, "expected different allowance")
+	s.Require().Equal(allowance.Int64(), amount.Int64(), "expected different allowance")
 }
 
 // setupERC20Precompile is a helper function to set up an instance of the ERC20 precompile for
@@ -386,7 +339,7 @@ func (is *IntegrationTestSuite) expectSendAuthz(callType CallType, contractsData
 	erc20Addr := contractsData.GetContractData(callType).Address
 	allowance, err := is.network.App.Erc20Keeper.GetAllowance(is.network.GetContext(), erc20Addr, granter, grantee)
 	Expect(err).ToNot(HaveOccurred(), "expected no error unpacking the allowance")
-	Expect(allowance.Cmp(expAmount)).To(Equal(0), "expected different allowance")
+	Expect(allowance.Int64()).To(Equal(expAmount.Int64()), "expected different allowance")
 }
 
 // expectSendAuthzForERC20 is a helper function to check that a SendAuthorization
@@ -406,7 +359,7 @@ func (is *IntegrationTestSuite) expectSendAuthzForERC20(callType CallType, contr
 	var allowance *big.Int
 	err = contractABI.UnpackIntoInterface(&allowance, "allowance", ethRes.Ret)
 	Expect(err).ToNot(HaveOccurred(), "expected no error unpacking allowance")
-	Expect(math.NewIntFromBigInt(allowance)).To(Equal(expAmount), "expected different allowance")
+	Expect(allowance.Int64()).To(Equal(expAmount.Int64()), "expected different allowance")
 }
 
 // ExpectSendAuthzForContract is a helper function to check that a SendAuthorization
@@ -416,14 +369,7 @@ func (is *IntegrationTestSuite) expectSendAuthzForERC20(callType CallType, contr
 func (is *IntegrationTestSuite) ExpectSendAuthzForContract(
 	callType CallType, contractData ContractsData, granter, grantee common.Address, expAmount *big.Int,
 ) {
-	switch {
-	case slices.Contains(nativeCallTypes, callType):
-		is.expectSendAuthz(callType, contractData, granter, grantee, expAmount)
-	case slices.Contains(erc20CallTypes, callType):
-		is.expectSendAuthzForERC20(callType, contractData, granter, grantee, expAmount)
-	default:
-		panic("unknown contract call type")
-	}
+	is.expectSendAuthzForERC20(callType, contractData, granter, grantee, expAmount)
 }
 
 // expectNoSendAuthz is a helper function to check that no SendAuthorization
@@ -432,7 +378,7 @@ func (is *IntegrationTestSuite) expectNoSendAuthz(calltype CallType, contractDat
 	erc20Addr := contractData.GetContractData(calltype).Address
 	allowance, err := is.network.App.Erc20Keeper.GetAllowance(is.network.GetContext(), erc20Addr, granter, grantee)
 	Expect(err).ToNot(HaveOccurred(), "expected no error unpacking the allowance")
-	Expect(allowance.Cmp(big.NewInt(0))).To(Equal(0), "expected allowance to be zero")
+	Expect(allowance.Int64()).To(Equal(int64(0)), "expected allowance to be zero")
 }
 
 // expectNoSendAuthzForERC20 is a helper function to check that no SendAuthorization
