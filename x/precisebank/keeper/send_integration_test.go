@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/cosmos/evm/evmd"
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
@@ -719,38 +717,35 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 	)
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomFractionalSends() {
+func (suite *KeeperIntegrationTestSuite) TestRandomValueSends_MultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
 	}{
 		{
-			"6 decimals",
-			testconstants.SixDecimalsChainID,
+			name:    "6 decimals",
+			chainId: testconstants.SixDecimalsChainID,
 		},
 		{
-			"2 decimals",
-			testconstants.TwoDecimalsChainID,
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
 		},
 		{
-			"12 decimals",
-			testconstants.TwelveDecimalsChainID,
+			name:    "12 decimals",
+			chainId: testconstants.TwelveDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			denom := coinInfo.Denom
-			decimals := coinInfo.Decimals
+			suite.SetupTest()
+			ctx := suite.network.GetContext()
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
 			suite.Require().NoError(err)
 
-			suite.SetupTest()
-
-			ctx := suite.network.GetContext()
 			sender := sdk.AccAddress([]byte{1})
 			recipient := sdk.AccAddress([]byte{2})
 
@@ -814,15 +809,6 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalSends() {
 }
 
 func FuzzSendCoins(f *testing.F) {
-	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	denom := coinInfo.Denom
-	decimals := coinInfo.Decimals
-
-	configurator := evmtypes.NewEVMConfigurator()
-	configurator.ResetTestConfig()
-	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
-	require.NoError(f, err)
-
 	f.Add(uint64(100), uint64(0), uint64(2))
 	f.Add(uint64(100), uint64(100), uint64(5))
 	f.Add(types.ConversionFactor().Uint64(), uint64(0), uint64(500))

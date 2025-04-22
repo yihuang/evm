@@ -5,10 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/testutil"
 	"github.com/cosmos/evm/x/precisebank/types"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -256,15 +254,6 @@ func TestGenesisState_TotalAmountWithRemainder(t *testing.T) {
 }
 
 func FuzzGenesisStateValidate_NonZeroRemainder(f *testing.F) {
-	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	denom := coinInfo.Denom
-	decimals := coinInfo.Decimals
-
-	configurator := evmtypes.NewEVMConfigurator()
-	configurator.ResetTestConfig()
-	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
-	require.NoError(f, err)
-
 	f.Add(5)
 	f.Add(100)
 	f.Add(30)
@@ -286,15 +275,6 @@ func FuzzGenesisStateValidate_NonZeroRemainder(f *testing.F) {
 }
 
 func FuzzGenesisStateValidate_ZeroRemainder(f *testing.F) {
-	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	denom := coinInfo.Denom
-	decimals := coinInfo.Decimals
-
-	configurator := evmtypes.NewEVMConfigurator()
-	configurator.ResetTestConfig()
-	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
-	require.NoError(f, err)
-
 	f.Add(5)
 	f.Add(100)
 	f.Add(30)

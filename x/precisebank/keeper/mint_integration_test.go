@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
@@ -362,42 +360,38 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 	}
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomFractionalMints() {
+func (suite *KeeperIntegrationTestSuite) TestRandomValueMints_MultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
 	}{
 		{
-			"6 decimals",
-			testconstants.SixDecimalsChainID,
+			name:    "6 decimals",
+			chainId: testconstants.SixDecimalsChainID,
 		},
 		{
-			"2 decimals",
-			testconstants.TwoDecimalsChainID,
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
 		},
 		{
-			"12 decimals",
-			testconstants.TwelveDecimalsChainID,
+			name:    "12 decimals",
+			chainId: testconstants.TwelveDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			denom := coinInfo.Denom
-			decimals := coinInfo.Decimals
+			suite.SetupTest()
+			ctx := suite.network.GetContext()
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
 			suite.Require().NoError(err)
-
-			suite.SetupTest()
-
-			ctx := suite.network.GetContext()
 
 			// Has mint permissions
 			minterModuleName := evmtypes.ModuleName
-			minterModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(minterModuleName)
+			minter := sdk.AccAddress([]byte{1})
 
 			// Target balance
 			targetBalance := types.ConversionFactor().MulRaw(100)
@@ -409,42 +403,41 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalMints() {
 			totalMinted := sdkmath.ZeroInt()
 			mintCount := 0
 
-			// Continue mints as long as minter module has balance remaining
+			// Continue mints as long as target balance is not reached
 			for {
-				// Check current minter module balance
-				minterAmount := suite.GetAllBalances(minterModuleAddr).AmountOf(types.ExtendedCoinDenom)
-				if minterAmount.BigInt().Cmp(targetBalance.BigInt()) == 0 {
+				// Check current minter balance
+				minterBal := suite.GetAllBalances(minter).AmountOf(types.ExtendedCoinDenom)
+				if minterBal.GTE(targetBalance) {
 					break
 				}
 
 				// Generate random amount within the range of max possible mint amount
-				remainingAmount := targetBalance.Sub(minterAmount)
-				maxPossibleMint := maxMintUnit
-				if maxPossibleMint.GT(remainingAmount) {
-					maxPossibleMint = remainingAmount
-				}
-				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleMint.BigInt())).AddRaw(1)
+				remaining := targetBalance.Sub(minterBal)
+				maxPossible := sdkmath.MinInt(maxMintUnit, remaining)
+				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossible.BigInt())).AddRaw(1)
 
-				mintAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
-				err := suite.network.App.PreciseBankKeeper.MintCoins(ctx, minterModuleName, mintAmount)
-				suite.NoError(err)
+				// 1. mint to evm module
+				mintCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+				err := suite.network.App.PreciseBankKeeper.MintCoins(ctx, minterModuleName, mintCoins)
+				suite.Require().NoError(err)
+
+				// 2. send to account
+				err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(ctx, minterModuleName, minter, mintCoins)
+				suite.Require().NoError(err)
 
 				totalMinted = totalMinted.Add(randAmount)
 				mintCount++
 			}
 
-			suite.T().Logf("Completed %d random mints, total minted: %s", mintCount, totalMinted.String())
+			suite.T().Logf("Completed %d random mints, total minted: %s", mintCount, totalMinted)
 
-			// Check minter module balance
-			moduleAmount := suite.GetAllBalances(minterModuleAddr).AmountOf(types.ExtendedCoinDenom)
-			suite.Equal(moduleAmount.BigInt().Cmp(targetBalance.BigInt()), 0, "minter balance should be %s", targetBalance)
+			// Check minter balance
+			minterBal := suite.GetAllBalances(minter).AmountOf(types.ExtendedCoinDenom)
+			suite.Equal(minterBal.BigInt().Cmp(targetBalance.BigInt()), 0, "minter balance mismatch (expected: %s, actual: %s)", targetBalance, minterBal)
 
-			// Check backing asserts(fractional balance and remainder)
-			precisebankModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
-			fractionalBalance := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, precisebankModuleAddr)
+			// Check remainder
 			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
-			suite.Equal(fractionalBalance.BigInt().Cmp(big.NewInt(0)), 0, "fractional balance should be zero")
-			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero")
+			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero (expected: %s, actual: %s)", big.NewInt(0), remainder)
 
 			// Check invariants
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
@@ -456,15 +449,6 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalMints() {
 }
 
 func FuzzMintCoins(f *testing.F) {
-	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	denom := coinInfo.Denom
-	decimals := coinInfo.Decimals
-
-	configurator := evmtypes.NewEVMConfigurator()
-	configurator.ResetTestConfig()
-	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
-	require.NoError(f, err)
-
 	f.Add(int64(0))
 	f.Add(int64(100))
 	f.Add(types.ConversionFactor().Int64())

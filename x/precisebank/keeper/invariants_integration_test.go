@@ -1,9 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
-
-	"github.com/cosmos/evm/evmd"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -233,14 +230,9 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 			suite.network.App.BankKeeper.IterateAllBalances(
 				suite.network.GetContext(),
 				func(address sdk.AccAddress, coin sdk.Coin) (stop bool) {
-					fmt.Println("address", address.String(), "coin", coin)
 					return false
 				},
 			)
-
-			for accPerm := range evmd.BlockedAddresses() {
-				fmt.Println("blocked address", accPerm)
-			}
 
 			tt.setupFn(suite.network.GetContext(), suite.network.App.PreciseBankKeeper)
 

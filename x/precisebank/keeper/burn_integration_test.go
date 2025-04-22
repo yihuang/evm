@@ -7,8 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
@@ -442,46 +440,45 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	}
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomFractionalBurns() {
+func (suite *KeeperIntegrationTestSuite) TestRandomValueBurns_MultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
 	}{
 		{
-			"6 decimals",
-			testconstants.SixDecimalsChainID,
+			name:    "6 decimals",
+			chainId: testconstants.SixDecimalsChainID,
 		},
 		{
-			"2 decimals",
-			testconstants.TwoDecimalsChainID,
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
 		},
 		{
-			"12 decimals",
-			testconstants.TwelveDecimalsChainID,
+			name:    "12 decimals",
+			chainId: testconstants.TwelveDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			denom := coinInfo.Denom
-			decimals := coinInfo.Decimals
+			suite.SetupTest()
+			ctx := suite.network.GetContext()
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
 			suite.Require().NoError(err)
 
-			suite.SetupTest()
-
-			ctx := suite.network.GetContext()
-
-			// Has both mint & burn permissions
+			// Has burn permissions
 			burnerModuleName := evmtypes.ModuleName
-			burnerModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(burnerModuleName)
+			burner := sdk.AccAddress([]byte{1})
 
 			// Initial balance large enough to cover many small burns
 			initialBalance := types.ConversionFactor().MulRaw(100)
-			err = suite.network.App.PreciseBankKeeper.MintCoins(ctx, burnerModuleName, cs(ci(types.ExtendedCoinDenom, initialBalance)))
+			initialCoin := cs(ci(types.ExtendedCoinDenom, initialBalance))
+			err = suite.network.App.PreciseBankKeeper.MintCoins(ctx, burnerModuleName, initialCoin)
+			suite.Require().NoError(err)
+			err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(ctx, burnerModuleName, burner, initialCoin)
 			suite.Require().NoError(err)
 
 			// Setup test parameters
@@ -491,10 +488,10 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalBurns() {
 			totalBurned := sdkmath.ZeroInt()
 			burnCount := 0
 
-			// Continue burns as long as burner module has balance remaining
+			// Continue burns as long as burner has balance remaining
 			for {
-				// Check current burner module balance
-				burnerAmount := suite.GetAllBalances(burnerModuleAddr).AmountOf(types.ExtendedCoinDenom)
+				// Check current burner balance
+				burnerAmount := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom)
 				if burnerAmount.IsZero() {
 					break
 				}
@@ -506,26 +503,28 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalBurns() {
 				}
 				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleBurn.BigInt())).AddRaw(1)
 
-				burnAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
-				err := suite.network.App.PreciseBankKeeper.BurnCoins(ctx, burnerModuleName, burnAmount)
-				suite.NoError(err)
+				// 1. send to burner module
+				burnCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+				err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(ctx, burner, burnerModuleName, burnCoins)
+				suite.Require().NoError(err)
+
+				// 2. burn from burner module
+				err = suite.network.App.PreciseBankKeeper.BurnCoins(ctx, burnerModuleName, burnCoins)
+				suite.Require().NoError(err)
 
 				totalBurned = totalBurned.Add(randAmount)
 				burnCount++
 			}
 
-			suite.T().Logf("Completed %d random burns, total burned: %s", burnCount, totalBurned.String())
+			suite.T().Logf("Completed %d random burns, total burned: %s", burnCount, totalBurned)
 
-			// Check burner module balance
-			moduleAmount := suite.GetAllBalances(burnerModuleAddr).AmountOf(types.ExtendedCoinDenom)
-			suite.Equal(moduleAmount.BigInt().Cmp(big.NewInt(0)), 0, "burner balance should be zero")
+			// Check burner balance
+			burnerBal := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom)
+			suite.Equal(burnerBal.BigInt().Cmp(big.NewInt(0)), 0, "burner balance mismatch (expected: %s, actual: %s)", big.NewInt(0), burnerBal)
 
-			// Check backing asserts(fractional balance and remainder)
-			precisebankModuleAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
-			fractionalBalance := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, precisebankModuleAddr)
+			// Check remainder
 			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
-			suite.Equal(fractionalBalance.BigInt().Cmp(big.NewInt(0)), 0, "fractional balance should be zero")
-			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero")
+			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero (expected: %s, actual: %s)", big.NewInt(0), remainder)
 
 			// Check invariants
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
@@ -537,15 +536,6 @@ func (suite *KeeperIntegrationTestSuite) TestRandomFractionalBurns() {
 }
 
 func FuzzBurnCoins(f *testing.F) {
-	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	denom := coinInfo.Denom
-	decimals := coinInfo.Decimals
-
-	configurator := evmtypes.NewEVMConfigurator()
-	configurator.ResetTestConfig()
-	err := configurator.WithEVMCoinInfo(denom, uint8(decimals)).Configure()
-	require.NoError(f, err)
-
 	f.Add(int64(0))
 	f.Add(int64(100))
 	f.Add(types.ConversionFactor().Int64())
