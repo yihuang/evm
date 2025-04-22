@@ -1,18 +1,20 @@
 package keeper_test
 
 import (
+	"fmt"
 	"math/big"
 	"math/rand"
 	"time"
 
+	"github.com/cosmos/evm/contracts"
 	testconstants "github.com/cosmos/evm/testutil/constants"
+	"github.com/cosmos/evm/testutil/integration/os/factory"
+	"github.com/cosmos/evm/testutil/integration/os/utils"
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdkmath "cosmossdk.io/math"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestRandomValueOperations_MultiDecimals() {
@@ -46,8 +48,8 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueOperations_MultiDecimals
 			suite.Require().NoError(err)
 
 			moduleName := evmtypes.ModuleName
-			sender := sdk.AccAddress([]byte{1})
-			recipient := sdk.AccAddress([]byte{2})
+			sender := suite.keyring.GetAccAddr(0)
+			recipient := suite.keyring.GetAccAddr(1)
 
 			// Mint initial balance to sender
 			initialBalance := types.ConversionFactor().MulRaw(100)
@@ -137,6 +139,114 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueOperations_MultiDecimals
 			res, stop := inv(ctx)
 			suite.Require().False(stop, "Invariant broken")
 			suite.Require().Empty(res, "Unexpected invariant violation: %s", res)
+		})
+	}
+}
+
+func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
+	tests := []struct {
+		name    string
+		chainId string
+	}{
+		{
+			name:    "6 decimals",
+			chainId: testconstants.SixDecimalsChainID,
+		},
+		{
+			name:    "12 decimals",
+			chainId: testconstants.TwelveDecimalsChainID,
+		},
+		{
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
+		},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			suite.SetupTestWithChainID(tt.chainId)
+			ctx := suite.network.GetContext()
+
+			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			configurator.
+				WithChainConfig(ethCfg).
+				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+			err := configurator.Configure()
+			suite.Require().NoError(err)
+
+			sender := suite.keyring.GetKey(0)
+			amount := big.NewInt(1)
+
+			// Deploy WATOM contract
+			watomAddr, err := suite.factory.DeployContract(
+				sender.Priv,
+				evmtypes.EvmTxArgs{},
+				factory.ContractDeploymentData{
+					Contract: contracts.WATOMContract,
+				},
+			)
+			suite.Require().NoError(err)
+
+			err = suite.network.NextBlock()
+			suite.Require().NoError(err)
+
+			baseFeeRes, err := suite.network.GetEvmClient().BaseFee(ctx, &evmtypes.QueryBaseFeeRequest{})
+			suite.Require().NoError(err)
+
+			// Call deposit() with msg.value = wrapAmount
+			_, err = suite.factory.ExecuteContractCall(
+				sender.Priv,
+				evmtypes.EvmTxArgs{
+					To:        &watomAddr,
+					Amount:    amount,
+					GasLimit:  100_000,
+					GasFeeCap: baseFeeRes.BaseFee.BigInt(),
+					GasTipCap: big.NewInt(1),
+				},
+				factory.CallArgs{
+					ContractABI: contracts.WATOMContract.ABI,
+					MethodName:  "deposit",
+				},
+			)
+			suite.Require().NoError(err)
+			err = suite.network.NextBlock()
+			suite.Require().NoError(err)
+
+			// Check WATOM balance == wrapAmount
+			bal, err := utils.GetERC20Balance(suite.network, watomAddr, sender.Addr)
+			suite.Require().NoError(err)
+			suite.Require().Equal(amount.Cmp(bal), 0, "WATOM balance should match deposited amount (expected: %s, actual: %s)", amount, bal)
+
+			baseFeeRes, err = suite.network.GetEvmClient().BaseFee(ctx, &evmtypes.QueryBaseFeeRequest{})
+			suite.Require().NoError(err)
+
+			fmt.Println(suite.network.App.PreciseBankKeeper.GetAllBalances(ctx, watomAddr.Bytes()))
+
+			// Call withdraw(wrapAmount)
+			_, err = suite.factory.ExecuteContractCall(
+				sender.Priv,
+				evmtypes.EvmTxArgs{
+					To:        &watomAddr,
+					GasLimit:  100_000,
+					GasFeeCap: baseFeeRes.BaseFee.BigInt(),
+					GasTipCap: big.NewInt(1),
+				},
+				factory.CallArgs{
+					ContractABI: contracts.WATOMContract.ABI,
+					MethodName:  "withdraw",
+					Args:        []interface{}{amount},
+				},
+			)
+			suite.Require().NoError(err)
+			suite.Require().NoError(suite.network.NextBlock())
+
+			// Final WATOM balance should be 0
+			bal, err = utils.GetERC20Balance(suite.network, watomAddr, sender.Addr)
+			suite.Require().NoError(err)
+			suite.Require().Equal("0", bal.String(), "WATOM balance should be zero after withdraw")
 		})
 	}
 }

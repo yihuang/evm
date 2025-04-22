@@ -450,28 +450,33 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueBurns_MultiDecimals() {
 			chainId: testconstants.SixDecimalsChainID,
 		},
 		{
-			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
-		},
-		{
 			name:    "12 decimals",
 			chainId: testconstants.TwelveDecimalsChainID,
+		},
+		{
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			suite.SetupTest()
+			suite.SetupTestWithChainID(tt.chainId)
 			ctx := suite.network.GetContext()
+
+			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
+			configurator.
+				WithChainConfig(ethCfg).
+				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+			err := configurator.Configure()
 			suite.Require().NoError(err)
 
 			// Has burn permissions
 			burnerModuleName := evmtypes.ModuleName
-			burner := sdk.AccAddress([]byte{1})
+			burner := suite.keyring.GetAccAddr(0)
 
 			// Initial balance large enough to cover many small burns
 			initialBalance := types.ConversionFactor().MulRaw(100)

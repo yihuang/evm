@@ -727,27 +727,32 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueSends_MultiDecimals() {
 			chainId: testconstants.SixDecimalsChainID,
 		},
 		{
-			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
-		},
-		{
 			name:    "12 decimals",
 			chainId: testconstants.TwelveDecimalsChainID,
+		},
+		{
+			name:    "2 decimals",
+			chainId: testconstants.TwoDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			suite.SetupTest()
+			suite.SetupTestWithChainID(tt.chainId)
 			ctx := suite.network.GetContext()
+
+			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
+			configurator.
+				WithChainConfig(ethCfg).
+				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+			err := configurator.Configure()
 			suite.Require().NoError(err)
 
-			sender := sdk.AccAddress([]byte{1})
-			recipient := sdk.AccAddress([]byte{2})
+			sender := suite.keyring.GetAccAddr(0)
+			recipient := suite.keyring.GetAccAddr(1)
 
 			// Initial balance large enough to cover many small sends
 			initialBalance := types.ConversionFactor().MulRaw(100)
