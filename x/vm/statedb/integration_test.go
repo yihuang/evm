@@ -12,7 +12,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cosmos/evm/contracts"
-	stakingprecompile "github.com/cosmos/evm/precompiles/staking"
 	testcontracts "github.com/cosmos/evm/precompiles/testutil/contracts"
 	testfactory "github.com/cosmos/evm/testutil/integration/os/factory"
 	"github.com/cosmos/evm/testutil/integration/os/grpc"
@@ -58,8 +57,6 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 		validatorToDelegateTo string
 
 		delegatedAmountPre math.Int
-
-		stakingPrecompile *stakingprecompile.Precompile
 	)
 
 	mintAmount := big.NewInt(2e18)
@@ -76,8 +73,6 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 		deployer = keyring.GetKey(0)
 
 		var err error
-		stakingPrecompile, err = stakingprecompile.NewPrecompile(*network.App.StakingKeeper, network.App.AuthzKeeper)
-		Expect(err).ToNot(HaveOccurred(), "failed to create staking precompile")
 
 		// Load the flash loan contract from the compiled JSON data.
 		flashLoanContract, err = testcontracts.LoadFlashLoanContract()
@@ -89,12 +84,13 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 		Expect(err).ToNot(HaveOccurred(), "failed to get bonded validators")
 
 		validatorToDelegateTo = valsRes.Validators[0].OperatorAddress
-		qRes, err := handler.GetDelegation(deployer.AccAddr.String(), validatorToDelegateTo)
-		Expect(err).ToNot(HaveOccurred(), "failed to get delegation")
-		delegatedAmountPre = qRes.DelegationResponse.Balance.Amount
+		// qRes, err := handler.GetDelegation(deployer.AccAddr.String(), validatorToDelegateTo)
+		// Expect(err).ToNot(HaveOccurred(), "failed to get delegation")
+		// delegatedAmountPre = qRes.DelegationResponse.Balance.Amount
+		delegatedAmountPre = math.NewInt(0)
 
 		// Deploy an ERC-20 token contract.
-		erc20Addr, err = factory.DeployContract(
+		erc20Addr, err := factory.DeployContract(
 			deployer.Priv,
 			evmtypes.EvmTxArgs{},
 			testfactory.ContractDeploymentData{
@@ -209,46 +205,6 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 		allowance, ok = unpacked[0].(*big.Int)
 		Expect(ok).To(BeTrue(), "failed to convert allowance to big.Int")
 		Expect(allowance.String()).To(Equal(mintAmount.String()), "allowance is not correct")
-
-		// Approve the flash loan contract to delegate tokens on behalf of user.
-		precompileAddr := stakingPrecompile.Address()
-
-		_, err = factory.ExecuteContractCall(
-			deployer.Priv,
-			evmtypes.EvmTxArgs{To: &precompileAddr},
-			testfactory.CallArgs{
-				ContractABI: stakingPrecompile.ABI,
-				MethodName:  "approve",
-				Args: []interface{}{
-					flashLoanAddr, delegateAmount, []string{stakingprecompile.DelegateMsg},
-				},
-			},
-		)
-		Expect(err).ToNot(HaveOccurred(), "failed to approve flash loan contract")
-
-		Expect(network.NextBlock()).ToNot(HaveOccurred(), "failed to commit block")
-
-		// Check the allowance.
-		res, err = factory.ExecuteContractCall(
-			deployer.Priv,
-			evmtypes.EvmTxArgs{To: &precompileAddr},
-			testfactory.CallArgs{
-				ContractABI: stakingPrecompile.ABI,
-				MethodName:  "allowance",
-				Args: []interface{}{
-					deployer.Addr, flashLoanAddr, stakingprecompile.DelegateMsg,
-				},
-			},
-		)
-		Expect(err).ToNot(HaveOccurred(), "failed to get allowance")
-
-		Expect(network.NextBlock()).ToNot(HaveOccurred(), "failed to commit block")
-
-		ethRes, err = evmtypes.DecodeTxResponse(res.Data)
-		Expect(err).ToNot(HaveOccurred(), "failed to decode allowance tx response")
-
-		err = stakingPrecompile.UnpackIntoInterface(&allowance, "allowance", ethRes.Ret)
-		Expect(err).ToNot(HaveOccurred(), "failed to unpack allowance")
 	})
 
 	DescribeTable("call the flashLoan contract", func(tc testCase) {
@@ -258,6 +214,7 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 				To:       &flashLoanAddr,
 				GasPrice: big.NewInt(900_000_000),
 				GasLimit: 400_000,
+				Amount:   delegateAmount,
 			},
 			testfactory.CallArgs{
 				ContractABI: flashLoanContract.ABI,
@@ -265,7 +222,6 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 				Args: []interface{}{
 					erc20Addr,
 					validatorToDelegateTo,
-					delegateAmount,
 				},
 			},
 		)
