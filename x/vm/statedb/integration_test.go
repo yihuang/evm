@@ -1,6 +1,7 @@
 package statedb_test
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -18,6 +19,8 @@ import (
 	testkeyring "github.com/cosmos/evm/testutil/integration/os/keyring"
 	testnetwork "github.com/cosmos/evm/testutil/integration/os/network"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"cosmossdk.io/math"
 )
@@ -84,13 +87,12 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 		Expect(err).ToNot(HaveOccurred(), "failed to get bonded validators")
 
 		validatorToDelegateTo = valsRes.Validators[0].OperatorAddress
-		// qRes, err := handler.GetDelegation(deployer.AccAddr.String(), validatorToDelegateTo)
-		// Expect(err).ToNot(HaveOccurred(), "failed to get delegation")
-		// delegatedAmountPre = qRes.DelegationResponse.Balance.Amount
+
+		// Initial delegation of flash loan contract to the validator is 0.
 		delegatedAmountPre = math.NewInt(0)
 
 		// Deploy an ERC-20 token contract.
-		erc20Addr, err := factory.DeployContract(
+		erc20Addr, err = factory.DeployContract(
 			deployer.Priv,
 			evmtypes.EvmTxArgs{},
 			testfactory.ContractDeploymentData{
@@ -229,16 +231,24 @@ var _ = Describe("testing the flash loan exploit", Ordered, func() {
 
 		Expect(network.NextBlock()).ToNot(HaveOccurred(), "failed to commit block")
 
-		delRes, err := handler.GetDelegation(deployer.AccAddr.String(), validatorToDelegateTo)
-		Expect(err).ToNot(HaveOccurred(), "failed to get delegation")
-		delAmtPost := delRes.DelegationResponse.Balance.Amount
+		falshLoanAccAddr := sdk.AccAddress(flashLoanAddr.Bytes())
+
 		if tc.expDelegation {
+			delRes, err := handler.GetDelegation(falshLoanAccAddr.String(), validatorToDelegateTo)
+			Expect(err).ToNot(HaveOccurred(), "failed to get delegation")
+			delAmtPost := delRes.DelegationResponse.Balance.Amount
 			Expect(delAmtPost).To(Equal(
 				delegatedAmountPre.Add(math.NewIntFromBigInt(delegateAmount))),
 				"delegated amount is not correct",
 			)
 		} else {
-			Expect(delAmtPost).To(Equal(delegatedAmountPre))
+			_, err := handler.GetDelegation(falshLoanAccAddr.String(), validatorToDelegateTo)
+			Expect(err).To(HaveOccurred(), "failed to get delegation")
+			Expect(err.Error()).To(ContainSubstring(
+				fmt.Sprintf("delegation with delegator %s not found for validator %s",
+					falshLoanAccAddr.String(),
+					validatorToDelegateTo),
+			), "delegation should not exist")
 		}
 
 		// Check the ERC20 token balance of the deployer.
