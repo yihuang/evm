@@ -1,9 +1,9 @@
 package evmd
 
 import (
-	"cosmossdk.io/math"
-
 	erc20types "github.com/cosmos/evm/x/erc20/types"
+
+	"cosmossdk.io/math"
 )
 
 const (

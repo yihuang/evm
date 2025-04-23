@@ -3,8 +3,6 @@ package erc20_test
 import (
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	"github.com/cosmos/evm/precompiles/erc20"
@@ -12,6 +10,8 @@ import (
 	utiltx "github.com/cosmos/evm/testutil/tx"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
 	"github.com/cosmos/evm/x/vm/statedb"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (

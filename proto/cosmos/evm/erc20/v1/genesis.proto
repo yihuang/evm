@@ -3,8 +3,8 @@ syntax = "proto3";
 package cosmos.evm.erc20.v1;
 
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
 import "cosmos/evm/erc20/v1/erc20.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/cosmos/evm/x/erc20/types";
 
