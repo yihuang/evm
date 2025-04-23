@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"cosmossdk.io/math"
-
 	exampleapp "github.com/cosmos/evm/evmd"
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/erc20/types"
+
+	"cosmossdk.io/math"
 )
 
 type GenesisTestSuite struct {

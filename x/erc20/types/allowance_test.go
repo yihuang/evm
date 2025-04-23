@@ -3,10 +3,11 @@ package types_test
 import (
 	"math/big"
 
-	utiltx "github.com/cosmos/evm/testutil/tx"
-	"github.com/cosmos/evm/x/erc20/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/suite"
+
+	utiltx "github.com/cosmos/evm/testutil/tx"
+	"github.com/cosmos/evm/x/erc20/types"
 )
 
 type AllowanceTestSuite struct {
