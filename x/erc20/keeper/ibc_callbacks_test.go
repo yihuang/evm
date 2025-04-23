@@ -260,7 +260,6 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 				suite.network.App.BankKeeper,
 				suite.network.App.EVMKeeper,
 				suite.network.App.StakingKeeper,
-				suite.network.App.AuthzKeeper,
 				&suite.network.App.TransferKeeper,
 			)
 
