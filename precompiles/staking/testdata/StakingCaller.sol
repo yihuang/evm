@@ -512,7 +512,15 @@ contract StakingCaller {
         delegation[msg.sender][_validatorAddr] += msg.value;
     }
 
+    /// @dev This function is used to dequeue unbonding entries that have expired.
+    ///
+    /// @notice StakingCaller acts as the delegator and manages delegation/unbonding state per EoA.
+    /// Reflecting x/staking unbondingQueue changes in real-time would require event listening.
+    /// To simplify unbonding entry processing, this function is called during delegate/undelegate calls.
+    /// Although updating unbondingQueue state isn't tested in the staking precompile integration tests,
+    /// it is included for the completeness of the contract.
     function _dequeueUnbondingEntry() private {
+        
         for (uint256 i = 0; i < unbondingQueue[msg.sender].length; i++) {
             UnbondingEntry storage entry = unbondingQueue[msg.sender][i];
             if (uint256(int256(entry.completionTime)) <= block.timestamp) {
@@ -522,6 +530,9 @@ contract StakingCaller {
         }
     }
 
+    /// @dev This function is used to cancel unbonding entries that have been cancelled.
+    /// @param _creationHeight The creation height of the unbonding entry to cancel.
+    /// @param _amount The amount to cancel.
     function _cancelUnbonding(uint256 _creationHeight, uint256 _amount) private {
         UnbondingEntry[] storage entries = unbondingQueue[msg.sender];
 
