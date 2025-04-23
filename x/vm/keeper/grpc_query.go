@@ -330,7 +330,7 @@ func (k Keeper) EstimateGasInternal(c context.Context, req *types.EthCallRequest
 	if msg.GasFeeCap().BitLen() != 0 {
 		baseDenom := types.GetEVMCoinDenom()
 
-		balance := k.bankWrapper.GetBalance(ctx, sdk.AccAddress(args.From.Bytes()), baseDenom)
+		balance := k.bankKeeper.GetBalance(ctx, sdk.AccAddress(args.From.Bytes()), baseDenom)
 		available := balance.Amount
 		transfer := "0"
 		if args.Value != nil {
@@ -472,9 +472,9 @@ func (k Keeper) TraceTx(c context.Context, req *types.QueryTraceTxRequest) (*typ
 	}
 
 	// compute and use base fee of the height that is being traced
-	baseFee := k.feeMarketWrapper.CalculateBaseFee(ctx)
-	if baseFee != nil {
-		cfg.BaseFee = baseFee
+	baseFee := k.feeMarketKeeper.CalculateBaseFee(ctx)
+	if baseFee.IsNil() {
+		cfg.BaseFee = baseFee.BigInt()
 	}
 
 	signer := ethtypes.MakeSigner(cfg.ChainConfig, big.NewInt(ctx.BlockHeight()))
@@ -566,9 +566,9 @@ func (k Keeper) TraceBlock(c context.Context, req *types.QueryTraceBlockRequest)
 	}
 
 	// compute and use base fee of height that is being traced
-	baseFee := k.feeMarketWrapper.CalculateBaseFee(ctx)
-	if baseFee != nil {
-		cfg.BaseFee = baseFee
+	baseFee := k.feeMarketKeeper.CalculateBaseFee(ctx)
+	if baseFee.IsNil() {
+		cfg.BaseFee = baseFee.BigInt()
 	}
 
 	signer := ethtypes.MakeSigner(cfg.ChainConfig, big.NewInt(ctx.BlockHeight()))

@@ -288,11 +288,7 @@ func (b *Backend) GenerateMinGasCoin(gasPrice hexutil.Big, appConf config.Config
 		unit = minGasPrices[0].Denom
 	}
 
-	// The provided gasPrice has 18 decimals.
-	// We need to update to the denom's real precision
-	scaledAmt := evmtypes.ConvertBigIntFrom18DecimalsToLegacyDec(gasPrice.ToInt())
-	c := sdk.DecCoin{Denom: unit, Amount: scaledAmt}
-
+	c := sdk.NewDecCoin(unit, sdkmath.NewIntFromBigInt(gasPrice.ToInt()))
 	return c
 }
 
@@ -348,5 +344,5 @@ func (b *Backend) RPCMinGasPrice() *big.Int {
 		return big.NewInt(constants.DefaultGasPrice)
 	}
 
-	return evmtypes.ConvertAmountTo18DecimalsLegacy(amt).TruncateInt().BigInt()
+	return amt.TruncateInt().BigInt()
 }

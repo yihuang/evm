@@ -11,7 +11,6 @@ import (
 
 	"github.com/cosmos/evm/x/vm/statedb"
 	"github.com/cosmos/evm/x/vm/types"
-	"github.com/cosmos/evm/x/vm/wrappers"
 
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -43,14 +42,13 @@ type Keeper struct {
 	// access to account state
 	accountKeeper types.AccountKeeper
 
-	// bankWrapper is used to convert the Cosmos SDK coin used in the EVM to the
-	// proper decimal representation.
-	bankWrapper types.BankWrapper
+	// update balance and accounting operations with coins
+	bankKeeper types.BankKeeper
 
 	// access historical headers for EVM state transition execution
 	stakingKeeper types.StakingKeeper
 	// fetch EIP1559 base fee and parameters
-	feeMarketWrapper *wrappers.FeeMarketWrapper
+	feeMarketKeeper types.FeeMarketKeeper
 	// erc20Keeper interface needed to instantiate erc20 precompiles
 	erc20Keeper types.Erc20Keeper
 
@@ -85,21 +83,18 @@ func NewKeeper(
 		panic(err)
 	}
 
-	bankWrapper := wrappers.NewBankWrapper(bankKeeper)
-	feeMarketWrapper := wrappers.NewFeeMarketWrapper(fmk)
-
 	// NOTE: we pass in the parameter space to the CommitStateDB in order to use custom denominations for the EVM operations
 	return &Keeper{
-		cdc:              cdc,
-		authority:        authority,
-		accountKeeper:    ak,
-		bankWrapper:      bankWrapper,
-		stakingKeeper:    sk,
-		feeMarketWrapper: feeMarketWrapper,
-		storeKey:         storeKey,
-		transientKey:     transientKey,
-		tracer:           tracer,
-		erc20Keeper:      erc20Keeper,
+		cdc:             cdc,
+		authority:       authority,
+		accountKeeper:   ak,
+		bankKeeper:      bankKeeper,
+		stakingKeeper:   sk,
+		feeMarketKeeper: fmk,
+		storeKey:        storeKey,
+		transientKey:    transientKey,
+		tracer:          tracer,
+		erc20Keeper:     erc20Keeper,
 	}
 }
 
@@ -251,10 +246,8 @@ func (k *Keeper) GetNonce(ctx sdk.Context, addr common.Address) uint64 {
 // GetBalance load account's balance of gas token.
 func (k *Keeper) GetBalance(ctx sdk.Context, addr common.Address) *big.Int {
 	cosmosAddr := sdk.AccAddress(addr.Bytes())
-
-	// Get the balance via bank wrapper to convert it to 18 decimals if needed.
-	coin := k.bankWrapper.GetBalance(ctx, cosmosAddr, types.GetEVMCoinDenom())
-
+	evmDenom := types.GetEVMCoinDenom()
+	coin := k.bankKeeper.GetBalance(ctx, cosmosAddr, evmDenom)
 	return coin.Amount.BigInt()
 }
 
@@ -267,23 +260,23 @@ func (k Keeper) GetBaseFee(ctx sdk.Context) *big.Int {
 	if !types.IsLondon(ethCfg, ctx.BlockHeight()) {
 		return nil
 	}
-	baseFee := k.feeMarketWrapper.GetBaseFee(ctx)
-	if baseFee == nil {
+	baseFee := k.feeMarketKeeper.GetBaseFee(ctx)
+	if baseFee.IsNil() {
 		// return 0 if feemarket not enabled.
-		baseFee = big.NewInt(0)
+		baseFee = math.LegacyDec{}
 	}
-	return baseFee
+	return baseFee.BigInt()
 }
 
 // GetMinGasMultiplier returns the MinGasMultiplier param from the fee market module
 func (k Keeper) GetMinGasMultiplier(ctx sdk.Context) math.LegacyDec {
-	return k.feeMarketWrapper.GetParams(ctx).MinGasMultiplier
+	return k.feeMarketKeeper.GetParams(ctx).MinGasMultiplier
 }
 
 // GetMinGasPrice returns the MinGasPrice param from the fee market module
 // adapted according to the evm denom decimals
 func (k Keeper) GetMinGasPrice(ctx sdk.Context) math.LegacyDec {
-	return k.feeMarketWrapper.GetParams(ctx).MinGasPrice
+	return k.feeMarketKeeper.GetParams(ctx).MinGasPrice
 }
 
 // ResetTransientGasUsed reset gas used to prepare for execution of current cosmos tx, called in ante handler.

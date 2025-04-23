@@ -58,12 +58,8 @@ func NewMonoDecoratorUtils(
 		)
 	}
 
+	mempoolMinGasPrice := ctx.MinGasPrices().AmountOf(evmDenom)
 	globalMinGasPrice := ek.GetMinGasPrice(ctx)
-
-	// Mempool gas price should be scaled to the 18 decimals representation.
-	// If it is already a 18 decimal token, this is a no-op.
-	mempoolMinGasPrice := evmtypes.ConvertAmountTo18DecimalsLegacy(ctx.MinGasPrices().AmountOf(evmDenom))
-
 	return &DecoratorUtils{
 		EvmParams:          evmParams,
 		Rules:              rules,
