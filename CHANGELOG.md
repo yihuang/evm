@@ -23,6 +23,8 @@
 - Renamed x/evm to x/vm
 - Renamed protobuf files from evmos to cosmos org
 - [\#83](https://github.com/cosmos/evm/pull/83) Remove base fee v1 from x/feemarket
+- [\#90](https://github.com/cosmos/evm/pull/90) Add allowance state in x/evm module
+- [\#62](https://github.com/cosmos/evm/pull/62) Remove x/authz dependency from precompiles
 
 ### API-Breaking
 
