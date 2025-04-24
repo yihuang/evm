@@ -25,6 +25,7 @@
 - Renamed protobuf files from evmos to cosmos org
 - [\#83](https://github.com/cosmos/evm/pull/83) Remove base fee v1 from x/feemarket
 - [#95](https://github.com/cosmos/evm/pull/95) Replaced erc20/ with erc20 in native ERC20 denoms prefix for IBC v2
+- [\#93](https://github.com/cosmos/evm/pull/93) Remove legacy subspaces
 
 ### API-Breaking
 
