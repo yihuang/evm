@@ -11,7 +11,6 @@ import (
 
 	dbm "github.com/cosmos/cosmos-db"
 	exampleapp "github.com/cosmos/evm/evmd"
-	appcfg "github.com/cosmos/evm/evmd/config"
 	cosmosevmtypes "github.com/cosmos/evm/types"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
 	feemarkettypes "github.com/cosmos/evm/x/feemarket/types"
@@ -174,7 +173,7 @@ func createTestingApp(chainID string, customBaseAppOptions ...func(*baseapp.Base
 		nil,
 		loadLatest,
 		appOptions,
-		appcfg.EvmAppOptions,
+		exampleapp.EvmAppOptions,
 		baseAppOptions...,
 	)
 }

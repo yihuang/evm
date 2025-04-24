@@ -1,9 +1,6 @@
 package evmd
 
-import (
-	appcfg "github.com/cosmos/evm/evmd/config"
-	erc20types "github.com/cosmos/evm/x/erc20/types"
-)
+import erc20types "github.com/cosmos/evm/x/erc20/types"
 
 // WEVMOSContractMainnet is the WEVMOS contract address for mainnet
 const WEVMOSContractMainnet = "0xD4949664cD82660AaE99bEdc034a0deA8A0bd517"
@@ -13,7 +10,7 @@ const WEVMOSContractMainnet = "0xD4949664cD82660AaE99bEdc034a0deA8A0bd517"
 var ExampleTokenPairs = []erc20types.TokenPair{
 	{
 		Erc20Address:  WEVMOSContractMainnet,
-		Denom:         appcfg.ExampleChainDenom,
+		Denom:         ExampleChainDenom,
 		Enabled:       true,
 		ContractOwner: erc20types.OWNER_MODULE,
 	},

@@ -1,4 +1,4 @@
-package config
+package evmd
 
 const (
 	// ExampleChainDenom is the denomination of the Cosmos EVM example chain's base coin.

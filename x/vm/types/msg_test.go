@@ -15,8 +15,8 @@ import (
 
 	"github.com/cosmos/evm/crypto/ethsecp256k1"
 	"github.com/cosmos/evm/encoding"
-	appcfg "github.com/cosmos/evm/evmd/config"
 	testconstants "github.com/cosmos/evm/testutil/constants"
+	"github.com/cosmos/evm/testutil/integration/os/network"
 	utiltx "github.com/cosmos/evm/testutil/tx"
 	"github.com/cosmos/evm/x/vm/types"
 
@@ -57,8 +57,10 @@ func (suite *MsgsTestSuite) SetupTest() {
 	encodingConfig := encoding.MakeConfig()
 	suite.clientCtx = client.Context{}.WithTxConfig(encodingConfig.TxConfig)
 
-	err := appcfg.EvmAppOptions("cosmos_9001-1")
-	suite.Require().NoError(err)
+	// This is just for calling EvmAppOptions
+	network.NewUnitTestNetwork(
+		network.WithChainID(testconstants.ExampleChainID),
+	)
 }
 
 func (suite *MsgsTestSuite) TestMsgEthereumTx_Constructor() {

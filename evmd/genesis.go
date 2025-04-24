@@ -3,7 +3,6 @@ package evmd
 import (
 	"encoding/json"
 
-	appcfg "github.com/cosmos/evm/evmd/config"
 	erc20types "github.com/cosmos/evm/x/erc20/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
@@ -47,7 +46,7 @@ func NewErc20GenesisState() *erc20types.GenesisState {
 // NOTE: for the example chain implementation we are also adding a default minter.
 func NewMintGenesisState() *minttypes.GenesisState {
 	mintGenState := minttypes.DefaultGenesisState()
-	mintGenState.Params.MintDenom = appcfg.ExampleChainDenom
+	mintGenState.Params.MintDenom = ExampleChainDenom
 
 	return mintGenState
 }

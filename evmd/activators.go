@@ -1,4 +1,4 @@
-package config
+package evmd
 
 import (
 	"github.com/ethereum/go-ethereum/core/vm"

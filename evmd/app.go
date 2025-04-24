@@ -23,7 +23,6 @@ import (
 	evmosencoding "github.com/cosmos/evm/encoding"
 	chainante "github.com/cosmos/evm/evmd/ante"
 	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
-	appcfg "github.com/cosmos/evm/evmd/config"
 	srvflags "github.com/cosmos/evm/server/flags"
 	cosmosevmtypes "github.com/cosmos/evm/types"
 	cosmosevmutils "github.com/cosmos/evm/utils"
@@ -242,7 +241,7 @@ func NewExampleApp(
 	traceStore io.Writer,
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
-	evmAppOptions appcfg.EVMOptionsFn,
+	evmAppOptions EVMOptionsFn,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *EVMD {
 	encodingConfig := evmosencoding.MakeConfig()

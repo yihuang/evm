@@ -1,7 +1,7 @@
 //go:build !test
 // +build !test
 
-package config
+package evmd
 
 import (
 	"fmt"
