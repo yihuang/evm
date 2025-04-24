@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -192,7 +193,8 @@ func TestFractionalDenomNotInBankInvariant(t *testing.T) {
 					Once()
 			},
 			true,
-			"precisebank: fractional-denom-not-in-bank invariant\nx/bank should not hold any aatom but has supply of 1000aatom\n",
+			fmt.Sprintf("precisebank: fractional-denom-not-in-bank invariant\nx/bank should not hold any %s but has supply of 1000%s\n",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 		},
 	}
 

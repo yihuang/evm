@@ -30,7 +30,7 @@ func (suite *KeeperIntegrationTestSuite) TestBlockedRecipient() {
 
 	// To x/precisebank
 	toAddr := suite.network.App.AccountKeeper.GetModuleAddress(types.ModuleName)
-	amount := cs(c("uatom", 1000))
+	amount := cs(c(types.IntegerCoinDenom, 1000))
 
 	msg := banktypes.NewMsgSend(fromAddr, toAddr, amount)
 
@@ -58,7 +58,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_MatchingErrors() {
 		{
 			"invalid module",
 			"notamodule",
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"",
 			"module account notamodule does not exist: unknown address",
 		},
@@ -66,15 +66,15 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_MatchingErrors() {
 			"no mint permissions",
 			// Check app.go to ensure this module has no mint permissions
 			authtypes.FeeCollectorName,
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"",
 			"module account fee_collector does not have permissions to mint tokens: unauthorized",
 		},
 		{
 			"invalid amount",
 			evmtypes.ModuleName,
-			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-100)}},
-			"-100uatom: invalid coins",
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-100)}},
+			fmt.Sprintf("-100%s: invalid coins", types.IntegerCoinDenom),
 			"",
 		},
 	}
@@ -360,7 +360,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 	}
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomValueMints_MultiDecimals() {
+func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
@@ -390,13 +390,13 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueMints_MultiDecimals() {
 			configurator.ResetTestConfig()
 			configurator.
 				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+				WithEVMCoinInfo(coinInfo)
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
 			// Has mint permissions
 			minterModuleName := evmtypes.ModuleName
-			minter := suite.keyring.GetAccAddr(0)
+			minter := sdk.AccAddress([]byte{1})
 
 			// Target balance
 			targetBalance := types.ConversionFactor().MulRaw(100)

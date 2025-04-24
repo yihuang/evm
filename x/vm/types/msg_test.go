@@ -89,9 +89,6 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_Constructor() {
 }
 
 func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
-	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
-	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
-
 	evmTx := &types.EvmTxArgs{
 		Nonce:     0,
 		To:        &suite.to,
@@ -117,14 +114,14 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 			true,
 		},
 	}
-	for _, cfg := range []types.EvmCoinInfo{
-		{Denom: sixDecimalsCoinInfo.Denom, Decimals: sixDecimalsCoinInfo.Decimals},
-		{Denom: eighteenDecimalsCoinInfo.Denom, Decimals: eighteenDecimalsCoinInfo.Decimals},
+	for _, coinInfo := range []types.EvmCoinInfo{
+		testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID],
+		testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID],
 	} {
 		for _, tc := range testCases {
 			configurator := types.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			suite.Require().NoError(configurator.WithEVMCoinInfo(cfg.Denom, uint8(cfg.Decimals)).Configure())
+			suite.Require().NoError(configurator.WithEVMCoinInfo(coinInfo).Configure())
 			if strings.Contains(tc.name, "nil data") {
 				tc.msg.Data = nil
 			}
@@ -142,7 +139,7 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 				suite.Require().Equal(uint64(100000), tx.GetGas())
 
 				expFeeAmt := sdkmath.NewIntFromBigInt(evmTx.GasPrice).MulRaw(int64(evmTx.GasLimit)) //#nosec
-				scaledAmt := expFeeAmt.Quo(cfg.Decimals.ConversionFactor())
+				scaledAmt := expFeeAmt.Quo(coinInfo.Decimals.ConversionFactor())
 				expFee := sdk.NewCoins(sdk.NewCoin(baseDenom, scaledAmt))
 				suite.Require().Equal(expFee, tx.GetFee())
 			}

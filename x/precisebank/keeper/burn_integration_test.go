@@ -36,7 +36,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			"invalid module",
 			"notamodule",
 			func() {},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"",
 			"module account notamodule does not exist: unknown address",
 		},
@@ -45,7 +45,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			// Check app.go to ensure this module has no burn permissions
 			authtypes.FeeCollectorName,
 			func() {},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"",
 			"module account fee_collector does not have permissions to burn tokens: unauthorized",
 		},
@@ -54,16 +54,16 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			// Has burn permissions so it goes to the amt check
 			evmtypes.ModuleName,
 			func() {},
-			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-100)}},
-			"-100uatom: invalid coins",
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-100)}},
+			fmt.Sprintf("-100%s: invalid coins", types.IntegerCoinDenom),
 			"",
 		},
 		{
 			"insufficient balance - empty",
 			evmtypes.ModuleName,
 			func() {},
-			cs(c("uatom", 1000)),
-			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
+			cs(c(types.IntegerCoinDenom, 1000)),
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds", types.IntegerCoinDenom, types.IntegerCoinDenom),
 			"",
 		},
 	}
@@ -151,7 +151,8 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins() {
 			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(2))),
 			cs(),
 			// Returns correct error with aatom balance (rewrites Bank BurnCoins err)
-			"spendable balance 1000000000000aatom is smaller than 2000000000000aatom: insufficient funds",
+			fmt.Sprintf("spendable balance 1000000000000%s is smaller than 2000000000000%s: insufficient funds",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 		},
 		{
 			"error - insufficient fractional, borrow",
@@ -159,7 +160,8 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins() {
 			cs(c(types.ExtendedCoinDenom, 2000)),
 			cs(),
 			// Error from SendCoins to reserve
-			"spendable balance 1000aatom is smaller than 2000aatom: insufficient funds",
+			fmt.Sprintf("spendable balance 1000%s is smaller than 2000%s: insufficient funds",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 		},
 	}
 
@@ -440,7 +442,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	}
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomValueBurns_MultiDecimals() {
+func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
@@ -470,13 +472,13 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueBurns_MultiDecimals() {
 			configurator.ResetTestConfig()
 			configurator.
 				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+				WithEVMCoinInfo(coinInfo)
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
 			// Has burn permissions
 			burnerModuleName := evmtypes.ModuleName
-			burner := suite.keyring.GetAccAddr(0)
+			burner := sdk.AccAddress([]byte{1})
 
 			// Initial balance large enough to cover many small burns
 			initialBalance := types.ConversionFactor().MulRaw(100)

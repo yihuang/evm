@@ -2,6 +2,7 @@ package wrappers
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/cosmos/evm/x/vm/types"
@@ -36,32 +37,35 @@ func NewBankWrapper(
 // MintAmountToAccount converts the given amount into the evm coin scaling
 // the amount to the original decimals, then mints that amount to the provided account.
 func (w BankWrapper) MintAmountToAccount(ctx context.Context, recipientAddr sdk.AccAddress, amt *big.Int) error {
-	coin := sdk.Coin{Denom: types.GetEVMCoinDenom(), Amount: sdkmath.NewIntFromBigInt(amt)}
+	amtInt := sdkmath.NewIntFromBigInt(amt)
 
-	convertedCoin, err := types.ConvertEvmCoinFrom18Decimals(coin)
-	if err != nil {
-		return errors.Wrap(err, "failed to mint coin to account in bank wrapper")
+	var coinsToMint sdk.Coins
+	evmCoinDecimals := types.GetEVMCoinDecimals()
+	if evmCoinDecimals == types.EighteenDecimals {
+		coinsToMint = sdk.NewCoins(sdk.NewCoin(types.GetEVMCoinDenom(), amtInt))
+	} else {
+		coinsToMint = sdk.NewCoins(sdk.NewCoin(types.GetEVMCoinExtendedDenom(), amtInt))
 	}
 
-	coinsToMint := sdk.Coins{convertedCoin}
 	if err := w.BankKeeper.MintCoins(ctx, types.ModuleName, coinsToMint); err != nil {
 		return errors.Wrap(err, "failed to mint coins to account in bank wrapper")
 	}
-
 	return w.BankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, recipientAddr, coinsToMint)
 }
 
 // BurnAmountFromAccount converts the given amount into the evm coin scaling
 // the amount to the original decimals, then burns that quantity from the provided account.
 func (w BankWrapper) BurnAmountFromAccount(ctx context.Context, account sdk.AccAddress, amt *big.Int) error {
-	coin := sdk.Coin{Denom: types.GetEVMCoinDenom(), Amount: sdkmath.NewIntFromBigInt(amt)}
+	amtInt := sdkmath.NewIntFromBigInt(amt)
 
-	convertedCoin, err := types.ConvertEvmCoinFrom18Decimals(coin)
-	if err != nil {
-		return errors.Wrap(err, "failed to burn coins from account in bank wrapper")
+	var coinsToBurn sdk.Coins
+	evmCoinDecimals := types.GetEVMCoinDecimals()
+	if evmCoinDecimals == types.EighteenDecimals {
+		coinsToBurn = sdk.NewCoins(sdk.NewCoin(types.GetEVMCoinDenom(), amtInt))
+	} else {
+		coinsToBurn = sdk.NewCoins(sdk.NewCoin(types.GetEVMCoinExtendedDenom(), amtInt))
 	}
 
-	coinsToBurn := sdk.Coins{convertedCoin}
 	if err := w.BankKeeper.SendCoinsFromAccountToModule(ctx, account, types.ModuleName, coinsToBurn); err != nil {
 		return errors.Wrap(err, "failed to burn coins from account in bank wrapper")
 	}
@@ -72,14 +76,21 @@ func (w BankWrapper) BurnAmountFromAccount(ctx context.Context, account sdk.AccA
 // Bank keeper shadowed methods
 // ------------------------------------------------------------------------------------------
 
-// GetBalance returns the balance of the given account converted to 18 decimals.
+// GetBalance returns the balance of the given account.
 func (w BankWrapper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
-	// Get the balance from the BankModule. The balance returned is in the bank
-	// decimals representation, which could be different than the 18 decimals
-	// representation used in the evm.
-	coin := w.BankKeeper.GetBalance(ctx, addr, denom)
+	if denom != types.GetEVMCoinDenom() {
+		panic(fmt.Sprintf("expected evm denom %s, received %s", types.GetEVMCoinDenom(), denom))
+	}
 
-	return types.MustConvertEvmCoinTo18Decimals(coin)
+	var coin sdk.Coin
+	evmCoinDecimals := types.GetEVMCoinDecimals()
+	if evmCoinDecimals == types.EighteenDecimals {
+		coin = w.BankKeeper.GetBalance(ctx, addr, types.GetEVMCoinDenom())
+	} else {
+		coin = w.BankKeeper.GetBalance(ctx, addr, types.GetEVMCoinExtendedDenom())
+	}
+
+	return coin
 }
 
 // SendCoinsFromAccountToModule wraps around the Cosmos SDK x/bank module's

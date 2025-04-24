@@ -38,6 +38,20 @@ func setEVMCoinDenom(denom string) error {
 	return nil
 }
 
+// setEVMCoinExtendedDenom allows to define the extended denom of the coin used in the EVM.
+func setEVMCoinExtendedDenom(extendedDenom string) error {
+	// if 18 decimals, extended denom must be empty
+	if extendedDenom == "" {
+		return nil
+	}
+
+	if err := sdk.ValidateDenom(extendedDenom); err != nil {
+		return err
+	}
+	testingEvmCoinInfo.ExtendedDenom = extendedDenom
+	return nil
+}
+
 // GetEVMCoinDecimals returns the decimals used in the representation of the EVM
 // coin.
 func GetEVMCoinDecimals() Decimals {
@@ -47,6 +61,11 @@ func GetEVMCoinDecimals() Decimals {
 // GetEVMCoinDenom returns the denom used for the EVM coin.
 func GetEVMCoinDenom() string {
 	return testingEvmCoinInfo.Denom
+}
+
+// GetEVMCoinExtendedDenom returns the extended denom used for the EVM coin.
+func GetEVMCoinExtendedDenom() string {
+	return testingEvmCoinInfo.ExtendedDenom
 }
 
 // SetEVMCoinInfo allows to define denom and decimals of the coin used in the EVM.
@@ -61,6 +80,9 @@ func setTestingEVMCoinInfo(eci EvmCoinInfo) error {
 		panic("evm coin denom is not set")
 	}
 	if err := setEVMCoinDenom(eci.Denom); err != nil {
+		return err
+	}
+	if err := setEVMCoinExtendedDenom(eci.ExtendedDenom); err != nil {
 		return err
 	}
 	return setEVMCoinDecimals(eci.Decimals)

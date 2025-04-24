@@ -154,8 +154,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			"invalid coins",
 			senderModuleName,
 			sdk.AccAddress([]byte{2}),
-			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-1)}},
-			"-1uatom: invalid coins",
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-1)}},
+			fmt.Sprintf("-1%s: invalid coins", types.IntegerCoinDenom),
 			"",
 		},
 		{
@@ -163,7 +163,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			senderModuleName,
 			sdk.AccAddress([]byte{2}),
 			cs(c(types.IntegerCoinDenom, 1000)),
-			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
+				types.IntegerCoinDenom, types.IntegerCoinDenom),
 			"",
 		},
 		{
@@ -173,7 +174,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
 			cs(c(types.ExtendedCoinDenom, 1000)),
-			"spendable balance 0aatom is smaller than 1000aatom: insufficient funds",
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 			"",
 		},
 	}
@@ -231,14 +233,16 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_MatchingErrors() {
 		{
 			"invalid coins",
 			cs(),
-			sdk.Coins{sdk.Coin{Denom: "uatom", Amount: sdkmath.NewInt(-1)}},
-			"-1uatom: invalid coins",
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-1)}},
+			fmt.Sprintf("-1%s: invalid coins",
+				types.IntegerCoinDenom),
 		},
 		{
 			"insufficient empty balance - passthrough",
 			cs(),
 			cs(c(types.IntegerCoinDenom, 1000)),
-			"spendable balance 0uatom is smaller than 1000uatom: insufficient funds",
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
+				types.IntegerCoinDenom, types.IntegerCoinDenom),
 		},
 		{
 			"insufficient empty balance - extended",
@@ -246,13 +250,15 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_MatchingErrors() {
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
 			cs(c(types.ExtendedCoinDenom, 1000)),
-			"spendable balance 0aatom is smaller than 1000aatom: insufficient funds",
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 		},
 		{
 			"insufficient non-empty balance - passthrough",
 			cs(c(types.IntegerCoinDenom, 100), c("usdc", 1000)),
 			cs(c(types.IntegerCoinDenom, 1000)),
-			"spendable balance 100uatom is smaller than 1000uatom: insufficient funds",
+			fmt.Sprintf("spendable balance 100%s is smaller than 1000%s: insufficient funds",
+				types.IntegerCoinDenom, types.IntegerCoinDenom),
 		},
 		// non-empty aatom transfer error is tested in SendCoins, not here since
 		// x/bank doesn't hold aatom
@@ -302,7 +308,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins() {
 			cs(c(types.ExtendedCoinDenom, 10), c("usdc", 1000)),
 			cs(),
 			cs(c(types.ExtendedCoinDenom, 1000)),
-			"spendable balance 10aatom is smaller than 1000aatom: insufficient funds",
+			fmt.Sprintf("spendable balance 10%s is smaller than 1000%s: insufficient funds",
+				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
 		},
 		{
 			"passthrough - unrelated",
@@ -717,7 +724,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 	)
 }
 
-func (suite *KeeperIntegrationTestSuite) TestRandomValueSends_MultiDecimals() {
+func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
@@ -747,12 +754,12 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueSends_MultiDecimals() {
 			configurator.ResetTestConfig()
 			configurator.
 				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+				WithEVMCoinInfo(coinInfo)
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
-			sender := suite.keyring.GetAccAddr(0)
-			recipient := suite.keyring.GetAccAddr(1)
+			sender := sdk.AccAddress([]byte{1})
+			recipient := sdk.AccAddress([]byte{2})
 
 			// Initial balance large enough to cover many small sends
 			initialBalance := types.ConversionFactor().MulRaw(100)

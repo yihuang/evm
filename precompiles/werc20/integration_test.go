@@ -114,10 +114,11 @@ var _ = When("a user interact with the WEVMOS precompiled contract", func() {
 		customGenesis[feemarkettypes.ModuleName] = feemarketGenesis
 
 		// Reset evm config here for the standard case
+		coinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
 		configurator := evmtypes.NewEVMConfigurator()
 		configurator.ResetTestConfig()
 		Expect(configurator.
-			WithEVMCoinInfo(testconstants.ExampleAttoDenom, uint8(evmtypes.EighteenDecimals)).
+			WithEVMCoinInfo(coinInfo).
 			Configure()).To(BeNil(), "expected no error setting the evm configurator")
 
 		integrationNetwork := network.NewUnitTestNetwork(

@@ -15,6 +15,8 @@ import (
 )
 
 func TestKeeper_GetBalance(t *testing.T) {
+	tk := newMockedTestData(t)
+
 	tests := []struct {
 		name      string
 		giveDenom string // queried denom for balance
@@ -62,14 +64,14 @@ func TestKeeper_GetBalance(t *testing.T) {
 			types.IntegerCoinDenom,
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
-			sdk.NewCoin("uatom", sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
 		},
 		{
 			"non-extended denom - unaffected by fractional balance",
-			"uatom",
-			sdk.NewCoins(sdk.NewCoin("uatom", sdkmath.NewInt(1000))),
+			types.IntegerCoinDenom,
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
 			sdkmath.NewInt(100),
-			sdk.NewCoin("uatom", sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
 		},
 		{
 			"unrelated denom - no fractional",
@@ -86,10 +88,8 @@ func TestKeeper_GetBalance(t *testing.T) {
 			sdk.NewCoin("busd", sdkmath.NewInt(1000)),
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tk := newMockedTestData(t)
 			addr := sdk.AccAddress([]byte("test-address"))
 
 			// Set fractional balance in store before query
@@ -177,14 +177,14 @@ func TestKeeper_SpendableCoin(t *testing.T) {
 			types.IntegerCoinDenom,
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
-			sdk.NewCoin("uatom", sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
 		},
 		{
 			"non-extended denom - unaffected by fractional balance",
-			"uatom",
-			sdk.NewCoins(sdk.NewCoin("uatom", sdkmath.NewInt(1000))),
+			types.IntegerCoinDenom,
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
 			sdkmath.NewInt(100),
-			sdk.NewCoin("uatom", sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
 		},
 		{
 			"unrelated denom - no fractional",
@@ -261,15 +261,26 @@ func TestHiddenReserve(t *testing.T) {
 		denom           string
 		expectedBalance sdk.Coin
 	}{
-		{"aatom", types.ExtendedCoinDenom, sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.ZeroInt())},
-		{"uatom", types.IntegerCoinDenom, sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1))},
-		{"unrelated denom", "cat", sdk.NewCoin("cat", sdkmath.ZeroInt())},
+		{
+			"aatom",
+			types.ExtendedCoinDenom,
+			sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.ZeroInt()),
+		},
+		{
+			"uatom",
+			types.IntegerCoinDenom,
+			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1)),
+		},
+		{
+			"unrelated denom",
+			"cat",
+			sdk.NewCoin("cat", sdkmath.ZeroInt()),
+		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// 2 calls for GetBalance and SpendableCoin, only for reserve coins
-			if tt.denom == "aatom" {
+			if tt.denom == types.ExtendedCoinDenom {
 				tk.ak.EXPECT().GetModuleAddress(types.ModuleName).
 					Return(moduleAddr).
 					Twice()

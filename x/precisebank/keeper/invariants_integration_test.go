@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -57,7 +59,8 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 				k.SetRemainderAmount(ctx, types.ConversionFactor().QuoRaw(2))
 			},
 			true,
-			"precisebank: module reserve backing total fractional balances invariant\naatom reserve balance 0 mismatches 500000000000 (fractional balances 0 + remainder 500000000000)\n\n",
+			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 0 mismatches 500000000000 (fractional balances 0 + remainder 500000000000)\n\n",
+				types.ExtendedCoinDenom),
 		},
 		{
 			"invalid - insufficient reserve backing",
@@ -74,7 +77,8 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 				suite.FundReserve(sdkmath.NewInt(1))
 			},
 			true,
-			"precisebank: module reserve backing total fractional balances invariant\naatom reserve balance 1000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
+			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 1000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
+				types.ExtendedCoinDenom),
 		},
 		{
 			"invalid - excess reserve backing",
@@ -91,7 +95,8 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 				suite.FundReserve(sdkmath.NewInt(3))
 			},
 			true,
-			"precisebank: module reserve backing total fractional balances invariant\naatom reserve balance 3000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
+			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 3000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
+				types.ExtendedCoinDenom),
 		},
 	}
 
@@ -218,7 +223,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				)
 			},
 			true,
-			"precisebank: total-supply invariant\ntotal supply 1700000000000 does not match integer total supply 1000000000000\n",
+			"precisebank: total-supply invariant\ntotal supply 200003000001700000000000 does not match integer total supply 200003000001000000000000\n",
 		},
 	}
 

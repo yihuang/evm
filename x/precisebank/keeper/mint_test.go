@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -34,7 +35,7 @@ func TestMintCoins_PanicValidations(t *testing.T) {
 					Return(nil).
 					Once()
 			},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"module account notamodule does not exist: unknown address",
 		},
 		{
@@ -50,7 +51,7 @@ func TestMintCoins_PanicValidations(t *testing.T) {
 					)).
 					Once()
 			},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"module account mint does not have permissions to mint tokens: unauthorized",
 		},
 		{
@@ -69,11 +70,11 @@ func TestMintCoins_PanicValidations(t *testing.T) {
 
 				// Will call x/bank MintCoins coins
 				td.bk.EXPECT().
-					MintCoins(td.ctx, minttypes.ModuleName, cs(c("uatom", 1000))).
+					MintCoins(td.ctx, minttypes.ModuleName, cs(c(types.IntegerCoinDenom, 1000))).
 					Return(nil).
 					Once()
 			},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"",
 		},
 		{
@@ -83,7 +84,7 @@ func TestMintCoins_PanicValidations(t *testing.T) {
 				// No mock setup needed since this is checked before module
 				// account checks
 			},
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			"module account precisebank cannot be minted to: unauthorized",
 		},
 	}
@@ -134,10 +135,10 @@ func TestMintCoins_Errors(t *testing.T) {
 					Once()
 			},
 			sdk.Coins{sdk.Coin{
-				Denom:  "uatom",
+				Denom:  types.IntegerCoinDenom,
 				Amount: sdkmath.NewInt(-1000),
 			}},
-			"-1000uatom: invalid coins",
+			fmt.Sprintf("-1000%s: invalid coins", types.IntegerCoinDenom),
 		},
 	}
 
@@ -176,7 +177,7 @@ func TestMintCoins_ExpectedCalls(t *testing.T) {
 		{
 			"passthrough mint - integer denom",
 			sdkmath.ZeroInt(),
-			cs(c("uatom", 1000)),
+			cs(c(types.IntegerCoinDenom, 1000)),
 			sdkmath.ZeroInt(),
 		},
 

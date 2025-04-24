@@ -49,6 +49,11 @@ func GetEVMCoinDenom() string {
 	return evmCoinInfo.Denom
 }
 
+// GetEVMCoinFractionalDenom returns the fractional denom used for the EVM coin.
+func GetEVMCoinFractionalDenom() string {
+	return evmCoinInfo.FractionalDenom
+}
+
 // setEVMCoinInfo allows to define denom and decimals of the coin used in the EVM.
 func setEVMCoinInfo(eci EvmCoinInfo) error {
 	if evmCoinInfo != nil {

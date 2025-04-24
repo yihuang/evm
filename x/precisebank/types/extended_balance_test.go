@@ -18,7 +18,7 @@ func TestSumExtendedCoin(t *testing.T) {
 	coinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
 	configurator := evmtypes.NewEVMConfigurator()
 	err := configurator.
-		WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).
+		WithEVMCoinInfo(coinInfo).
 		Configure()
 	require.NoError(t, err)
 

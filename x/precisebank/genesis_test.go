@@ -1,6 +1,7 @@
 package precisebank_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -96,7 +97,8 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				// 2 leftover from 0.999... + 0.999...
 				sdkmath.NewInt(2),
 			),
-			"module account balance does not match sum of fractional balances and remainder, balance is 0uatom but expected 2000000000000aatom (2uatom)",
+			fmt.Sprintf("module account balance does not match sum of fractional balances and remainder, balance is 0%s but expected 2000000000000%s (2%s)",
+				types.IntegerCoinDenom, types.ExtendedCoinDenom, types.IntegerCoinDenom),
 		},
 		{
 			"invalid - module balance excessive",
@@ -116,7 +118,8 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				},
 				sdkmath.NewInt(2),
 			),
-			"module account balance does not match sum of fractional balances and remainder, balance is 100uatom but expected 2000000000000aatom (2uatom)",
+			fmt.Sprintf("module account balance does not match sum of fractional balances and remainder, balance is 100%s but expected 2000000000000%s (2%s)",
+				types.IntegerCoinDenom, types.ExtendedCoinDenom, types.IntegerCoinDenom),
 		},
 		{
 			"sets module account",

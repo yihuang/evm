@@ -15,9 +15,11 @@ import (
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (suite *KeeperIntegrationTestSuite) TestRandomValueOperations_MultiDecimals() {
+func (suite *KeeperIntegrationTestSuite) TestMintBurnSend_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
@@ -41,15 +43,20 @@ func (suite *KeeperIntegrationTestSuite) TestRandomValueOperations_MultiDecimals
 			suite.SetupTest()
 			ctx := suite.network.GetContext()
 
+			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
+			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
-			err := configurator.WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals)).Configure()
+			configurator.
+				WithChainConfig(ethCfg).
+				WithEVMCoinInfo(coinInfo)
+			err := configurator.Configure()
 			suite.Require().NoError(err)
 
 			moduleName := evmtypes.ModuleName
-			sender := suite.keyring.GetAccAddr(0)
-			recipient := suite.keyring.GetAccAddr(1)
+			sender := sdk.AccAddress([]byte{1})
+			recipient := sdk.AccAddress([]byte{2})
 
 			// Mint initial balance to sender
 			initialBalance := types.ConversionFactor().MulRaw(100)
@@ -173,7 +180,7 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 			configurator.ResetTestConfig()
 			configurator.
 				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo.Denom, uint8(coinInfo.Decimals))
+				WithEVMCoinInfo(coinInfo)
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 

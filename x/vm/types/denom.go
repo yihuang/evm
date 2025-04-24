@@ -82,7 +82,8 @@ func (d Decimals) ConversionFactor() sdkmath.Int {
 //
 // TODO: move to own file? at least rename file because it's unclear to use "denom"
 type EvmCoinInfo struct {
-	Denom        string
-	DisplayDenom string
-	Decimals     Decimals
+	Denom         string
+	ExtendedDenom string
+	DisplayDenom  string
+	Decimals      Decimals
 }

@@ -24,24 +24,21 @@ func TestWithChainID(t *testing.T) {
 	testCases := []struct {
 		name            string
 		chainID         string
-		denom           string
-		decimals        evmtypes.Decimals
+		coinInfo        evmtypes.EvmCoinInfo
 		expBaseFee      math.LegacyDec
 		expCosmosAmount math.Int
 	}{
 		{
 			name:            "18 decimals",
 			chainID:         testconstants.ExampleChainID,
-			denom:           eighteenDecimalsCoinInfo.Denom,
-			decimals:        eighteenDecimalsCoinInfo.Decimals,
+			coinInfo:        eighteenDecimalsCoinInfo,
 			expBaseFee:      math.LegacyNewDec(875_000_000),
 			expCosmosAmount: network.GetInitialAmount(evmtypes.EighteenDecimals),
 		},
 		{
 			name:            "6 decimals",
 			chainID:         testconstants.SixDecimalsChainID,
-			denom:           sixDecimalsCoinInfo.Denom,
-			decimals:        sixDecimalsCoinInfo.Decimals,
+			coinInfo:        sixDecimalsCoinInfo,
 			expBaseFee:      math.LegacyNewDecWithPrec(875, 6),
 			expCosmosAmount: network.GetInitialAmount(evmtypes.SixDecimals),
 		},
@@ -64,7 +61,7 @@ func TestWithChainID(t *testing.T) {
 			// reset configuration to use the correct decimals coin info
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
-			require.NoError(t, configurator.WithEVMCoinInfo(tc.denom, uint8(tc.decimals)).Configure())
+			require.NoError(t, configurator.WithEVMCoinInfo(tc.coinInfo).Configure())
 
 			// ------------------------------------------------------------------------------------
 			// Checks on initial balances.
@@ -83,7 +80,7 @@ func TestWithChainID(t *testing.T) {
 			)
 
 			// Bank balance should always be in the original amount.
-			cReq, err := handler.GetBalanceFromBank(keyring.GetAccAddr(0), tc.denom)
+			cReq, err := handler.GetBalanceFromBank(keyring.GetAccAddr(0), tc.coinInfo.Denom)
 			require.NoError(t, err, "error getting balances")
 			require.Equal(t,
 				tc.expCosmosAmount.String(),

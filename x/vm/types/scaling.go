@@ -1,30 +1,12 @@
 package types
 
 import (
-	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-// MustConvertEvmCoinTo18Decimals converts the coin's Amount from its original
-// representation into a 18 decimals. The function panics if coin denom is
-// not the evm denom or in case of overflow.
-//
-// CONTRACT: The function should only be called when the coin denom is the EVM. This means that
-// should be called only when the code forces the denom to be the expected one.
-func MustConvertEvmCoinTo18Decimals(coin sdk.Coin) sdk.Coin {
-	if coin.Denom != GetEVMCoinDenom() {
-		panic(fmt.Sprintf("expected evm denom %s, received %s", GetEVMCoinDenom(), coin.Denom))
-	}
-
-	evmCoinDecimal := GetEVMCoinDecimals()
-	newAmount := coin.Amount.Mul(evmCoinDecimal.ConversionFactor())
-
-	return sdk.Coin{Denom: coin.Denom, Amount: newAmount}
-}
 
 // ConvertAmountToLegacy18Decimals convert the given amount into a 18 decimals
 // representation.
@@ -44,7 +26,7 @@ func ConvertAmountTo18DecimalsBigInt(amt *big.Int) *big.Int {
 
 // ConvertAmountFrom18DecimalsBigInt convert the given amount into a 18 decimals
 // representation.
-func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int {
+func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int { // ! ?
 	evmCoinDecimal := GetEVMCoinDecimals()
 
 	return new(big.Int).Quo(amt, evmCoinDecimal.ConversionFactor().BigInt())
@@ -52,54 +34,37 @@ func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int {
 
 // ConvertBigIntFrom18DecimalsToLegacyDec converts the given amount into a LegacyDec
 // with the corresponding decimals of the EVM denom.
-func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec {
+func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec { // ! ?
 	evmCoinDecimal := GetEVMCoinDecimals()
 	decAmt := sdkmath.LegacyNewDecFromBigInt(amt)
 	return decAmt.QuoInt(evmCoinDecimal.ConversionFactor())
 }
 
-// ConvertEvmCoinFrom18Decimals converts the coin's Amount from 18 decimals to its
-// original representation. Return an error if the coin denom is not the EVM.
-func ConvertEvmCoinFrom18Decimals(coin sdk.Coin) (sdk.Coin, error) {
-	if coin.Denom != GetEVMCoinDenom() {
-		return sdk.Coin{}, fmt.Errorf("expected coin denom %s, received %s", GetEVMCoinDenom(), coin.Denom)
-	}
-
-	evmCoinDecimal := GetEVMCoinDecimals()
-	newAmount := coin.Amount.Quo(evmCoinDecimal.ConversionFactor())
-
-	return sdk.Coin{Denom: coin.Denom, Amount: newAmount}, nil
-}
-
 // ConvertCoinsFrom18Decimals returns the given coins with the Amount of the evm
 // coin converted from the 18 decimals representation to the original one.
 func ConvertCoinsFrom18Decimals(coins sdk.Coins) sdk.Coins {
+	evmCoinDecimal := GetEVMCoinDecimals()
+	if evmCoinDecimal == EighteenDecimals {
+		return coins
+	}
+
 	evmDenom := GetEVMCoinDenom()
+	evmExtendedDenom := GetEVMCoinExtendedDenom()
 
-	convertedCoins := make(sdk.Coins, len(coins))
-	for i, coin := range coins {
+	var newCoins sdk.Coins
+	for _, coin := range coins {
 		if coin.Denom == evmDenom {
-			evmCoinDecimals := GetEVMCoinDecimals()
+			conversionFactor := evmCoinDecimal.ConversionFactor()
+			integerAmt := coin.Amount.Quo(conversionFactor)
+			fractionalAmt := coin.Amount.Mod(conversionFactor)
 
-			newAmount := coin.Amount.Quo(evmCoinDecimals.ConversionFactor())
-
-			coin = sdk.Coin{Denom: coin.Denom, Amount: newAmount}
+			integerCoin := sdk.NewCoin(evmDenom, integerAmt)
+			fractionalCoin := sdk.NewCoin(evmExtendedDenom, fractionalAmt)
+			convertedCoins := sdk.NewCoins(integerCoin, fractionalCoin)
+			newCoins = newCoins.Add(convertedCoins...)
+		} else {
+			newCoins = newCoins.Add(coin)
 		}
-		convertedCoins[i] = coin
 	}
-	return convertedCoins
-}
-
-// AdjustExtraDecimalsBigInt replaces all extra decimals by zero of an amount with 18 decimals in big.Int when having a decimal configuration different than 18 decimals
-func AdjustExtraDecimalsBigInt(amt *big.Int) *big.Int {
-	if amt.Sign() == 0 {
-		return amt
-	}
-	dec := GetEVMCoinDecimals()
-	if dec == EighteenDecimals {
-		return amt
-	}
-	scaleFactor := dec.ConversionFactor()
-	scaledDown := new(big.Int).Quo(amt, scaleFactor.BigInt())
-	return new(big.Int).Mul(scaledDown, scaleFactor.BigInt())
+	return newCoins
 }

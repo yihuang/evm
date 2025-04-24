@@ -59,19 +59,22 @@ var (
 			Decimals:     evmtypes.EighteenDecimals,
 		},
 		SixDecimalsChainID: {
-			Denom:        "utest",
-			DisplayDenom: "test",
-			Decimals:     evmtypes.SixDecimals,
+			Denom:         "utest",
+			ExtendedDenom: "atest",
+			DisplayDenom:  "test",
+			Decimals:      evmtypes.SixDecimals,
 		},
 		TwelveDecimalsChainID: {
-			Denom:        "ptest2",
-			DisplayDenom: "test2",
-			Decimals:     evmtypes.TwelveDecimals,
+			Denom:         "ptest2",
+			ExtendedDenom: "atest2",
+			DisplayDenom:  "test2",
+			Decimals:      evmtypes.TwelveDecimals,
 		},
 		TwoDecimalsChainID: {
-			Denom:        "ctest3",
-			DisplayDenom: "test3",
-			Decimals:     evmtypes.TwoDecimals,
+			Denom:         "ctest3",
+			ExtendedDenom: "atest3",
+			DisplayDenom:  "test3",
+			Decimals:      evmtypes.TwoDecimals,
 		},
 	}
 )
