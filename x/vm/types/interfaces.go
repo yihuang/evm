@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -55,4 +56,14 @@ type FeeMarketKeeper interface {
 // Erc20Keeper defines the expected interface needed to instantiate ERC20 precompiles.
 type Erc20Keeper interface {
 	GetERC20PrecompileInstance(ctx sdk.Context, address common.Address) (contract vm.PrecompiledContract, found bool, err error)
+}
+
+// BankWrapper defines the methods required by the wrapper around
+// the Cosmos SDK x/bank keeper that is used to manage an EVM coin
+// with a configurable value for decimals.
+type BankWrapper interface {
+	BankKeeper
+
+	MintAmountToAccount(ctx context.Context, recipientAddr sdk.AccAddress, amt *big.Int) error
+	BurnAmountFromAccount(ctx context.Context, account sdk.AccAddress, amt *big.Int) error
 }

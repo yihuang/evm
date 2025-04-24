@@ -103,15 +103,18 @@ func ValidateTx(tx sdktypes.Tx) (*tx.Fee, error) {
 
 // CheckTxFee checks if the Amount and GasLimit fields of the txFeeInfo input
 // are equal to the txFee coins and the txGasLimit value.
+// The function expects txFeeInfo to contains coins in the original decimal
+// representation.
 func CheckTxFee(txFeeInfo *tx.Fee, txFee *big.Int, txGasLimit uint64) error {
 	if txFeeInfo == nil {
 		return nil
 	}
 
-	evmDenom := evmtypes.GetEVMCoinDenom()
-	amount := sdkmath.NewIntFromBigInt(txFee)
-	if !txFeeInfo.Amount.AmountOf(evmDenom).Equal(amount) {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid AuthInfo Fee Amount (%s != %s)", txFeeInfo.Amount, amount)
+	convertedAmount := sdkmath.NewIntFromBigInt(evmtypes.ConvertAmountFrom18DecimalsBigInt(txFee))
+
+	baseDenom := evmtypes.GetEVMCoinDenom()
+	if !txFeeInfo.Amount.AmountOf(baseDenom).Equal(convertedAmount) {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid AuthInfo Fee Amount (%s != %s)", txFeeInfo.Amount, convertedAmount)
 	}
 
 	if txFeeInfo.GasLimit != txGasLimit {
