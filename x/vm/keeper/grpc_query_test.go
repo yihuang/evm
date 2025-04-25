@@ -1523,13 +1523,10 @@ func (suite *KeeperTestSuite) TestQueryBaseFee() {
 	}
 
 	// Save initial configure to restore it between tests
-	denom := types.GetEVMCoinDenom()
-	extendedDenom := types.GetEVMCoinExtendedDenom()
-	decimals := types.GetEVMCoinDecimals()
 	coinInfo := types.EvmCoinInfo{
-		Denom:         denom,
-		ExtendedDenom: extendedDenom,
-		Decimals:      decimals,
+		Denom:         types.GetEVMCoinDenom(),
+		ExtendedDenom: types.GetEVMCoinExtendedDenom(),
+		Decimals:      types.GetEVMCoinDecimals(),
 	}
 	chainConfig := types.DefaultChainConfig(suite.network.GetChainID())
 

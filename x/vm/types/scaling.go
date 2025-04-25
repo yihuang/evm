@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
@@ -26,7 +27,7 @@ func ConvertAmountTo18DecimalsBigInt(amt *big.Int) *big.Int {
 
 // ConvertAmountFrom18DecimalsBigInt convert the given amount into a 18 decimals
 // representation.
-func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int { // ! ?
+func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int {
 	evmCoinDecimal := GetEVMCoinDecimals()
 
 	return new(big.Int).Quo(amt, evmCoinDecimal.ConversionFactor().BigInt())
@@ -34,10 +35,30 @@ func ConvertAmountFrom18DecimalsBigInt(amt *big.Int) *big.Int { // ! ?
 
 // ConvertBigIntFrom18DecimalsToLegacyDec converts the given amount into a LegacyDec
 // with the corresponding decimals of the EVM denom.
-func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec { // ! ?
+func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec {
 	evmCoinDecimal := GetEVMCoinDecimals()
 	decAmt := sdkmath.LegacyNewDecFromBigInt(amt)
 	return decAmt.QuoInt(evmCoinDecimal.ConversionFactor())
+}
+
+// ConvertEvmCoinFrom18Decimals converts the coin's Amount from 18 decimals to its
+// original representation. Return an error if the coin denom is not the EVM.
+func ConvertEvmCoinFrom18Decimals(coin sdk.Coin) (sdk.Coins, error) {
+	if coin.Denom != GetEVMCoinDenom() {
+		return sdk.Coins{}, fmt.Errorf("expected coin denom %s, received %s", GetEVMCoinDenom(), coin.Denom)
+	}
+
+	if GetEVMCoinDecimals() == EighteenDecimals {
+		return sdk.NewCoins(coin), nil
+	}
+
+	evmCoinDecimal := GetEVMCoinDecimals()
+	integerAmount := coin.Amount.Quo(evmCoinDecimal.ConversionFactor())
+	fractionalAmount := coin.Amount.Mod(evmCoinDecimal.ConversionFactor())
+
+	integerCoin := sdk.NewCoin(GetEVMCoinDenom(), integerAmount)
+	fractionalCoin := sdk.NewCoin(GetEVMCoinExtendedDenom(), fractionalAmount)
+	return sdk.NewCoins(integerCoin, fractionalCoin), nil
 }
 
 // ConvertCoinsFrom18Decimals returns the given coins with the Amount of the evm

@@ -43,7 +43,7 @@ func TestMintAmountToAccount(t *testing.T) {
 			recipient: sdk.AccAddress([]byte("test_address")),
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)) // 1 token in 6 decimals
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)) // 1 token in 6 decimals
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -91,7 +91,7 @@ func TestMintAmountToAccount(t *testing.T) {
 			recipient: sdk.AccAddress([]byte("test_address")),
 			expectErr: "failed to mint coins to account in bank wrapper",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -145,7 +145,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -189,7 +189,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "failed to burn coins from account in bank wrapper",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -207,7 +207,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "burn error",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().

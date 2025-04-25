@@ -19,7 +19,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (suite *KeeperIntegrationTestSuite) TestMintBurnSend_RandomValueMultiDecimals() {
+func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
 		chainId string
