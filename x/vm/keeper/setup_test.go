@@ -102,17 +102,15 @@ func (suite *KeeperTestSuite) SetupTest() {
 	}
 	// get the denom and decimals set on chain initialization
 	// because we'll need to set them again when resetting the chain config
-	coinInfo := evmtypes.EvmCoinInfo{
-		Denom:         evmtypes.GetEVMCoinDenom(),
-		ExtendedDenom: evmtypes.GetEVMCoinExtendedDenom(),
-		Decimals:      evmtypes.GetEVMCoinDecimals(),
-	}
-
 	configurator := evmtypes.NewEVMConfigurator()
 	configurator.ResetTestConfig()
 	err := configurator.
 		WithChainConfig(chainConfig).
-		WithEVMCoinInfo(coinInfo).
+		WithEVMCoinInfo(evmtypes.EvmCoinInfo{
+			Denom:         evmtypes.GetEVMCoinDenom(),
+			ExtendedDenom: evmtypes.GetEVMCoinExtendedDenom(),
+			Decimals:      evmtypes.GetEVMCoinDecimals(),
+		}).
 		Configure()
 	suite.Require().NoError(err)
 }

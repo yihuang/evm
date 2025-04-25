@@ -363,34 +363,30 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins() {
 func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
-		chainId string
+		chainID string
 	}{
 		{
 			name:    "6 decimals",
-			chainId: testconstants.SixDecimalsChainID,
+			chainID: testconstants.SixDecimalsChainID,
 		},
 		{
 			name:    "12 decimals",
-			chainId: testconstants.TwelveDecimalsChainID,
+			chainID: testconstants.TwelveDecimalsChainID,
 		},
 		{
 			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
+			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			suite.SetupTestWithChainID(tt.chainId)
-			ctx := suite.network.GetContext()
-
-			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			suite.SetupTestWithChainID(tt.chainID)
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
 			configurator.
-				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo)
+				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
+				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
@@ -423,11 +419,11 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals(
 
 				// 1. mint to evm module
 				mintCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
-				err := suite.network.App.PreciseBankKeeper.MintCoins(ctx, minterModuleName, mintCoins)
+				err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), minterModuleName, mintCoins)
 				suite.Require().NoError(err)
 
 				// 2. send to account
-				err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(ctx, minterModuleName, minter, mintCoins)
+				err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), minterModuleName, minter, mintCoins)
 				suite.Require().NoError(err)
 
 				totalMinted = totalMinted.Add(randAmount)
@@ -441,12 +437,12 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals(
 			suite.Equal(minterBal.BigInt().Cmp(targetBalance.BigInt()), 0, "minter balance mismatch (expected: %s, actual: %s)", targetBalance, minterBal)
 
 			// Check remainder
-			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
+			remainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(suite.network.GetContext())
 			suite.Equal(remainder.BigInt().Cmp(big.NewInt(0)), 0, "remainder should be zero (expected: %s, actual: %s)", big.NewInt(0), remainder)
 
 			// Check invariants
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
-			res, stop := inv(ctx)
+			res, stop := inv(suite.network.GetContext())
 			suite.False(stop, "invariant broken")
 			suite.Empty(res, "unexpected invariant error: %s", res)
 		})

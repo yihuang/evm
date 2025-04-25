@@ -728,34 +728,30 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
-		chainId string
+		chainID string
 	}{
 		{
 			name:    "6 decimals",
-			chainId: testconstants.SixDecimalsChainID,
+			chainID: testconstants.SixDecimalsChainID,
 		},
 		{
 			name:    "12 decimals",
-			chainId: testconstants.TwelveDecimalsChainID,
+			chainID: testconstants.TwelveDecimalsChainID,
 		},
 		{
 			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
+			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			suite.SetupTestWithChainID(tt.chainId)
-			ctx := suite.network.GetContext()
-
-			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			suite.SetupTestWithChainID(tt.chainID)
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
 			configurator.
-				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo)
+				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
+				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
@@ -789,7 +785,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleSend.BigInt())).AddRaw(1)
 
 				sendAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
-				err := suite.network.App.PreciseBankKeeper.SendCoins(ctx, sender, recipient, sendAmount)
+				err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendAmount)
 				suite.NoError(err)
 				totalSent = totalSent.Add(randAmount)
 				sentCount++
@@ -804,7 +800,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 			// Check recipient balance
 			recipientBal := suite.GetAllBalances(recipient)
 			intReceived := recipientBal.AmountOf(types.ExtendedCoinDenom).Quo(types.ConversionFactor())
-			fracReceived := suite.network.App.PreciseBankKeeper.GetFractionalBalance(ctx, recipient)
+			fracReceived := suite.network.App.PreciseBankKeeper.GetFractionalBalance(suite.network.GetContext(), recipient)
 
 			expectedInt := totalSent.Quo(types.ConversionFactor())
 			expectedFrac := totalSent.Mod(types.ConversionFactor())
@@ -814,7 +810,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 
 			// Check invariants
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
-			res, stop := inv(ctx)
+			res, stop := inv(suite.network.GetContext())
 			suite.False(stop, "invariant broken")
 			suite.Empty(res, "unexpected invariant error: %s", res)
 		})

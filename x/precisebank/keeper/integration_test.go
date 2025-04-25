@@ -22,35 +22,31 @@ import (
 func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiDecimals() {
 	tests := []struct {
 		name    string
-		chainId string
+		chainID string
 	}{
 		{
 			name:    "6 decimals",
-			chainId: testconstants.SixDecimalsChainID,
+			chainID: testconstants.SixDecimalsChainID,
 		},
 		{
 			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
+			chainID: testconstants.TwoDecimalsChainID,
 		},
 		{
 			name:    "12 decimals",
-			chainId: testconstants.TwelveDecimalsChainID,
+			chainID: testconstants.TwelveDecimalsChainID,
 		},
 	}
 
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			suite.SetupTest()
-			ctx := suite.network.GetContext()
-
-			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
 			configurator.
-				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo)
+				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
+				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
@@ -61,8 +57,8 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 			// Mint initial balance to sender
 			initialBalance := types.ConversionFactor().MulRaw(100)
 			initialCoins := cs(ci(types.ExtendedCoinDenom, initialBalance))
-			suite.Require().NoError(suite.network.App.PreciseBankKeeper.MintCoins(ctx, moduleName, initialCoins))
-			suite.Require().NoError(suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(ctx, moduleName, sender, initialCoins))
+			suite.Require().NoError(suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), moduleName, initialCoins))
+			suite.Require().NoError(suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), moduleName, sender, initialCoins))
 
 			maxUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
 			r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -83,10 +79,10 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 				case 0: // Mint to sender via module
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxUnit.BigInt())).AddRaw(1)
 					mintCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
-					if err := suite.network.App.PreciseBankKeeper.MintCoins(ctx, moduleName, mintCoins); err != nil {
+					if err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), moduleName, mintCoins); err != nil {
 						continue
 					}
-					if err := suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(ctx, moduleName, sender, mintCoins); err != nil {
+					if err := suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), moduleName, sender, mintCoins); err != nil {
 						continue
 					}
 					expectedSenderBal = expectedSenderBal.Add(randAmount)
@@ -101,10 +97,10 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 					burnable := sdkmath.MinInt(senderBal, maxUnit)
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, burnable.BigInt())).AddRaw(1)
 					burnCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
-					if err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(ctx, sender, moduleName, burnCoins); err != nil {
+					if err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), sender, moduleName, burnCoins); err != nil {
 						continue
 					}
-					if err := suite.network.App.PreciseBankKeeper.BurnCoins(ctx, moduleName, burnCoins); err != nil {
+					if err := suite.network.App.PreciseBankKeeper.BurnCoins(suite.network.GetContext(), moduleName, burnCoins); err != nil {
 						continue
 					}
 					expectedSenderBal = expectedSenderBal.Sub(randAmount)
@@ -119,7 +115,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 					sendable := sdkmath.MinInt(senderBal, maxUnit)
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, sendable.BigInt())).AddRaw(1)
 					sendCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
-					if err := suite.network.App.PreciseBankKeeper.SendCoins(ctx, sender, recipient, sendCoins); err != nil {
+					if err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendCoins); err != nil {
 						continue
 					}
 					expectedSenderBal = expectedSenderBal.Sub(randAmount)
@@ -138,12 +134,12 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 
 			// Check remainder
 			expectedRemainder := burnAmount.Sub(mintAmount).Mod(types.ConversionFactor())
-			actualRemainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(ctx)
+			actualRemainder := suite.network.App.PreciseBankKeeper.GetRemainderAmount(suite.network.GetContext())
 			suite.Require().Equal(expectedRemainder.BigInt().Cmp(actualRemainder.BigInt()), 0, "Remainder mismatch (expected: %s, actual: %s)", expectedRemainder, actualRemainder)
 
 			// Invariant check
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
-			res, stop := inv(ctx)
+			res, stop := inv(suite.network.GetContext())
 			suite.Require().False(stop, "Invariant broken")
 			suite.Require().Empty(res, "Unexpected invariant violation: %s", res)
 		})
@@ -153,34 +149,30 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 	tests := []struct {
 		name    string
-		chainId string
+		chainID string
 	}{
 		{
 			name:    "6 decimals",
-			chainId: testconstants.SixDecimalsChainID,
+			chainID: testconstants.SixDecimalsChainID,
 		},
 		{
 			name:    "12 decimals",
-			chainId: testconstants.TwelveDecimalsChainID,
+			chainID: testconstants.TwelveDecimalsChainID,
 		},
 		{
 			name:    "2 decimals",
-			chainId: testconstants.TwoDecimalsChainID,
+			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
-			suite.SetupTestWithChainID(tt.chainId)
-			ctx := suite.network.GetContext()
-
-			ethCfg := evmtypes.DefaultChainConfig(tt.chainId)
-			coinInfo := testconstants.ExampleChainCoinInfo[tt.chainId]
+			suite.SetupTestWithChainID(tt.chainID)
 
 			configurator := evmtypes.NewEVMConfigurator()
 			configurator.ResetTestConfig()
 			configurator.
-				WithChainConfig(ethCfg).
-				WithEVMCoinInfo(coinInfo)
+				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
+				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
 			err := configurator.Configure()
 			suite.Require().NoError(err)
 
@@ -200,7 +192,7 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 			err = suite.network.NextBlock()
 			suite.Require().NoError(err)
 
-			baseFeeRes, err := suite.network.GetEvmClient().BaseFee(ctx, &evmtypes.QueryBaseFeeRequest{})
+			baseFeeRes, err := suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
 			suite.Require().NoError(err)
 
 			// Call deposit() with msg.value = wrapAmount
@@ -227,10 +219,10 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 			suite.Require().NoError(err)
 			suite.Require().Equal(amount.Cmp(bal), 0, "WATOM balance should match deposited amount (expected: %s, actual: %s)", amount, bal)
 
-			baseFeeRes, err = suite.network.GetEvmClient().BaseFee(ctx, &evmtypes.QueryBaseFeeRequest{})
+			baseFeeRes, err = suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
 			suite.Require().NoError(err)
 
-			fmt.Println(suite.network.App.PreciseBankKeeper.GetAllBalances(ctx, watomAddr.Bytes()))
+			fmt.Println(suite.network.App.PreciseBankKeeper.GetAllBalances(suite.network.GetContext(), watomAddr.Bytes()))
 
 			// Call withdraw(wrapAmount)
 			_, err = suite.factory.ExecuteContractCall(
