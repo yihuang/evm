@@ -203,10 +203,11 @@ func NewMsgEditValidator(args []interface{}) (*stakingtypes.MsgEditValidator, co
 		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidType, "minSelfDelegation", &big.Int{}, args[3])
 	}
 
-	var minSelfDelegation *math.Int
+	// var minSelfDelegation *math.Int
+	var minSelfDelegation math.Int
 	if minSelfDelegationBigInt.Cmp(big.NewInt(DoNotModifyMinSelfDelegation)) != 0 {
 		msd := math.NewIntFromBigInt(minSelfDelegationBigInt)
-		minSelfDelegation = &msd
+		minSelfDelegation = msd
 	}
 
 	msg := &stakingtypes.MsgEditValidator{

@@ -164,9 +164,12 @@ func (p Precompile) EmitEditValidatorEvent(ctx sdk.Context, stateDB vm.StateDB, 
 	}
 
 	minSelfDelegation := big.NewInt(DoNotModifyMinSelfDelegation)
-	if msg.MinSelfDelegation != nil {
-		minSelfDelegation = msg.MinSelfDelegation.BigInt()
-	}
+	minSelfDelegation = msg.MinSelfDelegation.BigInt()
+	/*
+		if msg.MinSelfDelegation != nil {
+			minSelfDelegation = msg.MinSelfDelegation.BigInt()
+		}
+	*/
 
 	// Prepare the event data
 	var b bytes.Buffer
