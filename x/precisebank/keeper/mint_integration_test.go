@@ -382,14 +382,6 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals(
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
 
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			err := configurator.Configure()
-			suite.Require().NoError(err)
-
 			// Has mint permissions
 			minterModuleName := evmtypes.ModuleName
 			minter := sdk.AccAddress([]byte{1})

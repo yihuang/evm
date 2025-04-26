@@ -747,14 +747,6 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
 
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			err := configurator.Configure()
-			suite.Require().NoError(err)
-
 			sender := sdk.AccAddress([]byte{1})
 			recipient := sdk.AccAddress([]byte{2})
 

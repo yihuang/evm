@@ -464,14 +464,6 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
 
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			err := configurator.Configure()
-			suite.Require().NoError(err)
-
 			// Has burn permissions
 			burnerModuleName := evmtypes.ModuleName
 			burner := sdk.AccAddress([]byte{1})
@@ -479,7 +471,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 			// Initial balance large enough to cover many small burns
 			initialBalance := types.ConversionFactor().MulRaw(100)
 			initialCoin := cs(ci(types.ExtendedCoinDenom, initialBalance))
-			err = suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), burnerModuleName, initialCoin)
+			err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), burnerModuleName, initialCoin)
 			suite.Require().NoError(err)
 			err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), burnerModuleName, burner, initialCoin)
 			suite.Require().NoError(err)

@@ -58,11 +58,6 @@ func TestWithChainID(t *testing.T) {
 
 			handler := grpchandler.NewIntegrationHandler(nw) //nolint:staticcheck // Somehow the linter marks this as not being used, even though it's used below to get balances
 
-			// reset configuration to use the correct decimals coin info
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			require.NoError(t, configurator.WithEVMCoinInfo(tc.coinInfo).Configure())
-
 			// ------------------------------------------------------------------------------------
 			// Checks on initial balances.
 			// ------------------------------------------------------------------------------------

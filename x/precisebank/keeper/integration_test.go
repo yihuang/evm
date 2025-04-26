@@ -43,14 +43,6 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 		suite.Run(tt.name, func() {
 			suite.SetupTest()
 
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			err := configurator.Configure()
-			suite.Require().NoError(err)
-
 			moduleName := evmtypes.ModuleName
 			sender := sdk.AccAddress([]byte{1})
 			recipient := sdk.AccAddress([]byte{2})
@@ -173,13 +165,6 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
 
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			suite.Require().NoError(configurator.Configure())
-
 			sender := suite.keyring.GetKey(0)
 			recipient := suite.keyring.GetKey(1)
 			burnerAddr := common.HexToAddress("0x0000000000000000000000000000000000000000")
@@ -298,14 +283,6 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
-
-			configurator := evmtypes.NewEVMConfigurator()
-			configurator.ResetTestConfig()
-			configurator.
-				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
-				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
-			err := configurator.Configure()
-			suite.Require().NoError(err)
 
 			sender := suite.keyring.GetKey(0)
 			amount := big.NewInt(1)
