@@ -21,8 +21,8 @@ type EvmAnteTestSuite struct {
 }
 
 func TestEvmAnteTestSuite(t *testing.T) {
-	txTypes := []int{gethtypes.DynamicFeeTxType}
-	chainIDs := []string{testconstants.SixDecimalsChainID}
+	txTypes := []int{gethtypes.DynamicFeeTxType, gethtypes.LegacyTxType, gethtypes.AccessListTxType}
+	chainIDs := []string{testconstants.ExampleChainID, testconstants.SixDecimalsChainID}
 	for _, txType := range txTypes {
 		for _, chainID := range chainIDs {
 			suite.Run(t, &EvmAnteTestSuite{
