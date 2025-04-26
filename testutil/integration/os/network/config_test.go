@@ -56,7 +56,7 @@ func TestWithChainID(t *testing.T) {
 
 			nw := network.New(opts...)
 
-			handler := grpchandler.NewIntegrationHandler(nw) //nolint:staticcheck // Somehow the linter marks this as not being used, even though it's used below to get balances
+			handler := grpchandler.NewIntegrationHandler(nw)
 
 			// ------------------------------------------------------------------------------------
 			// Checks on initial balances.
