@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
+	"github.com/ethereum/go-ethereum/common"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -137,6 +138,135 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 			suite.Require().Equal(expectedRemainder.BigInt().Cmp(actualRemainder.BigInt()), 0, "Remainder mismatch (expected: %s, actual: %s)", expectedRemainder, actualRemainder)
 
 			// Invariant check
+			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
+			res, stop := inv(suite.network.GetContext())
+			suite.Require().False(stop, "Invariant broken")
+			suite.Require().Empty(res, "Unexpected invariant violation: %s", res)
+		})
+	}
+}
+
+func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals() {
+	maxGasLimit := int64(500000)
+	defaultEVMCoinTransferGasLimit := int64(21000)
+
+	tests := []struct {
+		name    string
+		chainID string
+	}{
+		{
+			name:    "6 decimals",
+			chainID: testconstants.SixDecimalsChainID,
+		},
+		{
+			name:    "12 decimals",
+			chainID: testconstants.TwelveDecimalsChainID,
+		},
+		{
+			name:    "2 decimals",
+			chainID: testconstants.TwoDecimalsChainID,
+		},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			suite.SetupTestWithChainID(tt.chainID)
+
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			configurator.
+				WithChainConfig(evmtypes.DefaultChainConfig(tt.chainID)).
+				WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[tt.chainID])
+			suite.Require().NoError(configurator.Configure())
+
+			sender := suite.keyring.GetKey(0)
+			recipient := suite.keyring.GetKey(1)
+			burnerAddr := common.HexToAddress("0x0000000000000000000000000000000000000000")
+
+			baseFeeResp, err := suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
+			suite.Require().NoError(err)
+			gasPrice := sdkmath.NewIntFromBigInt(baseFeeResp.BaseFee.BigInt())
+			gasFee := gasPrice.Mul(sdkmath.NewInt(int64(defaultEVMCoinTransferGasLimit)))
+
+			// Burn balance from sender except for initial balance
+			initialBalance := types.ConversionFactor().MulRaw(100)
+			senderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom).Sub(gasFee).Sub(initialBalance)
+			_, err = suite.factory.ExecuteEthTx(sender.Priv, evmtypes.EvmTxArgs{
+				To:       &burnerAddr,
+				Amount:   senderBal.BigInt(),
+				GasLimit: uint64(defaultEVMCoinTransferGasLimit),
+				GasPrice: gasPrice.BigInt(),
+			})
+			suite.Require().NoError(err)
+
+			// Burn balance from recipient
+			recipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom).Sub(gasFee)
+			_, err = suite.factory.ExecuteEthTx(recipient.Priv, evmtypes.EvmTxArgs{
+				To:       &burnerAddr,
+				Amount:   recipientBal.BigInt(),
+				GasLimit: uint64(defaultEVMCoinTransferGasLimit),
+				GasPrice: gasPrice.BigInt(),
+			})
+			suite.Require().NoError(err)
+
+			err = suite.network.NextBlock()
+			suite.Require().NoError(err)
+
+			maxSendUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
+			r := rand.New(rand.NewSource(SEED))
+
+			expectedSenderBal := initialBalance
+			expectedRecipientBal := sdkmath.ZeroInt()
+
+			sentCount := 0
+			for {
+				gasLimit := r.Int63n(maxGasLimit-defaultEVMCoinTransferGasLimit) + defaultEVMCoinTransferGasLimit
+				baseFeeResp, err = suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
+				suite.Require().NoError(err)
+				gasPrice = sdkmath.NewIntFromBigInt(baseFeeResp.BaseFee.BigInt())
+				gasFee = gasPrice.Mul(sdkmath.NewInt(int64(gasLimit)))
+
+				// Generate random value to send
+				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxSendUnit.BigInt())).AddRaw(1)
+
+				// Execute EVM coin transfer
+				txRes, _ := suite.factory.ExecuteEthTx(sender.Priv, evmtypes.EvmTxArgs{
+					To:       &recipient.Addr,
+					Amount:   randAmount.BigInt(),
+					GasLimit: uint64(gasLimit),
+					GasPrice: gasPrice.BigInt(),
+				})
+				err = suite.network.NextBlock()
+				suite.Require().NoError(err)
+
+				// Calculate gas fee used
+				gasUsed := txRes.GasUsed
+				gasFeeUsed := gasPrice.Mul(sdkmath.NewInt(gasUsed))
+				expectedSenderBal = expectedSenderBal.Sub(gasFeeUsed)
+
+				// break, if EVM coin transfer tx is failed
+				sentCount++
+				if txRes.IsErr() {
+					break
+				}
+
+				// Update expected balances
+				expectedSenderBal = expectedSenderBal.Sub(randAmount)
+				expectedRecipientBal = expectedRecipientBal.Add(randAmount)
+			}
+
+			suite.T().Logf("Completed %d random evm sends", sentCount)
+
+			// Check sender balance
+			actualSenderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom)
+			suite.Require().Equal(expectedSenderBal.BigInt().Cmp(actualSenderBal.BigInt()), 0,
+				"Sender balance mismatch (expected: %s, actual: %s)", expectedSenderBal, actualSenderBal)
+
+			// Check recipient balance
+			actualRecipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom)
+			suite.Require().Equal(expectedRecipientBal.BigInt().Cmp(actualRecipientBal.BigInt()), 0,
+				"Recipient balance mismatch (expected: %s, actual: %s)", expectedRecipientBal, actualRecipientBal)
+
+			// Check invariants
 			inv := keeper.AllInvariants(suite.network.App.PreciseBankKeeper)
 			res, stop := inv(suite.network.GetContext())
 			suite.Require().False(stop, "Invariant broken")
