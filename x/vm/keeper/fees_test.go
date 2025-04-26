@@ -446,6 +446,7 @@ func (suite *KeeperTestSuite) TestVerifyFeeAndDeductTxCostsFromUserBalance() {
 			},
 		},
 	}
+
 	for i, tc := range testCases {
 		suite.Run(tc.name, func() {
 			suite.enableFeemarket = tc.enableFeemarket
