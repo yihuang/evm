@@ -97,12 +97,10 @@ func (k Keeper) MintCoins(goCtx context.Context, moduleName string, amt sdk.Coin
 //     Optimization:
 //   - Increase direct account mint amount by 1, no extra reserve mint
 func (k Keeper) mintExtendedCoin(
-	goCtx context.Context,
+	ctx sdk.Context,
 	recipientModuleName string,
 	amt sdkmath.Int,
 ) error {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	moduleAddr := k.ak.GetModuleAddress(recipientModuleName)
 
 	// Get current module account fractional balance - 0 if not found

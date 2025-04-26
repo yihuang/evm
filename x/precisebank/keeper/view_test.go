@@ -88,6 +88,7 @@ func TestKeeper_GetBalance(t *testing.T) {
 			sdk.NewCoin("busd", sdkmath.NewInt(1000)),
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			addr := sdk.AccAddress([]byte("test-address"))
@@ -277,6 +278,7 @@ func TestHiddenReserve(t *testing.T) {
 			sdk.NewCoin("cat", sdkmath.ZeroInt()),
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// 2 calls for GetBalance and SpendableCoin, only for reserve coins

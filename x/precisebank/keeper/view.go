@@ -70,10 +70,12 @@ func (k Keeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coi
 // by address. If the account has no spendable coins, an empty Coins slice is
 // returned.
 func (k Keeper) SpendableCoin(
-	ctx sdk.Context,
+	goCtx context.Context,
 	addr sdk.AccAddress,
 	denom string,
 ) sdk.Coin {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
 	// Same as GetBalance, extended denom balances are transparent to consumers.
 	if denom == types.ExtendedCoinDenom && addr.Equals(k.ak.GetModuleAddress(types.ModuleName)) {
 		return sdk.NewCoin(denom, sdkmath.ZeroInt())

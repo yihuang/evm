@@ -91,6 +91,7 @@ func TestBurnCoins_PanicValidations(t *testing.T) {
 			"module account precisebank cannot be burned from: unauthorized",
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setupFn(td)

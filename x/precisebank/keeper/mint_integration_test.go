@@ -377,6 +377,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals(
 			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
+
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)

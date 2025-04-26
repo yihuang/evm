@@ -80,12 +80,10 @@ func (k Keeper) BurnCoins(goCtx context.Context, moduleName string, amt sdk.Coin
 
 // burnExtendedCoin burns the fractional amount of the ExtendedCoinDenom from the module account.
 func (k Keeper) burnExtendedCoin(
-	goCtx context.Context,
+	ctx sdk.Context,
 	moduleName string,
 	amt sdkmath.Int,
 ) error {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	// Get the module address
 	moduleAddr := k.ak.GetModuleAddress(moduleName)
 

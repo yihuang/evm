@@ -168,6 +168,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
+
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
@@ -293,6 +294,7 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 			chainID: testconstants.TwoDecimalsChainID,
 		},
 	}
+
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
 			suite.SetupTestWithChainID(tt.chainID)
