@@ -3,8 +3,6 @@ package types
 import (
 	"fmt"
 
-	evmtypes "github.com/cosmos/evm/x/vm/types"
-
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,11 +29,7 @@ var (
 // valid fractional amount (999_999_999_999):
 // 0 < FractionalBalance < conversionFactor
 func ConversionFactor() sdkmath.Int {
-	if !evmtypes.IsSetEVMCoinInfo() {
-		return sdkmath.NewIntFromBigIntMut(ConversionFactorVal.BigInt())
-	}
-
-	return sdkmath.NewIntFromBigIntMut(evmtypes.GetEVMCoinDecimals().ConversionFactor().BigInt())
+	return sdkmath.NewIntFromBigInt(ConversionFactorVal.BigInt())
 }
 
 // FractionalBalance returns a new FractionalBalance with the given address and

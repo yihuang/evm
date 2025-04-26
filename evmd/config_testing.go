@@ -85,6 +85,7 @@ func EvmAppOptions(chainID string) error {
 		return err
 	}
 
+	precisebanktypes.ConversionFactorVal = evmtypes.GetEVMCoinDecimals().ConversionFactor()
 	precisebanktypes.IntegerCoinDenom = evmtypes.GetEVMCoinDenom()
 	precisebanktypes.ExtendedCoinDenom = evmtypes.GetEVMCoinExtendedDenom()
 

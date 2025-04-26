@@ -26,12 +26,7 @@ func TestConversionFactor_Immutable(t *testing.T) {
 	// Fetch the max amount again
 	cf2 := types.ConversionFactor()
 
-	require.Equal(
-		t,
-		origInt64,
-		cf2.Int64(),
-		"conversion factor should be immutable",
-	)
+	require.Equal(t, origInt64, cf2.Int64(), "conversion factor should be immutable")
 }
 
 func TestConversionFactor_Copied(t *testing.T) {
