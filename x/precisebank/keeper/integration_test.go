@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	"time"
 
 	"github.com/cosmos/evm/contracts"
 	testconstants "github.com/cosmos/evm/testutil/constants"
@@ -61,7 +60,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 			suite.Require().NoError(suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), moduleName, sender, initialCoins))
 
 			maxUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r := rand.New(rand.NewSource(SEED))
 
 			// Expected balances tracking
 			expectedSenderBal := initialBalance

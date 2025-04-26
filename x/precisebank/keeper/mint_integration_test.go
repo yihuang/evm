@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"math/rand"
 	"testing"
-	"time"
 
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
@@ -399,7 +398,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintCoins_RandomValueMultiDecimals(
 
 			// Setup test parameters
 			maxMintUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r := rand.New(rand.NewSource(SEED))
 
 			totalMinted := sdkmath.ZeroInt()
 			mintCount := 0

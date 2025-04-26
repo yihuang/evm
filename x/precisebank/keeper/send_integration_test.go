@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/cosmos/evm/evmd"
 	testconstants "github.com/cosmos/evm/testutil/constants"
@@ -764,7 +763,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 
 			// Setup test parameters
 			maxSendUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r := rand.New(rand.NewSource(SEED))
 
 			totalSent := sdkmath.ZeroInt()
 			sentCount := 0

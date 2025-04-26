@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"math/rand"
 	"testing"
-	"time"
 
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
@@ -486,7 +485,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 
 			// Setup test parameters
 			maxBurnUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
-			r := rand.New(rand.NewSource(time.Now().UnixNano()))
+			r := rand.New(rand.NewSource(SEED))
 
 			totalBurned := sdkmath.ZeroInt()
 			burnCount := 0

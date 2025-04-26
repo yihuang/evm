@@ -10,8 +10,9 @@ import (
 	"github.com/cosmos/evm/testutil/integration/os/grpc"
 	"github.com/cosmos/evm/testutil/integration/os/keyring"
 	"github.com/cosmos/evm/testutil/integration/os/network"
-	"github.com/cosmos/evm/x/precisebank/types"
 )
+
+const SEED = int64(42)
 
 type KeeperIntegrationTestSuite struct {
 	suite.Suite
@@ -19,8 +20,6 @@ type KeeperIntegrationTestSuite struct {
 	network *network.UnitTestNetwork
 	factory factory.TxFactory
 	keyring keyring.Keyring
-
-	queryClient types.QueryClient
 }
 
 func TestKeeperIntegrationTestSuite(t *testing.T) {
@@ -43,6 +42,4 @@ func (suite *KeeperIntegrationTestSuite) SetupTestWithChainID(chainID string) {
 
 	suite.network = nw
 	suite.factory = tf
-
-	suite.queryClient = nw.GetPreciseBankClient()
 }
