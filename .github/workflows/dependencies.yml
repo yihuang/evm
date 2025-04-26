@@ -33,4 +33,5 @@ jobs:
         if: env.GIT_DIFF
       - name: Run govulncheck
         run: govulncheck -show verbose ./...
+        if: env.GIT_DIFF
         shell: bash
