@@ -127,6 +127,19 @@ func (k Keeper) sendExtendedCoins(
 	from, to sdk.AccAddress,
 	amt sdkmath.Int,
 ) error {
+	// If we do not return early here, the following issue occurs:
+	// - `senderNewFracBal` will be calculated by subtracting fractional `amt` from the sender's fractional balance.
+	// - `recipientNewFracBal` will be calculated by adding fractional `amt` to the recipient's fractional balance.
+	// - Since `from` and `to` are the same address, calling SetFractionalBalance(from, ...) and SetFractionalBalance(to, ...)
+	//   would overwrite the fractional balance with the recipientNewFracBal value.
+	// - As a result, the subtraction of fractional amount is lost, and it would *artificially inflate* the balance
+	//   by the fractional amount, effectively *duplicating* the fractional value.
+	//
+	// By returning early here, we ensure that no unintended state mutation happens when transferring to self.
+	if from.Equals(to) {
+		return nil
+	}
+
 	// Sufficient balance check is done by bankkeeper.SendCoins(), for both
 	// integer and fractional-only sends. E.g. If fractional balance is
 	// insufficient, it will still incur a integer borrow which will fail if the
