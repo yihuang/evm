@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"math/rand"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/cosmos/evm/contracts"
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/testutil/integration/os/factory"
@@ -12,7 +14,6 @@ import (
 	"github.com/cosmos/evm/x/precisebank/keeper"
 	"github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
-	"github.com/ethereum/go-ethereum/common"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -185,7 +186,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			baseFeeResp, err := suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
 			suite.Require().NoError(err)
 			gasPrice := sdkmath.NewIntFromBigInt(baseFeeResp.BaseFee.BigInt())
-			gasFee := gasPrice.Mul(sdkmath.NewInt(int64(defaultEVMCoinTransferGasLimit)))
+			gasFee := gasPrice.Mul(sdkmath.NewInt(defaultEVMCoinTransferGasLimit))
 
 			// Burn balance from sender except for initial balance
 			initialBalance := types.ConversionFactor().MulRaw(100)
@@ -193,7 +194,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			_, err = suite.factory.ExecuteEthTx(sender.Priv, evmtypes.EvmTxArgs{
 				To:       &burnerAddr,
 				Amount:   senderBal.BigInt(),
-				GasLimit: uint64(defaultEVMCoinTransferGasLimit),
+				GasLimit: uint64(defaultEVMCoinTransferGasLimit), //nolint:gosec // G115
 				GasPrice: gasPrice.BigInt(),
 			})
 			suite.Require().NoError(err)
@@ -203,7 +204,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			_, err = suite.factory.ExecuteEthTx(recipient.Priv, evmtypes.EvmTxArgs{
 				To:       &burnerAddr,
 				Amount:   recipientBal.BigInt(),
-				GasLimit: uint64(defaultEVMCoinTransferGasLimit),
+				GasLimit: uint64(defaultEVMCoinTransferGasLimit), //nolint:gosec // G115
 				GasPrice: gasPrice.BigInt(),
 			})
 			suite.Require().NoError(err)
@@ -223,7 +224,6 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 				baseFeeResp, err = suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
 				suite.Require().NoError(err)
 				gasPrice = sdkmath.NewIntFromBigInt(baseFeeResp.BaseFee.BigInt())
-				gasFee = gasPrice.Mul(sdkmath.NewInt(int64(gasLimit)))
 
 				// Generate random value to send
 				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxSendUnit.BigInt())).AddRaw(1)
@@ -232,7 +232,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 				txRes, _ := suite.factory.ExecuteEthTx(sender.Priv, evmtypes.EvmTxArgs{
 					To:       &recipient.Addr,
 					Amount:   randAmount.BigInt(),
-					GasLimit: uint64(gasLimit),
+					GasLimit: uint64(gasLimit), //nolint:gosec // G115
 					GasPrice: gasPrice.BigInt(),
 				})
 				err = suite.network.NextBlock()
