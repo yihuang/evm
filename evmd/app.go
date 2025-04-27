@@ -514,7 +514,7 @@ func NewExampleApp(
 	// NOTE: use precisebank from EVM module and precompile, if EVM coin is not 18 decimals
 	var bankKeeper BankKeeper
 	bankKeeper = app.BankKeeper
-	if precisebanktypes.Decimals < evmtypes.EighteenDecimals {
+	if precisebanktypes.Decimals != evmtypes.EighteenDecimals {
 		bankKeeper = app.PreciseBankKeeper
 	}
 
