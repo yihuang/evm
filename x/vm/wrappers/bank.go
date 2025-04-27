@@ -79,13 +79,7 @@ func (w BankWrapper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom 
 		panic(fmt.Sprintf("expected evm denom %s, received %s", types.GetEVMCoinDenom(), denom))
 	}
 
-	var coin sdk.Coin
-	if types.GetEVMCoinDecimals() == types.EighteenDecimals {
-		coin = w.BankKeeper.GetBalance(ctx, addr, types.GetEVMCoinDenom())
-	} else {
-		coin = w.BankKeeper.GetBalance(ctx, addr, types.GetEVMCoinExtendedDenom())
-	}
-	return coin
+	return w.BankKeeper.GetBalance(ctx, addr, types.GetEVMCoinExtendedDenom())
 }
 
 // SendCoinsFromAccountToModule wraps around the Cosmos SDK x/bank module's
