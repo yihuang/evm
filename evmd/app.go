@@ -511,12 +511,6 @@ func NewExampleApp(
 		app.BankKeeper,
 		app.AccountKeeper,
 	)
-	// NOTE: use precisebank from EVM module and precompile, if EVM coin is not 18 decimals
-	var bankKeeper BankKeeper
-	bankKeeper = app.BankKeeper
-	if precisebanktypes.Decimals != evmtypes.EighteenDecimals {
-		bankKeeper = app.PreciseBankKeeper
-	}
 
 	// NOTE: it's required to set up the EVM keeper before the ERC-20 keeper, because it is used in its instantiation.
 	app.EVMKeeper = evmkeeper.NewKeeper(
@@ -524,7 +518,7 @@ func NewExampleApp(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey],
 		authtypes.NewModuleAddress(govtypes.ModuleName),
 		app.AccountKeeper,
-		bankKeeper,
+		app.PreciseBankKeeper,
 		app.StakingKeeper,
 		app.FeeMarketKeeper,
 		&app.Erc20Keeper,
@@ -588,7 +582,7 @@ func NewExampleApp(
 		NewAvailableStaticPrecompiles(
 			*app.StakingKeeper,
 			app.DistrKeeper,
-			bankKeeper,
+			app.PreciseBankKeeper,
 			app.Erc20Keeper,
 			app.AuthzKeeper,
 			app.TransferKeeper,
