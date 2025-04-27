@@ -7,7 +7,7 @@ package types
 import (
 	"fmt"
 
-	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/math"
 )
 
 // NOTE: Remember to add the ConversionFactor associated with constants.
@@ -32,25 +32,25 @@ const (
 	EighteenDecimals  Decimals = 18 // EighteenDecimals is the Decimals used for Cosmos coin with 18 decimals.
 )
 
-var ConversionFactor = map[Decimals]sdkmath.Int{
-	OneDecimals:       sdkmath.NewInt(1e17),
-	TwoDecimals:       sdkmath.NewInt(1e16),
-	ThreeDecimals:     sdkmath.NewInt(1e15),
-	FourDecimals:      sdkmath.NewInt(1e14),
-	FiveDecimals:      sdkmath.NewInt(1e13),
-	SixDecimals:       sdkmath.NewInt(1e12),
-	SevenDecimals:     sdkmath.NewInt(1e11),
-	EightDecimals:     sdkmath.NewInt(1e10),
-	NineDecimals:      sdkmath.NewInt(1e9),
-	TenDecimals:       sdkmath.NewInt(1e8),
-	ElevenDecimals:    sdkmath.NewInt(1e7),
-	TwelveDecimals:    sdkmath.NewInt(1e6),
-	ThirteenDecimals:  sdkmath.NewInt(1e5),
-	FourteenDecimals:  sdkmath.NewInt(1e4),
-	FifteenDecimals:   sdkmath.NewInt(1e3),
-	SixteenDecimals:   sdkmath.NewInt(1e2),
-	SeventeenDecimals: sdkmath.NewInt(1e1),
-	EighteenDecimals:  sdkmath.NewInt(1e0),
+var ConversionFactor = map[Decimals]math.Int{
+	OneDecimals:       math.NewInt(1e17),
+	TwoDecimals:       math.NewInt(1e16),
+	ThreeDecimals:     math.NewInt(1e15),
+	FourDecimals:      math.NewInt(1e14),
+	FiveDecimals:      math.NewInt(1e13),
+	SixDecimals:       math.NewInt(1e12),
+	SevenDecimals:     math.NewInt(1e11),
+	EightDecimals:     math.NewInt(1e10),
+	NineDecimals:      math.NewInt(1e9),
+	TenDecimals:       math.NewInt(1e8),
+	ElevenDecimals:    math.NewInt(1e7),
+	TwelveDecimals:    math.NewInt(1e6),
+	ThirteenDecimals:  math.NewInt(1e5),
+	FourteenDecimals:  math.NewInt(1e4),
+	FifteenDecimals:   math.NewInt(1e3),
+	SixteenDecimals:   math.NewInt(1e2),
+	SeventeenDecimals: math.NewInt(1e1),
+	EighteenDecimals:  math.NewInt(1e0),
 }
 
 // Decimals represents the decimal representation of a Cosmos coin.
@@ -73,7 +73,7 @@ func (d Decimals) Validate() error {
 // not and by default returns the conversion factor of 1, i.e. from 18 decimals
 // to 18 decimals. We cannot have a non supported Decimal since it is checked
 // and validated.
-func (d Decimals) ConversionFactor() sdkmath.Int {
+func (d Decimals) ConversionFactor() math.Int {
 	return ConversionFactor[d]
 }
 
