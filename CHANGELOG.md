@@ -17,6 +17,8 @@
 
 ### FEATURES
 
+- [\#69](https://github.com/cosmos/evm/pull/69) Add new `x/precisebank` module with bank decimal extension for EVM usage.
+
 ### STATE BREAKING
 
 - Refactored evmos/os into cosmos/evm
