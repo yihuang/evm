@@ -92,7 +92,3 @@ func setTestingEVMCoinInfo(eci EvmCoinInfo) error {
 func resetEVMCoinInfo() {
 	testingEvmCoinInfo = nil
 }
-
-func IsSetEVMCoinInfo() bool {
-	return testingEvmCoinInfo != nil
-}

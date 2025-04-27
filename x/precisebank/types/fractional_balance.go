@@ -3,15 +3,16 @@ package types
 import (
 	"fmt"
 
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+
 	sdkmath "cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	// ConversionFactorVal is used to convert the fractional balance to integer
-	// balances.
-	ConversionFactorVal = sdkmath.NewInt(1_000_000_000_000)
+	// Decimals is the number of decimal places for the fractional balance from EVM.
+	Decimals = evmtypes.SixDecimals
 
 	// IntegerCoinDenom is the denomination for integer coins that are managed by
 	// x/bank. This is the "true" denomination of the coin, and is also used for
@@ -29,7 +30,7 @@ var (
 // valid fractional amount (999_999_999_999):
 // 0 < FractionalBalance < conversionFactor
 func ConversionFactor() sdkmath.Int {
-	return sdkmath.NewIntFromBigInt(ConversionFactorVal.BigInt())
+	return sdkmath.NewIntFromBigInt(Decimals.ConversionFactor().BigInt())
 }
 
 // FractionalBalance returns a new FractionalBalance with the given address and

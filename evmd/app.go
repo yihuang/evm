@@ -137,7 +137,7 @@ func init() {
 	sdk.DefaultPowerReduction = cosmosevmtypes.AttoPowerReduction
 
 	// set the values for the precisebank module
-	precisebanktypes.ConversionFactorVal = evmtypes.SixteenDecimals.ConversionFactor()
+	precisebanktypes.Decimals = evmtypes.SixDecimals
 	precisebanktypes.IntegerCoinDenom = "uatom"
 	precisebanktypes.ExtendedCoinDenom = "aatom"
 
@@ -514,7 +514,7 @@ func NewExampleApp(
 	// NOTE: use precisebank from EVM module and precompile, if EVM coin is not 18 decimals
 	var bankKeeper BankKeeper
 	bankKeeper = app.BankKeeper
-	if evmtypes.IsSetEVMCoinInfo() && evmtypes.GetEVMCoinDecimals() < evmtypes.EighteenDecimals {
+	if precisebanktypes.Decimals < evmtypes.EighteenDecimals {
 		bankKeeper = app.PreciseBankKeeper
 	}
 
