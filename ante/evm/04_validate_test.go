@@ -259,12 +259,9 @@ func (suite *EvmAnteTestSuite) TestCheckTxFee() {
 
 				// If decimals is not 18 decimals, we have to convert txFeeInfo to original
 				// decimals representation.
-				originalAmount := amount
-				evmCoinDenom := evmtypes.GetEVMCoinDenom()
-				evmCoinDecimal := evmtypes.GetEVMCoinDecimals()
-				originalAmount = originalAmount.Quo(evmCoinDecimal.ConversionFactor())
+				evmExtendedDenom := evmtypes.GetEVMCoinExtendedDenom()
 
-				coins := sdktypes.Coins{sdktypes.Coin{Denom: evmCoinDenom, Amount: originalAmount}}
+				coins := sdktypes.Coins{sdktypes.Coin{Denom: evmExtendedDenom, Amount: amount}}
 
 				// This struct should hold values in the original representation
 				txFeeInfo := &tx.Fee{

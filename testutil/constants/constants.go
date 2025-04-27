@@ -54,9 +54,10 @@ var (
 	// chain id
 	ExampleChainCoinInfo = map[string]evmtypes.EvmCoinInfo{
 		ExampleChainID: {
-			Denom:        ExampleAttoDenom,
-			DisplayDenom: ExampleDisplayDenom,
-			Decimals:     evmtypes.EighteenDecimals,
+			Denom:         ExampleAttoDenom,
+			ExtendedDenom: ExampleAttoDenom,
+			DisplayDenom:  ExampleDisplayDenom,
+			Decimals:      evmtypes.EighteenDecimals,
 		},
 		SixDecimalsChainID: {
 			Denom:         "utest",

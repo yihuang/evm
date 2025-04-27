@@ -43,49 +43,26 @@ func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec {
 
 // ConvertEvmCoinFrom18Decimals converts the coin's Amount from 18 decimals to its
 // original representation. Return an error if the coin denom is not the EVM.
-func ConvertEvmCoinFrom18Decimals(coin sdk.Coin) (sdk.Coins, error) {
+func ConvertEvmCoinFrom18Decimals(coin sdk.Coin) (sdk.Coin, error) {
 	if coin.Denom != GetEVMCoinDenom() {
-		return sdk.Coins{}, fmt.Errorf("expected coin denom %s, received %s", GetEVMCoinDenom(), coin.Denom)
+		return sdk.Coin{}, fmt.Errorf("expected coin denom %s, received %s", GetEVMCoinDenom(), coin.Denom)
 	}
 
-	if GetEVMCoinDecimals() == EighteenDecimals {
-		return sdk.NewCoins(coin), nil
-	}
-
-	evmCoinDecimal := GetEVMCoinDecimals()
-	integerAmount := coin.Amount.Quo(evmCoinDecimal.ConversionFactor())
-	fractionalAmount := coin.Amount.Mod(evmCoinDecimal.ConversionFactor())
-
-	integerCoin := sdk.NewCoin(GetEVMCoinDenom(), integerAmount)
-	fractionalCoin := sdk.NewCoin(GetEVMCoinExtendedDenom(), fractionalAmount)
-	return sdk.NewCoins(integerCoin, fractionalCoin), nil
+	return sdk.Coin{Denom: GetEVMCoinExtendedDenom(), Amount: coin.Amount}, nil
 }
 
 // ConvertCoinsFrom18Decimals returns the given coins with the Amount of the evm
 // coin converted from the 18 decimals representation to the original one.
 func ConvertCoinsFrom18Decimals(coins sdk.Coins) sdk.Coins {
-	evmCoinDecimal := GetEVMCoinDecimals()
-	if evmCoinDecimal == EighteenDecimals {
-		return coins
-	}
-
 	evmDenom := GetEVMCoinDenom()
-	evmExtendedDenom := GetEVMCoinExtendedDenom()
 
-	var newCoins sdk.Coins
-	for _, coin := range coins {
+	convertedCoins := make(sdk.Coins, len(coins))
+	for i, coin := range coins {
 		if coin.Denom == evmDenom {
-			conversionFactor := evmCoinDecimal.ConversionFactor()
-			integerAmt := coin.Amount.Quo(conversionFactor)
-			fractionalAmt := coin.Amount.Mod(conversionFactor)
-
-			integerCoin := sdk.NewCoin(evmDenom, integerAmt)
-			fractionalCoin := sdk.NewCoin(evmExtendedDenom, fractionalAmt)
-			convertedCoins := sdk.NewCoins(integerCoin, fractionalCoin)
-			newCoins = newCoins.Add(convertedCoins...)
-		} else {
-			newCoins = newCoins.Add(coin)
+			evmExtendedDenom := GetEVMCoinExtendedDenom()
+			coin = sdk.Coin{Denom: evmExtendedDenom, Amount: coin.Amount}
 		}
+		convertedCoins[i] = coin
 	}
-	return newCoins
+	return convertedCoins.Sort()
 }

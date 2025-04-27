@@ -129,6 +129,7 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 			}
 
 			baseDenom := types.GetEVMCoinDenom()
+			extendedDenom := types.GetEVMCoinExtendedDenom()
 
 			tx, err := tc.msg.BuildTx(suite.clientCtx.TxConfig.NewTxBuilder(), baseDenom)
 			if tc.expError {
@@ -141,8 +142,7 @@ func (suite *MsgsTestSuite) TestMsgEthereumTx_BuildTx() {
 				suite.Require().Equal(uint64(100000), tx.GetGas())
 
 				expFeeAmt := sdkmath.NewIntFromBigInt(evmTx.GasPrice).MulRaw(int64(evmTx.GasLimit)) //#nosec
-				scaledAmt := expFeeAmt.Quo(coinInfo.Decimals.ConversionFactor())
-				expFee := sdk.NewCoins(sdk.NewCoin(baseDenom, scaledAmt))
+				expFee := sdk.NewCoins(sdk.NewCoin(extendedDenom, expFeeAmt))
 				suite.Require().Equal(expFee, tx.GetFee())
 			}
 		}

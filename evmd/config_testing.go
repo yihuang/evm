@@ -18,9 +18,10 @@ import (
 // chain id
 var ChainsCoinInfo = map[string]evmtypes.EvmCoinInfo{
 	EighteenDecimalsChainID: {
-		Denom:        ExampleChainDenom,
-		DisplayDenom: ExampleDisplayDenom,
-		Decimals:     evmtypes.EighteenDecimals,
+		Denom:         ExampleChainDenom,
+		ExtendedDenom: ExampleChainDenom,
+		DisplayDenom:  ExampleDisplayDenom,
+		Decimals:      evmtypes.EighteenDecimals,
 	},
 	SixDecimalsChainID: {
 		Denom:         "utest",

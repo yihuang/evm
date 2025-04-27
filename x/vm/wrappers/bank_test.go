@@ -43,7 +43,7 @@ func TestMintAmountToAccount(t *testing.T) {
 			recipient: sdk.AccAddress([]byte("test_address")),
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)) // 1 token in 6 decimals
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)) // 1 token in 18 decimals
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -91,7 +91,7 @@ func TestMintAmountToAccount(t *testing.T) {
 			recipient: sdk.AccAddress([]byte("test_address")),
 			expectErr: "failed to mint coins to account in bank wrapper",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -146,7 +146,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -190,7 +190,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "failed to burn coins from account in bank wrapper",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -208,7 +208,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 			amount:    big.NewInt(1e18),
 			expectErr: "burn error",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
-				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6))
+				expectedCoin := sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18))
 				expectedCoins := sdk.NewCoins(expectedCoin)
 
 				mbk.EXPECT().
@@ -297,7 +297,7 @@ func TestSendCoinsFromModuleToAccount(t *testing.T) {
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
 				expectedCoins := sdk.NewCoins([]sdk.Coin{
-					sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)),
+					sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)),
 				}...)
 
 				mbk.EXPECT().
@@ -348,7 +348,7 @@ func TestSendCoinsFromModuleToAccount(t *testing.T) {
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
 				expectedCoins := sdk.NewCoins([]sdk.Coin{
-					sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)),
+					sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)),
 					sdk.NewCoin("something", sdkmath.NewInt(3e18)),
 				}...)
 
@@ -458,7 +458,7 @@ func TestSendCoinsFromAccountToModule(t *testing.T) {
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
 				expectedCoins := sdk.NewCoins([]sdk.Coin{
-					sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)),
+					sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)),
 				}...)
 
 				mbk.EXPECT().
@@ -509,7 +509,7 @@ func TestSendCoinsFromAccountToModule(t *testing.T) {
 			expectErr: "",
 			mockSetup: func(mbk *testutil.MockBankWrapper) {
 				expectedCoins := sdk.NewCoins([]sdk.Coin{
-					sdk.NewCoin(sixDecimalsCoinInfo.Denom, sdkmath.NewInt(1e6)),
+					sdk.NewCoin(sixDecimalsCoinInfo.ExtendedDenom, sdkmath.NewInt(1e18)),
 					sdk.NewCoin("something", sdkmath.NewInt(3e18)),
 				}...)
 

@@ -19,9 +19,9 @@ func TestConvertCoinsFrom18Decimals(t *testing.T) {
 	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
 	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
 
-	eighteenDecimalsBaseCoin := sdk.Coin{Denom: eighteenDecimalsCoinInfo.Denom, Amount: math.NewInt(10)}
-	sixDecimalsExtendedCoin := sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(10)}
 	nonBaseCoin := sdk.Coin{Denom: "btc", Amount: math.NewInt(10)}
+	eighteenDecimalsBaseCoin := sdk.Coin{Denom: eighteenDecimalsCoinInfo.Denom, Amount: math.NewInt(10)}
+	sixDecimalsBaseCoin := sdk.Coin{Denom: sixDecimalsCoinInfo.Denom, Amount: math.NewInt(10)}
 
 	testCases := []struct {
 		name        string
@@ -44,8 +44,8 @@ func TestConvertCoinsFrom18Decimals(t *testing.T) {
 		{
 			name:        "pass - only base denom 6 decimals",
 			evmCoinInfo: sixDecimalsCoinInfo,
-			coins:       sdk.Coins{sixDecimalsExtendedCoin},
-			expCoins:    sdk.Coins{sixDecimalsExtendedCoin},
+			coins:       sdk.Coins{sixDecimalsBaseCoin},
+			expCoins:    sdk.Coins{sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(10)}},
 		},
 		{
 			name:        "pass - multiple coins and base denom 18 decimals",
@@ -56,8 +56,8 @@ func TestConvertCoinsFrom18Decimals(t *testing.T) {
 		{
 			name:        "pass - multiple coins and base denom 6 decimals",
 			evmCoinInfo: sixDecimalsCoinInfo,
-			coins:       sdk.Coins{nonBaseCoin, sixDecimalsExtendedCoin}.Sort(),
-			expCoins:    sdk.Coins{nonBaseCoin, sixDecimalsExtendedCoin}.Sort(),
+			coins:       sdk.Coins{nonBaseCoin, sixDecimalsBaseCoin}.Sort(),
+			expCoins:    sdk.Coins{nonBaseCoin, sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(10)}}.Sort(),
 		},
 	}
 

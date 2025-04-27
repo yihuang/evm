@@ -110,11 +110,9 @@ func CheckTxFee(txFeeInfo *tx.Fee, txFee *big.Int, txGasLimit uint64) error {
 		return nil
 	}
 
-	convertedAmount := sdkmath.NewIntFromBigInt(evmtypes.ConvertAmountFrom18DecimalsBigInt(txFee))
-
-	baseDenom := evmtypes.GetEVMCoinDenom()
-	if !txFeeInfo.Amount.AmountOf(baseDenom).Equal(convertedAmount) {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid AuthInfo Fee Amount (%s != %s)", txFeeInfo.Amount, convertedAmount)
+	evmExtendedDenom := evmtypes.GetEVMCoinExtendedDenom()
+	if !txFeeInfo.Amount.AmountOf(evmExtendedDenom).Equal(sdkmath.NewIntFromBigInt(txFee)) {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid AuthInfo Fee Amount (%s != %s)", txFeeInfo.Amount, txFee)
 	}
 
 	if txFeeInfo.GasLimit != txGasLimit {
