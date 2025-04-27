@@ -40,11 +40,6 @@ func setEVMCoinDenom(denom string) error {
 
 // setEVMCoinExtendedDenom allows to define the extended denom of the coin used in the EVM.
 func setEVMCoinExtendedDenom(extendedDenom string) error {
-	// if 18 decimals, extended denom must be empty
-	if extendedDenom == "" {
-		return nil
-	}
-
 	if err := sdk.ValidateDenom(extendedDenom); err != nil {
 		return err
 	}
