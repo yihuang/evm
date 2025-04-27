@@ -15,6 +15,81 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func TestConvertEvmCoinFrom18Decimals(t *testing.T) {
+	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
+	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
+
+	eighteenDecimalsBaseCoinZero := sdk.Coin{Denom: eighteenDecimalsCoinInfo.Denom, Amount: math.NewInt(0)}
+	sixDecimalsBaseCoinZero := sdk.Coin{Denom: sixDecimalsCoinInfo.Denom, Amount: math.NewInt(0)}
+
+	testCases := []struct {
+		name        string
+		evmCoinInfo evmtypes.EvmCoinInfo
+		coin        sdk.Coin
+		expCoin     sdk.Coin
+		expErr      bool
+	}{
+		{
+			name:        "pass - zero amount 18 decimals",
+			evmCoinInfo: eighteenDecimalsCoinInfo,
+			coin:        eighteenDecimalsBaseCoinZero,
+			expErr:      false,
+			expCoin:     eighteenDecimalsBaseCoinZero,
+		},
+		{
+			name:        "pass - zero amount 6 decimals",
+			evmCoinInfo: sixDecimalsCoinInfo,
+			coin:        sixDecimalsBaseCoinZero,
+			expErr:      false,
+			expCoin:     sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(0)},
+		},
+		{
+			name:        "pass - no conversion with 18 decimals",
+			evmCoinInfo: eighteenDecimalsCoinInfo,
+			coin:        sdk.Coin{Denom: eighteenDecimalsCoinInfo.Denom, Amount: math.NewInt(10)},
+			expErr:      false,
+			expCoin:     sdk.Coin{Denom: eighteenDecimalsCoinInfo.Denom, Amount: math.NewInt(10)},
+		},
+		{
+			name:        "pass - conversion with 6 decimals",
+			evmCoinInfo: sixDecimalsCoinInfo,
+			coin:        sdk.Coin{Denom: sixDecimalsCoinInfo.Denom, Amount: math.NewInt(1e12)},
+			expErr:      false,
+			expCoin:     sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(1e12)},
+		},
+		{
+			name:        "pass - conversion with amount less than conversion factor",
+			evmCoinInfo: sixDecimalsCoinInfo,
+			coin:        sdk.Coin{Denom: sixDecimalsCoinInfo.Denom, Amount: math.NewInt(1e11)},
+			expErr:      false,
+			expCoin:     sdk.Coin{Denom: sixDecimalsCoinInfo.ExtendedDenom, Amount: math.NewInt(1e11)},
+		},
+		{
+			name:        "fail - not evm denom",
+			evmCoinInfo: sixDecimalsCoinInfo,
+			coin:        sdk.Coin{Denom: "atom", Amount: math.NewInt(1)},
+			expErr:      true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			configurator := evmtypes.NewEVMConfigurator()
+			configurator.ResetTestConfig()
+			require.NoError(t, configurator.WithEVMCoinInfo(tc.evmCoinInfo).Configure())
+
+			coinConverted, err := evmtypes.ConvertEvmCoinFrom18Decimals(tc.coin)
+
+			if !tc.expErr {
+				require.NoError(t, err)
+				require.Equal(t, tc.expCoin, coinConverted, "expected a different coin")
+			} else {
+				require.Error(t, err)
+			}
+		})
+	}
+}
+
 func TestConvertCoinsFrom18Decimals(t *testing.T) {
 	eighteenDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.ExampleChainID]
 	sixDecimalsCoinInfo := testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID]
