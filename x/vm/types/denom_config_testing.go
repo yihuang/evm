@@ -63,7 +63,7 @@ func GetEVMCoinExtendedDenom() string {
 	return testingEvmCoinInfo.ExtendedDenom
 }
 
-// SetEVMCoinInfo allows to define denom and decimals of the coin used in the EVM.
+// setTestingEVMCoinInfo allows to define denom and decimals of the coin used in the EVM.
 func setTestingEVMCoinInfo(eci EvmCoinInfo) error {
 	if testingEvmCoinInfo != nil {
 		return errors.New("testing EVM coin info already set. Make sure you run the configurator's ResetTestConfig before trying to set a new evm coin info")
