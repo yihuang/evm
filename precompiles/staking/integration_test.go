@@ -131,7 +131,7 @@ var _ = Describe("Calling staking precompile directly", func() {
 				callArgs,
 				expectedCheck,
 			)
-			Expect(err).To(BeNil(), "expected error while calling the precompile")
+			Expect(err).To(BeNil(), "error while calling the contract and checking logs")
 			qRes, err = s.grpcHandler.GetDelegation(delegator.AccAddr.String(), valAddr.String())
 			Expect(err).To(BeNil())
 			postDelegation := qRes.DelegationResponse.Balance
@@ -1487,7 +1487,7 @@ var _ = Describe("Calling staking precompile via Solidity", Ordered, func() {
 				txArgs, callArgs,
 				execRevertedCheck,
 			)
-			Expect(err).To(BeNil(), "expected error while calling the precompile")
+			Expect(err).To(BeNil(), "fails for other reason, I think general message like ")
 		})
 	})
 
