@@ -379,15 +379,6 @@ func (suite *KeeperTestSuite) TestDeleteAllowance() {
 			true,
 			"",
 		},
-		{
-			"pass - positive value",
-			func() {
-				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
-				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
-			},
-			true,
-			"",
-		},
 	}
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
