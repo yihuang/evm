@@ -859,7 +859,7 @@ func (s *PrecompileTestSuite) TestUndelegate() {
 
 	testCases := []struct {
 		name                  string
-		malleate              func(delegato testkeyring.Key, operatorAddress string) []interface{}
+		malleate              func(delegator testkeyring.Key, operatorAddress string) []interface{}
 		postCheck             func(data []byte)
 		gas                   uint64
 		expUndelegationShares *big.Int

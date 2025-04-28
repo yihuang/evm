@@ -410,7 +410,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			errContains: erc20.ErrDecreaseNonPositiveValue.Error(),
 		},
 		{
-			name: "fail - decrease allowance without existing allowane",
+			name: "fail - decrease allowance without existing allowance",
 			malleate: func() []interface{} {
 				return []interface{}{
 					s.keyring.GetAddr(1), big.NewInt(decreaseAmount),
@@ -419,7 +419,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			errContains: "does not exist",
 		},
 		{
-			name: "pass - decrease allowance with existing allowane",
+			name: "pass - decrease allowance with existing allowance",
 			malleate: func() []interface{} {
 				s.setAllowance(
 					s.precompile.Address(),
@@ -443,7 +443,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			},
 		},
 		{
-			name: "pass - decrease to zero and delete existing allowane",
+			name: "pass - decrease to zero and delete existing allowance",
 			malleate: func() []interface{} {
 				s.setAllowance(
 					s.precompile.Address(),
@@ -458,7 +458,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			},
 			expPass: true,
 			postCheck: func() {
-				// Check that the allowane was deleted
+				// Check that the allowance was deleted
 				s.requireAllowance(
 					s.precompile.Address(),
 					s.keyring.GetAddr(0),
@@ -468,7 +468,7 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 			},
 		},
 		{
-			name: "fail - decrease allowance with existing allowane but decreased amount too high",
+			name: "fail - decrease allowance with existing allowance but decreased amount too high",
 			malleate: func() []interface{} {
 				s.setAllowance(
 					s.precompile.Address(),
