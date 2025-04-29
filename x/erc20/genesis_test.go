@@ -188,7 +188,7 @@ func (suite *GenesisTestSuite) TestErc20ExportGenesis() {
 			genesisState: *types.DefaultGenesisState(),
 		},
 		{
-			name: "custom genesis",
+			name: "custom genesis with empty allowance",
 			genesisState: types.NewGenesisState(
 				types.DefaultParams(),
 				[]types.TokenPair{
@@ -200,6 +200,34 @@ func (suite *GenesisTestSuite) TestErc20ExportGenesis() {
 					},
 				},
 				[]types.Allowance{},
+			),
+		},
+		{
+			name: "custom genesis with allowances",
+			genesisState: types.NewGenesisState(
+				types.DefaultParams(),
+				[]types.TokenPair{
+					{
+						Erc20Address:  osmoERC20ContractAddr,
+						Denom:         osmoDenom.IBCDenom(),
+						Enabled:       true,
+						ContractOwner: types.OWNER_MODULE,
+					},
+				},
+				[]types.Allowance{
+					{
+						Erc20Address: osmoERC20ContractAddr,
+						Owner:        utiltx.GenerateAddress().String(),
+						Spender:      utiltx.GenerateAddress().String(),
+						Value:        math.NewInt(100),
+					},
+					{
+						Erc20Address: osmoERC20ContractAddr,
+						Owner:        utiltx.GenerateAddress().String(),
+						Spender:      utiltx.GenerateAddress().String(),
+						Value:        math.NewInt(200),
+					},
+				},
 			),
 		},
 	}
