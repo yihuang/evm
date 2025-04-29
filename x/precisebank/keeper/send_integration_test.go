@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/cosmos/evm/evmd"
 	testconstants "github.com/cosmos/evm/testutil/constants"
 	"github.com/cosmos/evm/x/precisebank/keeper"
@@ -810,6 +812,12 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 }
 
 func FuzzSendCoins(f *testing.F) {
+	configurator := evmtypes.NewEVMConfigurator()
+	configurator.ResetTestConfig()
+	configurator.WithEVMCoinInfo(testconstants.ExampleChainCoinInfo[testconstants.SixDecimalsChainID])
+	err := configurator.Configure()
+	require.NoError(f, err)
+
 	f.Add(uint64(100), uint64(0), uint64(2))
 	f.Add(uint64(100), uint64(100), uint64(5))
 	f.Add(types.ConversionFactor().Uint64(), uint64(0), uint64(500))
