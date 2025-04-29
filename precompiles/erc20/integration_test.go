@@ -454,9 +454,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					}
 					txArgs.Amount = amountToSend
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 					res, _, err := is.factory.CallContractAndCheckLogs(sender.Priv, txArgs, args, transferCheck)
 					Expect(err).To(BeNil())
 					Expect(is.network.NextBlock()).To(BeNil())
@@ -548,9 +546,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					}
 					txArgs.Amount = big.NewInt(totalToSend)
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 					res, _, err := is.factory.CallContractAndCheckLogs(sender.Priv, txArgs, args, transferCheck)
 					Expect(err).To(BeNil())
 					Expect(is.network.NextBlock()).To(BeNil())
@@ -638,9 +634,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					}
 					txArgs.Amount = big.NewInt(200)
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 					res, _, err := is.factory.CallContractAndCheckLogs(sender.Priv, txArgs, args, transferCheck)
 					Expect(err).To(BeNil())
 					Expect(is.network.NextBlock()).To(BeNil())
@@ -690,10 +684,7 @@ var _ = Describe("ERC20 Extension -", func() {
 						owner.Addr, receiver, transferAmount,
 					)
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-						erc20.EventTypeApproval,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(spender.Priv, txArgs, transferArgs, transferCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -744,9 +735,7 @@ var _ = Describe("ERC20 Extension -", func() {
 							owner.Addr, receiver, transferCoins[0].Amount.BigInt(),
 						)
 
-						transferCheck := passCheck.WithExpEvents(
-							erc20.EventTypeTransfer, erc20.EventTypeApproval,
-						)
+						transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(spender.Priv, txArgs, transferArgs, transferCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -796,10 +785,7 @@ var _ = Describe("ERC20 Extension -", func() {
 							owner.Addr, receiver, transferCoins[0].Amount.BigInt(),
 						)
 
-						transferCheck := passCheck.WithExpEvents(
-							erc20.EventTypeTransfer,
-							erc20.EventTypeApproval,
-						)
+						transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(owner.Priv, txArgs, transferArgs, transferCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -975,10 +961,7 @@ var _ = Describe("ERC20 Extension -", func() {
 						owner.Addr, receiver, transferCoins[0].Amount.BigInt(),
 					)
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-						erc20.EventTypeApproval,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(owner.Priv, txArgs, transferArgs, transferCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -1037,10 +1020,7 @@ var _ = Describe("ERC20 Extension -", func() {
 						owner.Addr, receiver, transferCoins[0].Amount.BigInt(),
 					)
 
-					transferCheck := passCheck.WithExpEvents(
-						erc20.EventTypeTransfer,
-						erc20.EventTypeApproval,
-					)
+					transferCheck := passCheck.WithExpEvents(erc20.EventTypeTransfer)
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(msgSender.Priv, txArgs, transferArgs, transferCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -1211,12 +1191,7 @@ var _ = Describe("ERC20 Extension -", func() {
 			)
 
 			When("querying the allowance for the own address", func() {
-				// NOTE: We differ in behavior from the ERC20 calls here, because the full logic for approving,
-				// querying allowance and reducing allowance on a transferFrom transaction is not possible without
-				// changes to the Cosmos SDK.
-				//
-				// For reference see this comment: https://github.com/evmos/evmos/pull/2088#discussion_r1407646217
-				It("should return the maxUint256 value when calling the EVM extension", func() {
+				It("should return the 0 value when calling the EVM extension", func() {
 					spender := is.keyring.GetAddr(0)
 					owner := is.keyring.GetKey(0)
 
@@ -1228,7 +1203,7 @@ var _ = Describe("ERC20 Extension -", func() {
 					var allowance *big.Int
 					err = is.precompile.UnpackIntoInterface(&allowance, erc20.AllowanceMethod, ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
-					Expect(allowance).To(Equal(abi.MaxUint256), "expected different allowance")
+					Expect(allowance).To(Equal(common.Big0), "expected different allowance")
 				})
 
 				// NOTE: Since it's possible to set an allowance for the own address with the Solidity ERC20 contracts,

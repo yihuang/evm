@@ -89,17 +89,9 @@ func (p *Precompile) transfer(
 		return nil, err
 	}
 
-	isTransferFrom := method.Name == TransferFromMethod
-	owner := sdk.AccAddress(from.Bytes())
-	spenderAddr := contract.CallerAddress
-	spender := sdk.AccAddress(spenderAddr.Bytes())
-	ownerIsSpender := spender.Equals(owner)
+	if method.Name == TransferFromMethod {
+		spenderAddr := contract.CallerAddress
 
-	newAllowance := big.NewInt(0)
-	// NOTES: Approve method does not support the case where the owner and spender are the same,
-	// But, Allowance method return infinite amount(abi.MaxUint256) when owner is spender.
-	// Therefore, in this case, owner can spend infinite amount of tokens. without modifying the allowance.
-	if !ownerIsSpender {
 		prevAllowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), from, spenderAddr)
 		if err != nil {
 			return nil, ConvertErrToERC20Error(err)
@@ -137,14 +129,6 @@ func (p *Precompile) transfer(
 
 	if err = p.EmitTransferEvent(ctx, stateDB, from, to, amount); err != nil {
 		return nil, err
-	}
-
-	// NOTE: if it's a direct transfer, we return here but if used through transferFrom,
-	// we need to emit the approval event with the new allowance.
-	if isTransferFrom {
-		if err = p.EmitApprovalEvent(ctx, stateDB, from, spenderAddr, newAllowance); err != nil {
-			return nil, err
-		}
 	}
 
 	return method.Outputs.Pack(true)

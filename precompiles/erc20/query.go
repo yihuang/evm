@@ -1,7 +1,6 @@
 package erc20
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"strings"
@@ -182,12 +181,6 @@ func (p Precompile) Allowance(
 	owner, spender, err := ParseAllowanceArgs(args)
 	if err != nil {
 		return nil, err
-	}
-
-	// NOTE: In case the allowance is queried by the owner, we return the max uint256 value, which
-	// resembles an infinite allowance.
-	if bytes.Equal(owner.Bytes(), spender.Bytes()) {
-		return method.Outputs.Pack(abi.MaxUint256)
 	}
 
 	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)

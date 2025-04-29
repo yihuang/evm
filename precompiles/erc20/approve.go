@@ -1,7 +1,6 @@
 package erc20
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -41,14 +40,6 @@ func (p Precompile) Approve(
 	}
 
 	owner := contract.CallerAddress
-
-	// NOTE: We do not support approvals if the spender is the owner.
-	// This is different from the ERC20 standard but there is no reason to
-	// do so, since in that case the spender can just transfer the tokens
-	// without allowance.
-	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
-		return nil, ErrSpenderIsOwner
-	}
 
 	// TODO: owner should be the owner of the contract
 	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
@@ -105,10 +96,6 @@ func (p Precompile) IncreaseAllowance(
 	}
 
 	owner := contract.CallerAddress
-
-	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
-		return nil, ErrSpenderIsOwner
-	}
 
 	// TODO: owner should be the owner of the contract
 	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
@@ -170,9 +157,6 @@ func (p Precompile) DecreaseAllowance(
 
 	owner := contract.CallerAddress
 
-	if bytes.Equal(spender.Bytes(), owner.Bytes()) {
-		return nil, ErrSpenderIsOwner
-	}
 	// TODO: owner should be the owner of the contract
 
 	allowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), owner, spender)
