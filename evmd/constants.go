@@ -20,4 +20,9 @@ const (
 	TwoDecimalsChainID = "ostwo_9004"
 
 	CosmosChainID = "cosmos_262144"
+
+	// TestChainID1 is test chain IDs for IBC E2E test
+	TestChainID1 = "testchain_9001"
+	// TestChainID2 is test chain IDs for IBC E2E test
+	TestChainID2 = "testchain_9002"
 )

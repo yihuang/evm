@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	precisebanktypes "github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
@@ -40,6 +41,16 @@ var ChainsCoinInfo = map[string]evmtypes.EvmCoinInfo{
 		ExtendedDenom: "atest3",
 		DisplayDenom:  "test3",
 		Decimals:      evmtypes.TwoDecimals,
+	},
+	TestChainID1: {
+		Denom:        ExampleChainDenom,
+		DisplayDenom: ExampleChainDenom,
+		Decimals:     evmtypes.EighteenDecimals,
+	},
+	TestChainID2: {
+		Denom:        ExampleChainDenom,
+		DisplayDenom: ExampleChainDenom,
+		Decimals:     evmtypes.EighteenDecimals,
 	},
 }
 
