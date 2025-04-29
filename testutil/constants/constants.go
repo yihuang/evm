@@ -3,7 +3,10 @@ package constants
 import (
 	"fmt"
 
+	erc20types "github.com/cosmos/evm/x/erc20/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
+
+	"cosmossdk.io/math"
 )
 
 const (
@@ -60,6 +63,28 @@ var (
 			Denom:        ExampleMicroDenom,
 			DisplayDenom: ExampleDisplayDenom,
 			Decimals:     evmtypes.SixDecimals,
+		},
+	}
+
+	// ExampleTokenPairs creates a slice of token pairs, that contains a pair for the native denom of the example chain
+	// implementation.
+	ExampleTokenPairs = []erc20types.TokenPair{
+		{
+			Erc20Address:  WEVMOSContractMainnet,
+			Denom:         ExampleAttoDenom,
+			Enabled:       true,
+			ContractOwner: erc20types.OWNER_MODULE,
+		},
+	}
+
+	// ExampleAllowances creates a slice of allowances, that contains an allowance for the native denom of the example chain
+	// implementation.
+	ExampleAllowances = []erc20types.Allowance{
+		{
+			Erc20Address: WEVMOSContractMainnet,
+			Owner:        ExampleEvmAddressAlice,
+			Spender:      ExampleEvmAddressBob,
+			Value:        math.NewInt(100),
 		},
 	}
 )
