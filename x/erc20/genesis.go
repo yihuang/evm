@@ -2,7 +2,6 @@ package erc20
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -35,13 +34,11 @@ func InitGenesis(
 		k.SetToken(ctx, pair)
 	}
 
-	var erc20, owner, spender common.Address
-	var value *big.Int
 	for _, allowance := range data.Allowances {
-		erc20 = common.HexToAddress(allowance.Erc20Address)
-		owner = common.HexToAddress(allowance.Owner)
-		spender = common.HexToAddress(allowance.Spender)
-		value = allowance.Value.BigInt()
+		erc20 := common.HexToAddress(allowance.Erc20Address)
+		owner := common.HexToAddress(allowance.Owner)
+		spender := common.HexToAddress(allowance.Spender)
+		value := allowance.Value.BigInt()
 		err := k.UnsafeSetAllowance(ctx, erc20, owner, spender, value)
 		if err != nil {
 			panic(fmt.Errorf("error setting allowance %s", err))
