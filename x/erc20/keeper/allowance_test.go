@@ -205,7 +205,7 @@ func (suite *KeeperTestSuite) TestSetAllowance() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
+func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 	var (
 		ctx       sdk.Context
 		erc20Addr common.Address
@@ -222,24 +222,38 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 	)
 
 	testCases := []struct {
-		name        string
-		malleate    func()
-		expectPass  bool
-		errContains string
+		name                   string
+		malleate               func()
+		allowDisabledTokenPair bool
+		expectPass             bool
+		errContains            string
 	}{
 		{
 			"fail - no token pair exists",
 			func() {},
 			false,
+			false,
 			types.ErrTokenPairNotFound.Error(),
 		},
 		{
-			"pass - token pair is disabled",
+			"fail - token pair is disabled, disabled token pair is not allowed",
 			func() {
 				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
 				pair.Enabled = false
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 			},
+			false,
+			false,
+			types.ErrERC20TokenPairDisabled.Error(),
+		},
+		{
+			"pass - token pair is disabled, disabled token pair is allowed",
+			func() {
+				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
+				pair.Enabled = false
+				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
+			},
+			true,
 			true,
 			types.ErrERC20TokenPairDisabled.Error(),
 		},
@@ -251,6 +265,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 				owner = common.HexToAddress("0x0")
 			},
 			false,
+			false,
 			errortypes.ErrInvalidAddress.Error(),
 		},
 		{
@@ -260,6 +275,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				spender = common.HexToAddress("0x0")
 			},
+			false,
 			false,
 			errortypes.ErrInvalidAddress.Error(),
 		},
@@ -271,6 +287,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 				value = big.NewInt(-100)
 			},
 			false,
+			false,
 			types.ErrInvalidAllowance.Error(),
 		},
 		{
@@ -280,6 +297,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				value = big.NewInt(0)
 			},
+			false,
 			true,
 			"",
 		},
@@ -290,6 +308,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				value = big.NewInt(100)
 			},
+			false,
 			true,
 			"",
 		},
@@ -303,7 +322,7 @@ func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 			tc.malleate()
 
 			// Set Allowance
-			err := suite.network.App.Erc20Keeper.UnsafeSetAllowance(ctx, erc20Addr, owner, spender, value)
+			err := suite.network.App.Erc20Keeper.SetAllowanceWithValidation(ctx, erc20Addr, owner, spender, value, tc.allowDisabledTokenPair)
 			if tc.expectPass {
 				suite.Require().NoError(err)
 			} else {
