@@ -42,7 +42,7 @@ type Precompile struct {
 func NewPrecompile(
 	stakingKeeper stakingkeeper.Keeper,
 	transferKeeper transferkeeper.Keeper,
-	channelKeeper channelkeeper.Keeper,
+	channelKeeper *channelkeeper.Keeper,
 	evmKeeper *evmkeeper.Keeper,
 ) (*Precompile, error) {
 	newAbi, err := cmn.LoadABI(f, "abi.json")

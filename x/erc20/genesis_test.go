@@ -108,7 +108,7 @@ func (suite *GenesisTestSuite) TestERC20InitGenesis() {
 				[]types.TokenPair{
 					{
 						Erc20Address:  osmoERC20ContractAddr,
-						Denom:         osmoDenomTrace.IBCDenom(),
+						Denom:         osmoDenom.IBCDenom(),
 						Enabled:       true,
 						ContractOwner: types.OWNER_MODULE,
 					},
@@ -130,7 +130,7 @@ func (suite *GenesisTestSuite) TestERC20InitGenesis() {
 				[]types.TokenPair{
 					{
 						Erc20Address:  osmoERC20ContractAddr,
-						Denom:         osmoDenomTrace.IBCDenom(),
+						Denom:         osmoDenom.IBCDenom(),
 						Enabled:       false,
 						ContractOwner: types.OWNER_MODULE,
 					},
