@@ -14,7 +14,6 @@ import (
 func RegisterInvariants(
 	ir sdk.InvariantRegistry,
 	k Keeper,
-	bk types.BankKeeper,
 ) {
 	ir.RegisterRoute(types.ModuleName, "reserve-backs-fractions", ReserveBacksFractionsInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "balance-remainder-total", BalancedFractionalTotalInvariant(k))

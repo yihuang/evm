@@ -32,6 +32,7 @@ var (
 
 	_ appmodule.AppModule   = AppModule{}
 	_ module.HasABCIGenesis = AppModule{}
+	_ module.HasInvariants  = AppModule{}
 )
 
 // ----------------------------------------------------------------------------
@@ -138,7 +139,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 // RegisterInvariants registers precisebank module's invariants.
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(ir, am.keeper, am.bankKeeper)
+	keeper.RegisterInvariants(ir, am.keeper)
 }
 
 // InitGenesis performs precisebank module's genesis initialization It returns
