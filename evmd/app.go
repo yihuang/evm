@@ -484,15 +484,18 @@ func NewExampleApp(
 		tkeys[feemarkettypes.TransientKey],
 	)
 
-	// Set up EVM keeper
-	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
-
+	// Set up PreciseBank keeper
+	//
+	// NOTE: PreciseBank is not needed if SDK use 18 decimals for gas coin. Use BankKeeper instead.
 	app.PreciseBankKeeper = precisebankkeeper.NewKeeper(
 		appCodec,
 		keys[precisebanktypes.StoreKey],
 		app.BankKeeper,
 		app.AccountKeeper,
 	)
+
+	// Set up EVM keeper
+	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
 
 	// NOTE: it's required to set up the EVM keeper before the ERC-20 keeper, because it is used in its instantiation.
 	app.EVMKeeper = evmkeeper.NewKeeper(
