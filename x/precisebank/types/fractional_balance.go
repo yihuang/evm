@@ -10,27 +10,26 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var (
-	// Decimals is the number of decimal places for the fractional balance from EVM.
-	Decimals = evmtypes.SixDecimals
-
-	// IntegerCoinDenom is the denomination for integer coins that are managed by
-	// x/bank. This is the "true" denomination of the coin, and is also used for
-	// the reserve to back all fractional coins.
-	IntegerCoinDenom = "uatom"
-
-	// ExtendedCoinDenom is the denomination for the extended IntegerCoinDenom. This
-	// not only represents the fractional balance, but the total balance of
-	// integer + fractional balances.
-	ExtendedCoinDenom = "aatom"
-)
-
 // ConversionFactor returns a copy of the conversionFactor used to convert the
 // fractional balance to integer balances. This is also 1 greater than the max
 // valid fractional amount (999_999_999_999):
 // 0 < FractionalBalance < conversionFactor
 func ConversionFactor() sdkmath.Int {
-	return sdkmath.NewIntFromBigInt(Decimals.ConversionFactor().BigInt())
+	return sdkmath.NewIntFromBigInt(evmtypes.GetEVMCoinDecimals().ConversionFactor().BigInt())
+}
+
+// IntegerCoinDenom is the denomination for integer coins that are managed by
+// x/bank. This is the "true" denomination of the coin, and is also used for
+// the reserve to back all fractional coins.
+func IntegerCoinDenom() string {
+	return evmtypes.GetEVMCoinDenom()
+}
+
+// ExtendedCoinDenom is the denomination for the extended IntegerCoinDenom. This
+// not only represents the fractional balance, but the total balance of
+// integer + fractional balances.
+func ExtendedCoinDenom() string {
+	return evmtypes.GetEVMCoinExtendedDenom()
 }
 
 // FractionalBalance returns a new FractionalBalance with the given address and

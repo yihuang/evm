@@ -59,7 +59,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				err := suite.network.App.BankKeeper.MintCoins(
 					suite.network.GetContext(),
 					types.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(2))),
+					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(2))),
 				)
 				suite.Require().NoError(err)
 			},
@@ -98,7 +98,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				sdkmath.NewInt(2),
 			),
 			fmt.Sprintf("module account balance does not match sum of fractional balances and remainder, balance is 0%s but expected 2000000000000%s (2%s)",
-				types.IntegerCoinDenom, types.ExtendedCoinDenom, types.IntegerCoinDenom),
+				types.IntegerCoinDenom(), types.ExtendedCoinDenom(), types.IntegerCoinDenom()),
 		},
 		{
 			"invalid - module balance excessive",
@@ -107,7 +107,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				err := suite.network.App.BankKeeper.MintCoins(
 					suite.network.GetContext(),
 					types.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(100))),
+					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(100))),
 				)
 				suite.Require().NoError(err)
 			},
@@ -119,7 +119,7 @@ func (suite *GenesisTestSuite) TestInitGenesis() {
 				sdkmath.NewInt(2),
 			),
 			fmt.Sprintf("module account balance does not match sum of fractional balances and remainder, balance is 100%s but expected 2000000000000%s (2%s)",
-				types.IntegerCoinDenom, types.ExtendedCoinDenom, types.IntegerCoinDenom),
+				types.IntegerCoinDenom(), types.ExtendedCoinDenom(), types.IntegerCoinDenom()),
 		},
 		{
 			"sets module account",
@@ -219,7 +219,7 @@ func (suite *GenesisTestSuite) TestExportGenesis() {
 				err := suite.network.App.BankKeeper.MintCoins(
 					suite.network.GetContext(),
 					types.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1))),
+					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1))),
 				)
 				suite.Require().NoError(err)
 
@@ -238,7 +238,7 @@ func (suite *GenesisTestSuite) TestExportGenesis() {
 				err := suite.network.App.BankKeeper.MintCoins(
 					suite.network.GetContext(),
 					types.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1))),
+					sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1))),
 				)
 				suite.Require().NoError(err)
 

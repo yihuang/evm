@@ -10,7 +10,6 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	precisebanktypes "github.com/cosmos/evm/x/precisebank/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
@@ -95,10 +94,6 @@ func EvmAppOptions(chainID string) error {
 	if err != nil {
 		return err
 	}
-
-	precisebanktypes.Decimals = evmtypes.GetEVMCoinDecimals()
-	precisebanktypes.IntegerCoinDenom = evmtypes.GetEVMCoinDenom()
-	precisebanktypes.ExtendedCoinDenom = evmtypes.GetEVMCoinExtendedDenom()
 
 	return nil
 }

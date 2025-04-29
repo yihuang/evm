@@ -49,7 +49,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 
 			// Mint initial balance to sender
 			initialBalance := types.ConversionFactor().MulRaw(100)
-			initialCoins := cs(ci(types.ExtendedCoinDenom, initialBalance))
+			initialCoins := cs(ci(types.ExtendedCoinDenom(), initialBalance))
 			suite.Require().NoError(suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), moduleName, initialCoins))
 			suite.Require().NoError(suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), moduleName, sender, initialCoins))
 
@@ -71,7 +71,7 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 				switch op {
 				case 0: // Mint to sender via module
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxUnit.BigInt())).AddRaw(1)
-					mintCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+					mintCoins := cs(ci(types.ExtendedCoinDenom(), randAmount))
 					if err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), moduleName, mintCoins); err != nil {
 						continue
 					}
@@ -83,13 +83,13 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 					mintCount++
 
 				case 1: // Burn from sender via module
-					senderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+					senderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom())
 					if senderBal.IsZero() {
 						continue
 					}
 					burnable := sdkmath.MinInt(senderBal, maxUnit)
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, burnable.BigInt())).AddRaw(1)
-					burnCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+					burnCoins := cs(ci(types.ExtendedCoinDenom(), randAmount))
 					if err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), sender, moduleName, burnCoins); err != nil {
 						continue
 					}
@@ -101,13 +101,13 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 					burnCount++
 
 				case 2: // Send from sender to recipient
-					senderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+					senderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom())
 					if senderBal.IsZero() {
 						continue
 					}
 					sendable := sdkmath.MinInt(senderBal, maxUnit)
 					randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, sendable.BigInt())).AddRaw(1)
-					sendCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+					sendCoins := cs(ci(types.ExtendedCoinDenom(), randAmount))
 					if err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendCoins); err != nil {
 						continue
 					}
@@ -120,8 +120,8 @@ func (suite *KeeperIntegrationTestSuite) TestMintBurnSendCoins_RandomValueMultiD
 			suite.T().Logf("Executed operations: %d mints, %d burns, %d sends", mintCount, burnCount, sendCount)
 
 			// Check balances
-			actualSenderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
-			actualRecipientBal := suite.GetAllBalances(recipient).AmountOf(types.ExtendedCoinDenom)
+			actualSenderBal := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom())
+			actualRecipientBal := suite.GetAllBalances(recipient).AmountOf(types.ExtendedCoinDenom())
 			suite.Require().Equal(expectedSenderBal.BigInt().Cmp(actualSenderBal.BigInt()), 0, "Sender balance mismatch (expected: %s, actual: %s)", expectedSenderBal, actualSenderBal)
 			suite.Require().Equal(expectedRecipientBal.BigInt().Cmp(actualRecipientBal.BigInt()), 0, "Recipient balance mismatch (expected: %s, actual: %s)", expectedRecipientBal, actualRecipientBal)
 
@@ -176,7 +176,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 
 			// Burn balance from sender except for initial balance
 			initialBalance := types.ConversionFactor().MulRaw(100)
-			senderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom).Sub(gasFee).Sub(initialBalance)
+			senderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom()).Sub(gasFee).Sub(initialBalance)
 			_, err = suite.factory.ExecuteEthTx(sender.Priv, evmtypes.EvmTxArgs{
 				To:       &burnerAddr,
 				Amount:   senderBal.BigInt(),
@@ -186,7 +186,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			suite.Require().NoError(err)
 
 			// Burn balance from recipient
-			recipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom).Sub(gasFee)
+			recipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom()).Sub(gasFee)
 			_, err = suite.factory.ExecuteEthTx(recipient.Priv, evmtypes.EvmTxArgs{
 				To:       &burnerAddr,
 				Amount:   recipientBal.BigInt(),
@@ -243,12 +243,12 @@ func (suite *KeeperIntegrationTestSuite) TestSendEvmTx_RandomValueMultiDecimals(
 			suite.T().Logf("Completed %d random evm sends", sentCount)
 
 			// Check sender balance
-			actualSenderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom)
+			actualSenderBal := suite.GetAllBalances(sender.AccAddr).AmountOf(types.ExtendedCoinDenom())
 			suite.Require().Equal(expectedSenderBal.BigInt().Cmp(actualSenderBal.BigInt()), 0,
 				"Sender balance mismatch (expected: %s, actual: %s)", expectedSenderBal, actualSenderBal)
 
 			// Check recipient balance
-			actualRecipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom)
+			actualRecipientBal := suite.GetAllBalances(recipient.AccAddr).AmountOf(types.ExtendedCoinDenom())
 			suite.Require().Equal(expectedRecipientBal.BigInt().Cmp(actualRecipientBal.BigInt()), 0,
 				"Recipient balance mismatch (expected: %s, actual: %s)", expectedRecipientBal, actualRecipientBal)
 

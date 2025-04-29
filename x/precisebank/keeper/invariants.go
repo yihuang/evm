@@ -77,7 +77,7 @@ func ReserveBacksFractionsInvariant(k Keeper) sdk.Invariant {
 
 		// Get the total amount of backing coins in the reserve
 		moduleAddr := k.ak.GetModuleAddress(types.ModuleName)
-		reserveIntegerBalance := k.bk.GetBalance(ctx, moduleAddr, types.IntegerCoinDenom)
+		reserveIntegerBalance := k.bk.GetBalance(ctx, moduleAddr, types.IntegerCoinDenom())
 		reserveExtendedBalance := reserveIntegerBalance.Amount.Mul(types.ConversionFactor())
 
 		// The total amount of backing coins in the reserve should be equal to
@@ -87,7 +87,7 @@ func ReserveBacksFractionsInvariant(k Keeper) sdk.Invariant {
 		broken = !reserveExtendedBalance.Equal(totalRequiredBacking)
 		msg = fmt.Sprintf(
 			"%s reserve balance %s mismatches %s (fractional balances %s + remainder %s)\n",
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 			reserveExtendedBalance,
 			totalRequiredBacking,
 			fractionalBalSum,
@@ -191,7 +191,7 @@ func BalancedFractionalTotalInvariant(k Keeper) sdk.Invariant {
 // module as well as be double-counted in the total supply.
 func FractionalDenomNotInBankInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		extBankSupply := k.bk.GetSupply(ctx, types.ExtendedCoinDenom)
+		extBankSupply := k.bk.GetSupply(ctx, types.ExtendedCoinDenom())
 
 		broken := !extBankSupply.IsZero()
 		msg := ""
@@ -199,7 +199,7 @@ func FractionalDenomNotInBankInvariant(k Keeper) sdk.Invariant {
 		if broken {
 			msg = fmt.Sprintf(
 				"x/bank should not hold any %v but has supply of %v",
-				types.ExtendedCoinDenom,
+				types.ExtendedCoinDenom(),
 				extBankSupply,
 			)
 		}
@@ -229,13 +229,13 @@ func TotalSupplyInvariant(k Keeper) sdk.Invariant {
 				return false
 			}
 
-			if coin.Denom == types.IntegerCoinDenom {
+			if coin.Denom == types.IntegerCoinDenom() {
 				totalSupply = totalSupply.Add(coin.Amount.Mul(types.ConversionFactor()))
 			}
 			return false
 		})
 
-		integerTotalSupply := k.bk.GetSupply(ctx, types.IntegerCoinDenom).Amount.Mul(types.ConversionFactor())
+		integerTotalSupply := k.bk.GetSupply(ctx, types.IntegerCoinDenom()).Amount.Mul(types.ConversionFactor())
 
 		broken := !totalSupply.Equal(integerTotalSupply)
 		msg := ""

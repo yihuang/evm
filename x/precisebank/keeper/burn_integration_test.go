@@ -35,7 +35,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			"invalid module",
 			"notamodule",
 			func() {},
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			"",
 			"module account notamodule does not exist: unknown address",
 		},
@@ -44,7 +44,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			// Check app.go to ensure this module has no burn permissions
 			authtypes.FeeCollectorName,
 			func() {},
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			"",
 			"module account fee_collector does not have permissions to burn tokens: unauthorized",
 		},
@@ -53,16 +53,16 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_MatchingErrors() {
 			// Has burn permissions so it goes to the amt check
 			evmtypes.ModuleName,
 			func() {},
-			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-100)}},
-			fmt.Sprintf("-100%s: invalid coins", types.IntegerCoinDenom),
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom(), Amount: sdkmath.NewInt(-100)}},
+			fmt.Sprintf("-100%s: invalid coins", types.IntegerCoinDenom()),
 			"",
 		},
 		{
 			"insufficient balance - empty",
 			evmtypes.ModuleName,
 			func() {},
-			cs(c(types.IntegerCoinDenom, 1000)),
-			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds", types.IntegerCoinDenom, types.IntegerCoinDenom),
+			cs(c(types.IntegerCoinDenom(), 1000)),
+			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds", types.IntegerCoinDenom(), types.IntegerCoinDenom()),
 			"",
 		},
 	}
@@ -125,42 +125,42 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins() {
 		},
 		{
 			"passthrough - integer denom",
-			cs(c(types.IntegerCoinDenom, 2000)),
-			cs(c(types.IntegerCoinDenom, 1000)),
-			cs(c(types.ExtendedCoinDenom, 1000000000000000)),
+			cs(c(types.IntegerCoinDenom(), 2000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000000000000000)),
 			"",
 		},
 		{
 			"fractional only - no borrow",
-			cs(c(types.ExtendedCoinDenom, 1000)),
-			cs(c(types.ExtendedCoinDenom, 500)),
-			cs(c(types.ExtendedCoinDenom, 500)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
+			cs(c(types.ExtendedCoinDenom(), 500)),
+			cs(c(types.ExtendedCoinDenom(), 500)),
 			"",
 		},
 		{
 			"fractional burn - borrows",
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().AddRaw(100))),
-			cs(c(types.ExtendedCoinDenom, 500)),
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(400))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().AddRaw(100))),
+			cs(c(types.ExtendedCoinDenom(), 500)),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(400))),
 			"",
 		},
 		{
 			"error - insufficient integer balance",
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor())),
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(2))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor())),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().MulRaw(2))),
 			cs(),
 			// Returns correct error with aatom balance (rewrites Bank BurnCoins err)
 			fmt.Sprintf("spendable balance 1000000000000%s is smaller than 2000000000000%s: insufficient funds",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 		},
 		{
 			"error - insufficient fractional, borrow",
-			cs(c(types.ExtendedCoinDenom, 1000)),
-			cs(c(types.ExtendedCoinDenom, 2000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
+			cs(c(types.ExtendedCoinDenom(), 2000)),
 			cs(),
 			// Error from SendCoins to reserve
 			fmt.Sprintf("spendable balance 1000%s is smaller than 2000%s: insufficient funds",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 		},
 	}
 
@@ -204,14 +204,14 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins() {
 			suite.Require().False(stop, "invariant should not be broken")
 			suite.Require().Empty(res, "unexpected invariant message: %s", res)
 
-			intCoinAmt := tt.burnCoins.AmountOf(types.IntegerCoinDenom).
+			intCoinAmt := tt.burnCoins.AmountOf(types.IntegerCoinDenom()).
 				Mul(types.ConversionFactor())
 
-			fraCoinAmt := tt.burnCoins.AmountOf(types.ExtendedCoinDenom)
+			fraCoinAmt := tt.burnCoins.AmountOf(types.ExtendedCoinDenom())
 
 			totalExtCoinAmt := intCoinAmt.Add(fraCoinAmt)
 			spentCoins := sdk.NewCoins(sdk.NewCoin(
-				types.ExtendedCoinDenom,
+				types.ExtendedCoinDenom(),
 				totalExtCoinAmt,
 			))
 
@@ -241,7 +241,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Remainder() {
 	moduleName := evmtypes.ModuleName
 	moduleAddr := suite.network.App.AccountKeeper.GetModuleAddress(moduleName)
 
-	startCoins := cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5)))
+	startCoins := cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().MulRaw(5)))
 
 	// Start balance
 	err := suite.network.App.PreciseBankKeeper.MintCoins(
@@ -252,20 +252,20 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Remainder() {
 	suite.Require().NoError(err)
 
 	burnAmt := types.ConversionFactor().QuoRaw(10)
-	burnCoins := cs(ci(types.ExtendedCoinDenom, burnAmt))
+	burnCoins := cs(ci(types.ExtendedCoinDenom(), burnAmt))
 
 	// Burn 0.1 until balance is 0
 	for {
 		reserveBalBefore := suite.network.App.BankKeeper.GetBalance(
 			suite.network.GetContext(),
 			reserveAddr,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 		)
 
 		balBefore := suite.network.App.PreciseBankKeeper.GetBalance(
 			suite.network.GetContext(),
 			moduleAddr,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 		)
 		remainderBefore := suite.network.App.PreciseBankKeeper.GetRemainderAmount(suite.network.GetContext())
 
@@ -284,12 +284,12 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Remainder() {
 		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(
 			suite.network.GetContext(),
 			moduleAddr,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 		)
 		reserveBalAfter := suite.network.App.BankKeeper.GetBalance(
 			suite.network.GetContext(),
 			reserveAddr,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 		)
 
 		suite.Require().Equal(
@@ -336,7 +336,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	burnerAddr := suite.network.App.AccountKeeper.GetModuleAddress(burnerModuleName)
 
 	accCount := 20
-	startCoins := cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5)))
+	startCoins := cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().MulRaw(5)))
 
 	addrs := []sdk.AccAddress{}
 
@@ -348,20 +348,20 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 	}
 
 	burnAmt := types.ConversionFactor().QuoRaw(10)
-	burnCoins := cs(ci(types.ExtendedCoinDenom, burnAmt))
+	burnCoins := cs(ci(types.ExtendedCoinDenom(), burnAmt))
 
 	// Burn 0.1 from each account
 	for _, addr := range addrs {
 		reserveBalBefore := suite.network.App.BankKeeper.GetBalance(
 			suite.network.GetContext(),
 			reserveAddr,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 		)
 
 		balBefore := suite.network.App.PreciseBankKeeper.GetBalance(
 			suite.network.GetContext(),
 			addr,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 		)
 		remainderBefore := suite.network.App.PreciseBankKeeper.GetRemainderAmount(suite.network.GetContext())
 
@@ -388,12 +388,12 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_Spread_Remainder() {
 		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(
 			suite.network.GetContext(),
 			addr,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 		)
 		reserveBalAfter := suite.network.App.BankKeeper.GetBalance(
 			suite.network.GetContext(),
 			reserveAddr,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 		)
 
 		suite.Require().Equal(
@@ -470,7 +470,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 
 			// Initial balance large enough to cover many small burns
 			initialBalance := types.ConversionFactor().MulRaw(100)
-			initialCoin := cs(ci(types.ExtendedCoinDenom, initialBalance))
+			initialCoin := cs(ci(types.ExtendedCoinDenom(), initialBalance))
 			err := suite.network.App.PreciseBankKeeper.MintCoins(suite.network.GetContext(), burnerModuleName, initialCoin)
 			suite.Require().NoError(err)
 			err = suite.network.App.PreciseBankKeeper.SendCoinsFromModuleToAccount(suite.network.GetContext(), burnerModuleName, burner, initialCoin)
@@ -486,7 +486,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 			// Continue burns as long as burner has balance remaining
 			for {
 				// Check current burner balance
-				burnerAmount := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom)
+				burnerAmount := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom())
 				if burnerAmount.IsZero() {
 					break
 				}
@@ -499,7 +499,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleBurn.BigInt())).AddRaw(1)
 
 				// 1. send to burner module
-				burnCoins := cs(ci(types.ExtendedCoinDenom, randAmount))
+				burnCoins := cs(ci(types.ExtendedCoinDenom(), randAmount))
 				err := suite.network.App.PreciseBankKeeper.SendCoinsFromAccountToModule(suite.network.GetContext(), burner, burnerModuleName, burnCoins)
 				suite.Require().NoError(err)
 
@@ -514,7 +514,7 @@ func (suite *KeeperIntegrationTestSuite) TestBurnCoins_RandomValueMultiDecimals(
 			suite.T().Logf("Completed %d random burns, total burned: %s", burnCount, totalBurned)
 
 			// Check burner balance
-			burnerBal := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom)
+			burnerBal := suite.GetAllBalances(burner).AmountOf(types.ExtendedCoinDenom())
 			suite.Equal(burnerBal.BigInt().Cmp(big.NewInt(0)), 0, "burner balance mismatch (expected: %s, actual: %s)", big.NewInt(0), burnerBal)
 
 			// Check remainder
@@ -559,7 +559,7 @@ func FuzzBurnCoins(f *testing.F) {
 		err := suite.network.App.PreciseBankKeeper.MintCoins(
 			suite.network.GetContext(),
 			moduleName,
-			cs(ci(types.ExtendedCoinDenom, sdkmath.NewInt(amount).MulRaw(burnCount))),
+			cs(ci(types.ExtendedCoinDenom(), sdkmath.NewInt(amount).MulRaw(burnCount))),
 		)
 		suite.Require().NoError(err)
 
@@ -568,13 +568,13 @@ func FuzzBurnCoins(f *testing.F) {
 			err := suite.network.App.PreciseBankKeeper.BurnCoins(
 				suite.network.GetContext(),
 				moduleName,
-				cs(c(types.ExtendedCoinDenom, amount)),
+				cs(c(types.ExtendedCoinDenom(), amount)),
 			)
 			suite.Require().NoError(err)
 		}
 
 		// Check full balances
-		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), moduleAddr, types.ExtendedCoinDenom)
+		balAfter := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), moduleAddr, types.ExtendedCoinDenom())
 
 		suite.Require().Equalf(
 			int64(0),

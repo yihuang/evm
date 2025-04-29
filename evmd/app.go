@@ -136,11 +136,6 @@ func init() {
 	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
 	sdk.DefaultPowerReduction = cosmosevmtypes.AttoPowerReduction
 
-	// set the values for the precisebank module
-	precisebanktypes.Decimals = evmtypes.SixDecimals
-	precisebanktypes.IntegerCoinDenom = "uatom"
-	precisebanktypes.ExtendedCoinDenom = "aatom"
-
 	// get the user's home directory
 	var err error
 	DefaultNodeHome, err = clienthelpers.GetNodeHomeDirectory(".evmd")

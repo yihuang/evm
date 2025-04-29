@@ -44,7 +44,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryTotalFractionalBalance() {
 		suite.Run(tc.name, func() {
 			suite.SetupTest()
 
-			total := sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.ZeroInt())
+			total := sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.ZeroInt())
 			for i, balance := range tc.giveBalances {
 				addr := sdk.AccAddress([]byte(strconv.Itoa(i)))
 				suite.network.App.PreciseBankKeeper.SetFractionalBalance(suite.network.GetContext(), addr, balance)
@@ -70,14 +70,14 @@ func (suite *KeeperIntegrationTestSuite) TestQueryRemainder() {
 	)
 	suite.Require().NoError(err)
 
-	expRemainder := sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.ZeroInt())
+	expRemainder := sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.ZeroInt())
 	suite.Require().Equal(expRemainder, res.Remainder)
 
 	// Mint fractional coins to create non-zero remainder
 
 	pbk := suite.network.App.PreciseBankKeeper
 
-	coin := sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.OneInt())
+	coin := sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.OneInt())
 	err = pbk.MintCoins(
 		suite.network.GetContext(),
 		minttypes.ModuleName,
@@ -128,7 +128,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryFractionalBalance() {
 
 			addr := sdk.AccAddress([]byte("test"))
 
-			coin := sdk.NewCoin(types.ExtendedCoinDenom, tc.giveBalance)
+			coin := sdk.NewCoin(types.ExtendedCoinDenom(), tc.giveBalance)
 			suite.MintToAccount(addr, sdk.NewCoins(coin))
 
 			res, err := suite.network.GetPreciseBankClient().FractionalBalance(
@@ -141,7 +141,7 @@ func (suite *KeeperIntegrationTestSuite) TestQueryFractionalBalance() {
 
 			// Only fractional amount, even if minted more than conversion factor
 			expAmount := tc.giveBalance.Mod(types.ConversionFactor())
-			expFractionalBalance := sdk.NewCoin(types.ExtendedCoinDenom, expAmount)
+			expFractionalBalance := sdk.NewCoin(types.ExtendedCoinDenom(), expAmount)
 			suite.Require().Equal(expFractionalBalance, res.FractionalBalance)
 		})
 	}

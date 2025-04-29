@@ -44,10 +44,10 @@ func (k Keeper) BurnCoins(goCtx context.Context, moduleName string, amt sdk.Coin
 	// Get non-ExtendedCoinDenom coins
 	passthroughCoins := amt
 
-	extendedAmount := amt.AmountOf(types.ExtendedCoinDenom)
+	extendedAmount := amt.AmountOf(types.ExtendedCoinDenom())
 	if extendedAmount.IsPositive() {
 		// Remove ExtendedCoinDenom from the coins as it is managed by x/precisebank
-		removeCoin := sdk.NewCoin(types.ExtendedCoinDenom, extendedAmount)
+		removeCoin := sdk.NewCoin(types.ExtendedCoinDenom(), extendedAmount)
 		passthroughCoins = amt.Sub(removeCoin)
 	}
 
@@ -143,7 +143,7 @@ func (k Keeper) burnExtendedCoin(
 		// amount. SendCoinsFromModuleToModule will return an error if the
 		// module account has insufficient funds and an error with the full
 		// extended balance will be returned.
-		borrowCoin := sdk.NewCoin(types.IntegerCoinDenom, sdkmath.OneInt())
+		borrowCoin := sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.OneInt())
 		if err := k.bk.SendCoinsFromModuleToModule(
 			ctx,
 			moduleName,
@@ -157,7 +157,7 @@ func (k Keeper) burnExtendedCoin(
 	// Case #3: Does not require borrow, but remainder has accumulated enough
 	// fractional amounts to burn 1 integer coin.
 	if !requiresBorrow && overflowingRemainder {
-		reserveBurnCoins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.OneInt()))
+		reserveBurnCoins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.OneInt()))
 		if err := k.bk.BurnCoins(ctx, types.ModuleName, reserveBurnCoins); err != nil {
 			return fmt.Errorf("failed to burn %s for reserve: %w", reserveBurnCoins, err)
 		}
@@ -171,7 +171,7 @@ func (k Keeper) burnExtendedCoin(
 	// Burn the integer amount - this may include the extra optimization burn
 	// from case #1
 	if !integerBurnAmount.IsZero() {
-		coin := sdk.NewCoin(types.IntegerCoinDenom, integerBurnAmount)
+		coin := sdk.NewCoin(types.IntegerCoinDenom(), integerBurnAmount)
 		if err := k.bk.BurnCoins(ctx, moduleName, sdk.NewCoins(coin)); err != nil {
 			return k.updateInsufficientFundsError(ctx, moduleAddr, amt, err)
 		}

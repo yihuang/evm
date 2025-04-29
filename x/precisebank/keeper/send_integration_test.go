@@ -44,7 +44,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule_Matchi
 			"missing module account - extended",
 			sdk.AccAddress([]byte{2}),
 			"cat",
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			"module account cat does not exist: unknown address",
 		},
 	}
@@ -129,7 +129,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			"missing module account - extended",
 			"cat",
 			sdk.AccAddress([]byte{2}),
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			"",
 			"module account cat does not exist: unknown address",
 		},
@@ -145,7 +145,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			"blocked recipient address - extended",
 			senderModuleName,
 			blockedAddr,
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			fmt.Sprintf("%s is not allowed to receive funds: unauthorized", blockedAddr.String()),
 			"",
 		},
@@ -154,17 +154,17 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			"invalid coins",
 			senderModuleName,
 			sdk.AccAddress([]byte{2}),
-			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-1)}},
-			fmt.Sprintf("-1%s: invalid coins", types.IntegerCoinDenom),
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom(), Amount: sdkmath.NewInt(-1)}},
+			fmt.Sprintf("-1%s: invalid coins", types.IntegerCoinDenom()),
 			"",
 		},
 		{
 			"insufficient balance - passthrough",
 			senderModuleName,
 			sdk.AccAddress([]byte{2}),
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
-				types.IntegerCoinDenom, types.IntegerCoinDenom),
+				types.IntegerCoinDenom(), types.IntegerCoinDenom()),
 			"",
 		},
 		{
@@ -173,9 +173,9 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount_Matchi
 			sdk.AccAddress([]byte{2}),
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 			"",
 		},
 	}
@@ -233,32 +233,32 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_MatchingErrors() {
 		{
 			"invalid coins",
 			cs(),
-			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom, Amount: sdkmath.NewInt(-1)}},
+			sdk.Coins{sdk.Coin{Denom: types.IntegerCoinDenom(), Amount: sdkmath.NewInt(-1)}},
 			fmt.Sprintf("-1%s: invalid coins",
-				types.IntegerCoinDenom),
+				types.IntegerCoinDenom()),
 		},
 		{
 			"insufficient empty balance - passthrough",
 			cs(),
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
-				types.IntegerCoinDenom, types.IntegerCoinDenom),
+				types.IntegerCoinDenom(), types.IntegerCoinDenom()),
 		},
 		{
 			"insufficient empty balance - extended",
 			cs(),
 			// We can still test insufficient bal errors with "aatom" since
 			// we also expect it to not exist in x/bank
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 0%s is smaller than 1000%s: insufficient funds",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 		},
 		{
 			"insufficient non-empty balance - passthrough",
-			cs(c(types.IntegerCoinDenom, 100), c("usdc", 1000)),
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 100), c("usdc", 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 100%s is smaller than 1000%s: insufficient funds",
-				types.IntegerCoinDenom, types.IntegerCoinDenom),
+				types.IntegerCoinDenom(), types.IntegerCoinDenom()),
 		},
 		// non-empty aatom transfer error is tested in SendCoins, not here since
 		// x/bank doesn't hold aatom
@@ -305,11 +305,11 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins() {
 	}{
 		{
 			"insufficient balance error denom matches",
-			cs(c(types.ExtendedCoinDenom, 10), c("usdc", 1000)),
+			cs(c(types.ExtendedCoinDenom(), 10), c("usdc", 1000)),
 			cs(),
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			fmt.Sprintf("spendable balance 10%s is smaller than 1000%s: insufficient funds",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 		},
 		{
 			"passthrough - unrelated",
@@ -320,59 +320,59 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins() {
 		},
 		{
 			"passthrough - integer denom",
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			cs(),
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			"",
 		},
 		{
 			"passthrough & extended",
-			cs(c(types.IntegerCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 1000)),
 			cs(),
-			cs(c(types.IntegerCoinDenom, 10), c(types.ExtendedCoinDenom, 1)),
+			cs(c(types.IntegerCoinDenom(), 10), c(types.ExtendedCoinDenom(), 1)),
 			"",
 		},
 		{
 			"aatom send - 1aatom to 0 balance",
 			// Starting balances
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().MulRaw(5))),
 			cs(),
 			// Send amount
-			cs(c(types.ExtendedCoinDenom, 1)), // aatom
+			cs(c(types.ExtendedCoinDenom(), 1)), // aatom
 			"",
 		},
 		{
 			"sender borrow from integer",
 			// 1uatom, 0 fractional
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor())),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor())),
 			cs(),
 			// Send 1 with 0 fractional balance
-			cs(c(types.ExtendedCoinDenom, 1)),
+			cs(c(types.ExtendedCoinDenom(), 1)),
 			"",
 		},
 		{
 			"sender borrow from integer - max fractional amount",
 			// 1uatom, 0 fractional
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor())),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor())),
 			cs(),
 			// Max fractional amount
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1))),
 			"",
 		},
 		{
 			"receiver carry",
-			cs(c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.ExtendedCoinDenom(), 1000)),
 			// max fractional amount, carries over to integer
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1))),
-			cs(c(types.ExtendedCoinDenom, 1)),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1))),
+			cs(c(types.ExtendedCoinDenom(), 1)),
 			"",
 		},
 		{
 			"receiver carry - max fractional amount",
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().MulRaw(5))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().MulRaw(5))),
 			// max fractional amount, carries over to integer
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1))),
-			cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1))),
+			cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1))),
 			"",
 		},
 	}
@@ -408,14 +408,14 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins() {
 			// includes uatom, convert it so that its the equivalent aatom
 			// amount so its easier to compare. Compare extended coins only.
 			sendAmountFullExtended := tt.giveAmt
-			sendAmountInteger := tt.giveAmt.AmountOf(types.IntegerCoinDenom)
+			sendAmountInteger := tt.giveAmt.AmountOf(types.IntegerCoinDenom())
 			if !sendAmountInteger.IsZero() {
-				integerCoin := sdk.NewCoin(types.IntegerCoinDenom, sendAmountInteger)
+				integerCoin := sdk.NewCoin(types.IntegerCoinDenom(), sendAmountInteger)
 				sendAmountFullExtended = sendAmountFullExtended.Sub(integerCoin)
 
 				// Add equivalent extended coin
 				extendedCoinAmount := sendAmountInteger.Mul(types.ConversionFactor())
-				extendedCoin := sdk.NewCoin(types.ExtendedCoinDenom, extendedCoinAmount)
+				extendedCoin := sdk.NewCoin(types.ExtendedCoinDenom(), extendedCoinAmount)
 				sendAmountFullExtended = sendAmountFullExtended.Add(extendedCoin)
 			}
 
@@ -438,8 +438,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins() {
 
 			// FULL aatom equivalent, including uatom only/mixed sends
 			sendExtendedAmount := sdk.NewCoin(
-				types.ExtendedCoinDenom,
-				sendAmountFullExtended.AmountOf(types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(),
+				sendAmountFullExtended.AmountOf(types.ExtendedCoinDenom()),
 			)
 			extCoins := sdk.NewCoins(sendExtendedAmount)
 
@@ -488,11 +488,11 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_Matrix() {
 	// Test matrix fields:
 	startBalances := []startBalance{
 		{"empty", cs()},
-		{"integer only", cs(c(types.IntegerCoinDenom, 1000))},
-		{"extended only", cs(c(types.ExtendedCoinDenom, 1000))},
-		{"integer & extended", cs(c(types.IntegerCoinDenom, 1000), c(types.ExtendedCoinDenom, 1000))},
-		{"integer & extended - max fractional", cs(c(types.IntegerCoinDenom, 1000), ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1)))},
-		{"integer & extended - min fractional", cs(c(types.IntegerCoinDenom, 1000), c(types.ExtendedCoinDenom, 1))},
+		{"integer only", cs(c(types.IntegerCoinDenom(), 1000))},
+		{"extended only", cs(c(types.ExtendedCoinDenom(), 1000))},
+		{"integer & extended", cs(c(types.IntegerCoinDenom(), 1000), c(types.ExtendedCoinDenom(), 1000))},
+		{"integer & extended - max fractional", cs(c(types.IntegerCoinDenom(), 1000), ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1)))},
+		{"integer & extended - min fractional", cs(c(types.IntegerCoinDenom(), 1000), c(types.ExtendedCoinDenom(), 1))},
 	}
 
 	sendAmts := []struct {
@@ -505,23 +505,23 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_Matrix() {
 		},
 		{
 			"integer only",
-			cs(c(types.IntegerCoinDenom, 10)),
+			cs(c(types.IntegerCoinDenom(), 10)),
 		},
 		{
 			"extended only",
-			cs(c(types.ExtendedCoinDenom, 10)),
+			cs(c(types.ExtendedCoinDenom(), 10)),
 		},
 		{
 			"integer & extended",
-			cs(c(types.IntegerCoinDenom, 10), c(types.ExtendedCoinDenom, 1000)),
+			cs(c(types.IntegerCoinDenom(), 10), c(types.ExtendedCoinDenom(), 1000)),
 		},
 		{
 			"integer & extended - max fractional",
-			cs(c(types.IntegerCoinDenom, 10), ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(1))),
+			cs(c(types.IntegerCoinDenom(), 10), ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(1))),
 		},
 		{
 			"integer & extended - min fractional",
-			cs(c(types.IntegerCoinDenom, 10), c(types.ExtendedCoinDenom, 1)),
+			cs(c(types.IntegerCoinDenom(), 10), c(types.ExtendedCoinDenom(), 1)),
 		},
 	}
 
@@ -601,7 +601,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule() {
 	recipientModule := minttypes.ModuleName
 	recipientAddr := suite.network.App.AccountKeeper.GetModuleAddress(recipientModule)
 
-	sendAmt := cs(c(types.ExtendedCoinDenom, 1000))
+	sendAmt := cs(c(types.ExtendedCoinDenom(), 1000))
 
 	suite.MintToAccount(sender, sendAmt)
 
@@ -634,8 +634,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromAccountToModule_Blocke
 
 	sender := sdk.AccAddress([]byte{1})
 
-	sendAmt := cs(c(types.ExtendedCoinDenom, 1000))
-	sendAmt2 := cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(10)))
+	sendAmt := cs(c(types.ExtendedCoinDenom(), 1000))
+	sendAmt2 := cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(10)))
 
 	suite.MintToAccount(sender, sendAmt.Add(sendAmt2...))
 
@@ -662,8 +662,8 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_BlockedRecipientCarry() {
 	// which also should not fail when sending to a blocked module account.
 	sender := sdk.AccAddress([]byte{1})
 
-	sendAmt := cs(c(types.ExtendedCoinDenom, 1000))
-	sendAmt2 := cs(ci(types.ExtendedCoinDenom, types.ConversionFactor().SubRaw(10)))
+	sendAmt := cs(c(types.ExtendedCoinDenom(), 1000))
+	sendAmt2 := cs(ci(types.ExtendedCoinDenom(), types.ConversionFactor().SubRaw(10)))
 
 	suite.MintToAccount(sender, sendAmt.Add(sendAmt2...))
 
@@ -697,7 +697,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoinsFromModuleToAccount() {
 
 	recipient := sdk.AccAddress([]byte{1})
 
-	sendAmt := cs(c(types.ExtendedCoinDenom, 1000))
+	sendAmt := cs(c(types.ExtendedCoinDenom(), 1000))
 
 	suite.MintToModuleAccount(senderModule, sendAmt)
 
@@ -752,7 +752,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 
 			// Initial balance large enough to cover many small sends
 			initialBalance := types.ConversionFactor().MulRaw(100)
-			suite.MintToAccount(sender, cs(ci(types.ExtendedCoinDenom, initialBalance)))
+			suite.MintToAccount(sender, cs(ci(types.ExtendedCoinDenom(), initialBalance)))
 
 			// Setup test parameters
 			maxSendUnit := types.ConversionFactor().MulRaw(2).SubRaw(1)
@@ -764,7 +764,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 			// Continue transfers as long as sender has balance remaining
 			for {
 				// Check current sender balance
-				senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+				senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom())
 				if senderAmount.IsZero() {
 					break
 				}
@@ -776,7 +776,7 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 				}
 				randAmount := sdkmath.NewIntFromBigInt(new(big.Int).Rand(r, maxPossibleSend.BigInt())).AddRaw(1)
 
-				sendAmount := cs(ci(types.ExtendedCoinDenom, randAmount))
+				sendAmount := cs(ci(types.ExtendedCoinDenom(), randAmount))
 				err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendAmount)
 				suite.NoError(err)
 				totalSent = totalSent.Add(randAmount)
@@ -786,12 +786,12 @@ func (suite *KeeperIntegrationTestSuite) TestSendCoins_RandomValueMultiDecimals(
 			suite.T().Logf("Completed %d random sends, total sent: %s", sentCount, totalSent.String())
 
 			// Check sender balance
-			senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom)
+			senderAmount := suite.GetAllBalances(sender).AmountOf(types.ExtendedCoinDenom())
 			suite.Equal(senderAmount.BigInt().Cmp(big.NewInt(0)), 0, "sender balance should be zero")
 
 			// Check recipient balance
 			recipientBal := suite.GetAllBalances(recipient)
-			intReceived := recipientBal.AmountOf(types.ExtendedCoinDenom).Quo(types.ConversionFactor())
+			intReceived := recipientBal.AmountOf(types.ExtendedCoinDenom()).Quo(types.ConversionFactor())
 			fracReceived := suite.network.App.PreciseBankKeeper.GetFractionalBalance(suite.network.GetContext(), recipient)
 
 			expectedInt := totalSent.Quo(types.ConversionFactor())
@@ -835,11 +835,11 @@ func FuzzSendCoins(f *testing.F) {
 		recipient := sdk.AccAddress([]byte{2})
 
 		// Initial balances
-		suite.MintToAccount(sender, cs(c(types.ExtendedCoinDenom, int64(startBalSender))))      //nolint:gosec // G115
-		suite.MintToAccount(recipient, cs(c(types.ExtendedCoinDenom, int64(startBalReceiver)))) //nolint:gosec // G115
+		suite.MintToAccount(sender, cs(c(types.ExtendedCoinDenom(), int64(startBalSender))))      //nolint:gosec // G115
+		suite.MintToAccount(recipient, cs(c(types.ExtendedCoinDenom(), int64(startBalReceiver)))) //nolint:gosec // G115
 
 		// Send amount
-		sendCoins := cs(c(types.ExtendedCoinDenom, int64(sendAmount))) //nolint:gosec // G115
+		sendCoins := cs(c(types.ExtendedCoinDenom(), int64(sendAmount))) //nolint:gosec // G115
 		err := suite.network.App.PreciseBankKeeper.SendCoins(suite.network.GetContext(), sender, recipient, sendCoins)
 		if startBalSender < sendAmount {
 			suite.Require().Error(err, "expected insufficient funds error")
@@ -854,11 +854,11 @@ func FuzzSendCoins(f *testing.F) {
 
 		suite.Require().Equal(
 			startBalSender-sendAmount,
-			balSender.AmountOf(types.ExtendedCoinDenom).Uint64(),
+			balSender.AmountOf(types.ExtendedCoinDenom()).Uint64(),
 		)
 		suite.Require().Equal(
 			startBalReceiver+sendAmount,
-			balReceiver.AmountOf(types.ExtendedCoinDenom).Uint64(),
+			balReceiver.AmountOf(types.ExtendedCoinDenom()).Uint64(),
 		)
 
 		// Run Invariants to ensure remainder is backing all minted fractions

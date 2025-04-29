@@ -21,40 +21,40 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 	}{
 		{
 			"extended denom, no fractional - locked coins",
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 			// queried bank balance in uatom when querying for aatom
-			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
 			sdk.NewCoin(
-				types.ExtendedCoinDenom,
+				types.ExtendedCoinDenom(),
 				types.ConversionFactor().MulRaw(1000),
 			),
 		},
 		{
 			"extended denom, with fractional - locked coins",
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 			// queried bank balance in uatom when querying for aatom
-			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.NewInt(5000),
 			sdk.NewCoin(
-				types.ExtendedCoinDenom,
+				types.ExtendedCoinDenom(),
 				types.ConversionFactor().MulRaw(1000).AddRaw(5000),
 			),
 		},
 		{
 			"non-extended denom - uatom returns uatom",
-			types.IntegerCoinDenom,
-			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
+			types.IntegerCoinDenom(),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
-			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000)),
 		},
 		{
 			"non-extended denom, with fractional - uatom returns uatom",
-			types.IntegerCoinDenom,
-			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000))),
+			types.IntegerCoinDenom(),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			// does not affect balance
 			sdkmath.NewInt(100),
-			sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1000)),
+			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000)),
 		},
 	}
 
@@ -91,7 +91,7 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_HiddenReserve() {
 	// Make the reserve hold a non-zero balance
 	// Mint fractional coins to an account, which should cause a mint of 1
 	// integer coin to the reserve to back it.
-	extCoin := sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().AddRaw(1000))
+	extCoin := sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor().AddRaw(1000))
 	unrelatedCoin := sdk.NewCoin("unrelated", sdkmath.NewInt(1000))
 	suite.MintToAccount(
 		addr1,
@@ -102,7 +102,7 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_HiddenReserve() {
 	)
 
 	// Check underlying x/bank balance for reserve
-	reserveIntCoin := suite.network.App.BankKeeper.GetBalance(suite.network.GetContext(), moduleAddr, types.IntegerCoinDenom)
+	reserveIntCoin := suite.network.App.BankKeeper.GetBalance(suite.network.GetContext(), moduleAddr, types.IntegerCoinDenom())
 	suite.Require().Equal(
 		sdkmath.NewInt(1),
 		reserveIntCoin.Amount,
@@ -118,25 +118,25 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_HiddenReserve() {
 		{
 			"reserve account - hidden extended denom",
 			moduleAddr,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 			sdkmath.ZeroInt(),
 		},
 		{
 			"reserve account - visible integer denom",
 			moduleAddr,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 			sdkmath.OneInt(),
 		},
 		{
 			"user account - visible extended denom",
 			addr1,
-			types.ExtendedCoinDenom,
+			types.ExtendedCoinDenom(),
 			extCoin.Amount,
 		},
 		{
 			"user account - visible integer denom",
 			addr1,
-			types.IntegerCoinDenom,
+			types.IntegerCoinDenom(),
 			extCoin.Amount.Quo(types.ConversionFactor()),
 		},
 	}

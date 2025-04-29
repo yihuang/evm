@@ -11,15 +11,15 @@ import (
 // events.
 func SumExtendedCoin(amt sdk.Coins) sdk.Coin {
 	// uatom converted to aatom
-	integerAmount := amt.AmountOf(IntegerCoinDenom).Mul(ConversionFactor())
+	integerAmount := amt.AmountOf(IntegerCoinDenom()).Mul(ConversionFactor())
 	// aatom as is
-	extendedAmount := amt.AmountOf(ExtendedCoinDenom)
+	extendedAmount := amt.AmountOf(ExtendedCoinDenom())
 
 	// total of uatom and aatom amounts
 	fullEmissionAmount := integerAmount.Add(extendedAmount)
 
 	return sdk.NewCoin(
-		ExtendedCoinDenom,
+		ExtendedCoinDenom(),
 		fullEmissionAmount,
 	)
 }

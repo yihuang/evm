@@ -45,11 +45,11 @@ func (k Keeper) SendCoins(
 	}
 
 	passthroughCoins := amt
-	extendedCoinAmount := amt.AmountOf(types.ExtendedCoinDenom)
+	extendedCoinAmount := amt.AmountOf(types.ExtendedCoinDenom())
 
 	// Remove the extended coin amount from the passthrough coins
 	if extendedCoinAmount.IsPositive() {
-		subCoin := sdk.NewCoin(types.ExtendedCoinDenom, extendedCoinAmount)
+		subCoin := sdk.NewCoin(types.ExtendedCoinDenom(), extendedCoinAmount)
 		passthroughCoins = amt.Sub(subCoin)
 	}
 
@@ -171,7 +171,7 @@ func (k Keeper) sendExtendedCoins(
 	// Full integer amount transfer, including direct transfer of borrow/carry
 	// if any.
 	if integerAmt.IsPositive() {
-		transferCoin := sdk.NewCoin(types.IntegerCoinDenom, integerAmt)
+		transferCoin := sdk.NewCoin(types.IntegerCoinDenom(), integerAmt)
 		if err := k.bk.SendCoins(ctx, from, to, sdk.NewCoins(transferCoin)); err != nil {
 			return k.updateInsufficientFundsError(ctx, from, amt, err)
 		}
@@ -181,7 +181,7 @@ func (k Keeper) sendExtendedCoins(
 	// Sender borrows by transferring 1 integer amount to reserve to account for
 	// lack of fractional balance.
 	if senderNeedsBorrow && !recipientNeedsCarry {
-		borrowCoin := sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1))
+		borrowCoin := sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1))
 		if err := k.bk.SendCoinsFromAccountToModule(
 			ctx,
 			from, // sender borrowing
@@ -204,7 +204,7 @@ func (k Keeper) sendExtendedCoins(
 		// a SendCoins operation. Only SendCoinsFromModuleToAccount should check
 		// blocked addrs which is done by the parent SendCoinsFromModuleToAccount
 		// method.
-		carryCoin := sdk.NewCoin(types.IntegerCoinDenom, sdkmath.NewInt(1))
+		carryCoin := sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1))
 		if err := k.bk.SendCoins(
 			ctx,
 			reserveAddr,
@@ -392,8 +392,8 @@ func (k Keeper) updateInsufficientFundsError(
 	}
 
 	// Check balance is sufficient
-	bal := k.GetBalance(ctx, addr, types.ExtendedCoinDenom)
-	coin := sdk.NewCoin(types.ExtendedCoinDenom, amt)
+	bal := k.GetBalance(ctx, addr, types.ExtendedCoinDenom())
+	coin := sdk.NewCoin(types.ExtendedCoinDenom(), amt)
 
 	// TODO: This checks spendable coins and returns error with spendable
 	// coins, not full balance. If GetBalance() is modified to return the

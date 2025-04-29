@@ -13,7 +13,7 @@ import (
 )
 
 func (suite *KeeperIntegrationTestSuite) FundReserve(amt sdkmath.Int) {
-	coins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, amt))
+	coins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), amt))
 	err := suite.network.App.BankKeeper.MintCoins(suite.network.GetContext(), types.ModuleName, coins)
 	suite.Require().NoError(err)
 }
@@ -60,7 +60,7 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 			},
 			true,
 			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 0 mismatches 500000000000 (fractional balances 0 + remainder 500000000000)\n\n",
-				types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom()),
 		},
 		{
 			"invalid - insufficient reserve backing",
@@ -78,7 +78,7 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 			},
 			true,
 			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 1000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
-				types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom()),
 		},
 		{
 			"invalid - excess reserve backing",
@@ -96,7 +96,7 @@ func (suite *KeeperIntegrationTestSuite) TestReserveBackingFractionalInvariant()
 			},
 			true,
 			fmt.Sprintf("precisebank: module reserve backing total fractional balances invariant\n%s reserve balance 3000000000000 mismatches 2000000000000 (fractional balances 1500000000000 + remainder 500000000000)\n\n",
-				types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom()),
 		},
 	}
 
@@ -140,7 +140,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				err := k.MintCoins(
 					ctx,
 					evmtypes.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor())),
 				)
 				suite.Require().NoError(err)
 			},
@@ -154,7 +154,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				err := k.MintCoins(
 					ctx,
 					evmtypes.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor())),
 				)
 				suite.Require().NoError(err)
 
@@ -164,7 +164,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 					ctx,
 					senderAddr,
 					sdk.AccAddress{1},
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(4))),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor().QuoRaw(10).MulRaw(4))),
 				)
 				suite.Require().NoError(err)
 			},
@@ -178,7 +178,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				err := k.MintCoins(
 					ctx,
 					evmtypes.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor())),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor())),
 				)
 				suite.Require().NoError(err)
 
@@ -188,7 +188,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 					ctx,
 					senderAddr,
 					sdk.AccAddress{1},
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(4))),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor().QuoRaw(10).MulRaw(4))),
 				)
 				suite.Require().NoError(err)
 
@@ -196,7 +196,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				err = k.BurnCoins(
 					ctx,
 					evmtypes.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, types.ConversionFactor().QuoRaw(10).MulRaw(2))),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), types.ConversionFactor().QuoRaw(10).MulRaw(2))),
 				)
 				suite.Require().NoError(err)
 			},
@@ -210,7 +210,7 @@ func (suite *KeeperIntegrationTestSuite) TestTotalSupplyInvariant() {
 				err := k.MintCoins(
 					ctx,
 					evmtypes.ModuleName,
-					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.NewInt(1000))),
+					sdk.NewCoins(sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.NewInt(1000))),
 				)
 				suite.Require().NoError(err)
 

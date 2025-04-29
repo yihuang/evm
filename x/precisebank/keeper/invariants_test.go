@@ -177,8 +177,8 @@ func TestFractionalDenomNotInBankInvariant(t *testing.T) {
 				// No fractional balance in x/bank
 				// This also enforces there is no GetSupply() call for IntegerCoinDenom / uatom
 				bk.EXPECT().
-					GetSupply(ctx, types.ExtendedCoinDenom).
-					Return(sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.ZeroInt())).
+					GetSupply(ctx, types.ExtendedCoinDenom()).
+					Return(sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.ZeroInt())).
 					Once()
 			},
 			false,
@@ -188,13 +188,13 @@ func TestFractionalDenomNotInBankInvariant(t *testing.T) {
 			"invalid - x/bank contains fractional denom (aatom)",
 			func(ctx sdk.Context, bk *mocks.MockBankKeeper) {
 				bk.EXPECT().
-					GetSupply(ctx, types.ExtendedCoinDenom).
-					Return(sdk.NewCoin(types.ExtendedCoinDenom, sdkmath.NewInt(1000))).
+					GetSupply(ctx, types.ExtendedCoinDenom()).
+					Return(sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.NewInt(1000))).
 					Once()
 			},
 			true,
 			fmt.Sprintf("precisebank: fractional-denom-not-in-bank invariant\nx/bank should not hold any %s but has supply of 1000%s\n",
-				types.ExtendedCoinDenom, types.ExtendedCoinDenom),
+				types.ExtendedCoinDenom(), types.ExtendedCoinDenom()),
 		},
 	}
 

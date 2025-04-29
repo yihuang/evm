@@ -59,13 +59,13 @@ func (suite *KeeperIntegrationTestSuite) GetAllBalances(addr sdk.AccAddress) sdk
 
 	// Remove integer coins from the balance
 	for _, coin := range bankBalances {
-		if coin.Denom == types.IntegerCoinDenom {
+		if coin.Denom == types.IntegerCoinDenom() {
 			bankBalances = bankBalances.Sub(coin)
 		}
 	}
 
 	// Replace the integer coin with the extended coin, from x/precisebank
-	extendedBal := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), addr, types.ExtendedCoinDenom)
+	extendedBal := suite.network.App.PreciseBankKeeper.GetBalance(suite.network.GetContext(), addr, types.ExtendedCoinDenom())
 
 	return bankBalances.Add(extendedBal)
 }
@@ -75,16 +75,16 @@ func (suite *KeeperIntegrationTestSuite) GetAllBalances(addr sdk.AccAddress) sdk
 // for testing to make sure only extended amounts are compared instead of double
 // counting balances.
 func ConvertCoinsToExtendedCoinDenom(coins sdk.Coins) sdk.Coins {
-	integerCoinAmt := coins.AmountOf(types.IntegerCoinDenom)
+	integerCoinAmt := coins.AmountOf(types.IntegerCoinDenom())
 	if integerCoinAmt.IsZero() {
 		return coins
 	}
 
 	// Remove the integer coin from the coins
-	integerCoin := sdk.NewCoin(types.IntegerCoinDenom, integerCoinAmt)
+	integerCoin := sdk.NewCoin(types.IntegerCoinDenom(), integerCoinAmt)
 
 	// Add the equivalent extended coin to the coins
-	extendedCoin := sdk.NewCoin(types.ExtendedCoinDenom, integerCoinAmt.Mul(types.ConversionFactor()))
+	extendedCoin := sdk.NewCoin(types.ExtendedCoinDenom(), integerCoinAmt.Mul(types.ConversionFactor()))
 
 	return coins.Sub(integerCoin).Add(extendedCoin)
 }

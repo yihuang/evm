@@ -35,7 +35,7 @@ func InitGenesis(
 	totalAmt := gs.TotalAmountWithRemainder()
 
 	moduleAddr := ak.GetModuleAddress(types.ModuleName)
-	moduleBal := bk.GetBalance(ctx, moduleAddr, types.IntegerCoinDenom)
+	moduleBal := bk.GetBalance(ctx, moduleAddr, types.IntegerCoinDenom())
 	moduleBalExtended := moduleBal.Amount.Mul(types.ConversionFactor())
 
 	// Compare balances in full precise extended amounts
@@ -43,8 +43,8 @@ func InitGenesis(
 		panic(fmt.Sprintf(
 			"module account balance does not match sum of fractional balances and remainder, balance is %s but expected %v%s (%v%s)",
 			moduleBal,
-			totalAmt, types.ExtendedCoinDenom,
-			totalAmt.Quo(types.ConversionFactor()), types.IntegerCoinDenom,
+			totalAmt, types.ExtendedCoinDenom(),
+			totalAmt.Quo(types.ConversionFactor()), types.IntegerCoinDenom(),
 		))
 	}
 

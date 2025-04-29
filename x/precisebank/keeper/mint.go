@@ -46,10 +46,10 @@ func (k Keeper) MintCoins(goCtx context.Context, moduleName string, amt sdk.Coin
 	// Get non-ExtendedCoinDenom coins
 	passthroughCoins := amt
 
-	extendedAmount := amt.AmountOf(types.ExtendedCoinDenom)
+	extendedAmount := amt.AmountOf(types.ExtendedCoinDenom())
 	if extendedAmount.IsPositive() {
 		// Remove ExtendedCoinDenom from the coins as it is managed by x/precisebank
-		removeCoin := sdk.NewCoin(types.ExtendedCoinDenom, extendedAmount)
+		removeCoin := sdk.NewCoin(types.ExtendedCoinDenom(), extendedAmount)
 		passthroughCoins = amt.Sub(removeCoin)
 	}
 
@@ -134,7 +134,7 @@ func (k Keeper) mintExtendedCoin(
 		// Carry should send from reserve -> account, instead of minting an
 		// extra integer coin. Otherwise doing an extra mint will require a burn
 		// from reserves to maintain exact backing.
-		carryCoin := sdk.NewCoin(types.IntegerCoinDenom, sdkmath.OneInt())
+		carryCoin := sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.OneInt())
 
 		// SendCoinsFromModuleToModule allows for sending coins even if the
 		// recipient module account is blocked.
@@ -169,7 +169,7 @@ func (k Keeper) mintExtendedCoin(
 	// Mint new integer amounts in x/bank - including carry over from fractional
 	// amount if any.
 	if integerMintAmount.IsPositive() {
-		integerMintCoin := sdk.NewCoin(types.IntegerCoinDenom, integerMintAmount)
+		integerMintCoin := sdk.NewCoin(types.IntegerCoinDenom(), integerMintAmount)
 
 		if err := k.bk.MintCoins(
 			ctx,
@@ -197,7 +197,7 @@ func (k Keeper) mintExtendedCoin(
 	wasCarried := fractionalAmount.Add(fractionalMintAmount).GTE(types.ConversionFactor())
 	if prevRemainder.LT(fractionalMintAmount) && !wasCarried {
 		// Always only 1 integer coin, as fractionalMintAmount < ConversionFactor
-		reserveMintCoins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom, sdkmath.OneInt()))
+		reserveMintCoins := sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.OneInt()))
 		if err := k.bk.MintCoins(ctx, types.ModuleName, reserveMintCoins); err != nil {
 			return fmt.Errorf("failed to mint %s for reserve: %w", reserveMintCoins, err)
 		}
