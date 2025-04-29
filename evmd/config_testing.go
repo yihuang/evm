@@ -43,14 +43,16 @@ var ChainsCoinInfo = map[string]evmtypes.EvmCoinInfo{
 		Decimals:      evmtypes.TwoDecimals,
 	},
 	TestChainID1: {
-		Denom:        ExampleChainDenom,
-		DisplayDenom: ExampleChainDenom,
-		Decimals:     evmtypes.EighteenDecimals,
+		Denom:         ExampleChainDenom,
+		ExtendedDenom: ExampleChainDenom,
+		DisplayDenom:  ExampleChainDenom,
+		Decimals:      evmtypes.EighteenDecimals,
 	},
 	TestChainID2: {
-		Denom:        ExampleChainDenom,
-		DisplayDenom: ExampleChainDenom,
-		Decimals:     evmtypes.EighteenDecimals,
+		Denom:         ExampleChainDenom,
+		ExtendedDenom: ExampleChainDenom,
+		DisplayDenom:  ExampleChainDenom,
+		Decimals:      evmtypes.EighteenDecimals,
 	},
 }
 
