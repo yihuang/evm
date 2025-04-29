@@ -8,7 +8,6 @@ import (
 	chainconfig "github.com/cosmos/evm/cmd/evmd/config"
 	"github.com/cosmos/evm/evmd"
 	"github.com/cosmos/evm/testutil/constants"
-	testconstants "github.com/cosmos/evm/testutil/constants"
 )
 
 func TestRequireSameTestDenom(t *testing.T) {
@@ -30,7 +29,7 @@ func TestRequireSameTestBech32Prefix(t *testing.T) {
 func TestRequireSameWEVMOSMainnet(t *testing.T) {
 	require.Equal(t,
 		constants.WEVMOSContractMainnet,
-		testconstants.WEVMOSContractMainnet,
+		evmd.WEVMOSContractMainnet,
 		"wevmos contract addresses should be the same across the repo",
 	)
 }
