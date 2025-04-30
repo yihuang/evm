@@ -205,7 +205,7 @@ func (suite *KeeperTestSuite) TestSetAllowance() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
+func (suite *KeeperTestSuite) TestUnsafeSetAllowance() {
 	var (
 		ctx       sdk.Context
 		erc20Addr common.Address
@@ -222,40 +222,26 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 	)
 
 	testCases := []struct {
-		name                   string
-		malleate               func()
-		allowDisabledTokenPair bool
-		expectPass             bool
-		errContains            string
+		name        string
+		malleate    func()
+		expectPass  bool
+		errContains string
 	}{
 		{
 			"fail - no token pair exists",
 			func() {},
 			false,
-			false,
 			types.ErrTokenPairNotFound.Error(),
 		},
 		{
-			"fail - token pair is disabled, disabled token pair is not allowed",
-			func() {
-				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
-				pair.Enabled = false
-				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
-			},
-			false,
-			false,
-			types.ErrERC20TokenPairDisabled.Error(),
-		},
-		{
-			"pass - token pair is disabled, disabled token pair is allowed",
+			"pass - token pair is disabled",
 			func() {
 				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
 				pair.Enabled = false
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 			},
 			true,
-			true,
-			types.ErrERC20TokenPairDisabled.Error(),
+			"",
 		},
 		{
 			"fail - zero owner address",
@@ -264,7 +250,6 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				owner = common.HexToAddress("0x0")
 			},
-			false,
 			false,
 			errortypes.ErrInvalidAddress.Error(),
 		},
@@ -276,7 +261,6 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 				spender = common.HexToAddress("0x0")
 			},
 			false,
-			false,
 			errortypes.ErrInvalidAddress.Error(),
 		},
 		{
@@ -287,7 +271,6 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 				value = big.NewInt(-100)
 			},
 			false,
-			false,
 			types.ErrInvalidAllowance.Error(),
 		},
 		{
@@ -297,7 +280,6 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				value = big.NewInt(0)
 			},
-			false,
 			true,
 			"",
 		},
@@ -308,7 +290,6 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
 				value = big.NewInt(100)
 			},
-			false,
 			true,
 			"",
 		},
@@ -322,7 +303,7 @@ func (suite *KeeperTestSuite) TestSetAllowanceWithValidation() {
 			tc.malleate()
 
 			// Set Allowance
-			err := suite.network.App.Erc20Keeper.SetAllowanceWithValidation(ctx, erc20Addr, owner, spender, value, tc.allowDisabledTokenPair)
+			err := suite.network.App.Erc20Keeper.UnsafeSetAllowance(ctx, erc20Addr, owner, spender, value)
 			if tc.expectPass {
 				suite.Require().NoError(err)
 			} else {
@@ -435,9 +416,9 @@ func (suite *KeeperTestSuite) TestGetAllowances() {
 	}{
 		{
 			// NOTES: This case doesn’t actually occur in practice.
-			// While Allowances exist only for the ERC20 precompile,
-			// ERC20 token that was initially deployed on EVM can be deleted.
-			"pass - even if token pair is deleted",
+			// It is because, while Allowances exist only for the ERC20 precompile,
+			// only ERC20 token that was initially deployed on EVM state can be deleted.
+			"pass - even if token pair were deleted, allowances are deleted together and returns empty allowances",
 			func() {
 				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
@@ -452,15 +433,28 @@ func (suite *KeeperTestSuite) TestGetAllowances() {
 			},
 		},
 		{
-			// NOTES: This is because GetAllowances() if for genesis import & export.
-			// Because disabled token pair can be enabled later, when export allowances state,
-			// it should be included in the exported state.
-			"pass - when token pair is disabled, return empty allowances",
+			// NOTES: GetAllowances() is only for genesis import & export.
+			// Because disabled token pair can be enabled later,
+			// when allowances related to disabled token pair should also be included in the exported state.
+			"pass - even if token pair is disabled, return allowances",
 			func() {
 				pair := types.NewTokenPair(erc20Addr, "coin", types.OWNER_MODULE)
+				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
+
+				err := suite.network.App.Erc20Keeper.SetAllowance(ctx, erc20Addr, owner, spender, value)
+				suite.Require().NoError(err)
+
 				pair.Enabled = false
 				suite.network.App.Erc20Keeper.SetToken(ctx, pair)
-				expRes = []types.Allowance{}
+
+				expRes = []types.Allowance{
+					{
+						Erc20Address: erc20Addr.Hex(),
+						Owner:        owner.Hex(),
+						Spender:      spender.Hex(),
+						Value:        math.NewIntFromBigInt(value),
+					},
+				}
 			},
 		},
 		{
