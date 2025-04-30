@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"math/big"
 	"math/rand"
 
@@ -329,8 +328,6 @@ func (suite *KeeperIntegrationTestSuite) TestWATOMWrapUnwrap_MultiDecimal() {
 
 			baseFeeRes, err = suite.network.GetEvmClient().BaseFee(suite.network.GetContext(), &evmtypes.QueryBaseFeeRequest{})
 			suite.Require().NoError(err)
-
-			fmt.Println(suite.network.App.PreciseBankKeeper.GetAllBalances(suite.network.GetContext(), watomAddr.Bytes()))
 
 			// Call withdraw(wrapAmount)
 			_, err = suite.factory.ExecuteContractCall(
