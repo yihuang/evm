@@ -7,6 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 )
 
 func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
@@ -16,6 +17,7 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 
 		giveBankBal       sdk.Coins   // full balance
 		giveFractionalBal sdkmath.Int // stored fractional balance for giveAddr
+		giveLockedCoins   sdk.Coins   // locked coins
 
 		wantSpendableBal sdk.Coin
 	}{
@@ -25,9 +27,11 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 			// queried bank balance in uatom when querying for aatom
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(10))),
+			// (integer + fractional) - locked
 			sdk.NewCoin(
 				types.ExtendedCoinDenom(),
-				types.ConversionFactor().MulRaw(1000),
+				types.ConversionFactor().MulRaw(1000-10),
 			),
 		},
 		{
@@ -36,9 +40,11 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 			// queried bank balance in uatom when querying for aatom
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.NewInt(5000),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(10))),
 			sdk.NewCoin(
 				types.ExtendedCoinDenom(),
-				types.ConversionFactor().MulRaw(1000).AddRaw(5000),
+				// (integer - locked) + fractional
+				types.ConversionFactor().MulRaw(1000-10).AddRaw(5000),
 			),
 		},
 		{
@@ -46,7 +52,8 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 			types.IntegerCoinDenom(),
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			sdkmath.ZeroInt(),
-			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000)),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(10))),
+			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(990)),
 		},
 		{
 			"non-extended denom, with fractional - uatom returns uatom",
@@ -54,7 +61,8 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000))),
 			// does not affect balance
 			sdkmath.NewInt(100),
-			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(1000)),
+			sdk.NewCoins(sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(10))),
+			sdk.NewCoin(types.IntegerCoinDenom(), sdkmath.NewInt(990)),
 		},
 	}
 
@@ -69,11 +77,38 @@ func (suite *KeeperIntegrationTestSuite) TestKeeper_SpendableCoin() {
 			// Set fractional balance in store before query
 			suite.network.App.PreciseBankKeeper.SetFractionalBalance(suite.network.GetContext(), addr, tt.giveFractionalBal)
 
-			spendableCoins := suite.network.App.PreciseBankKeeper.SpendableCoin(suite.network.GetContext(), addr, tt.giveDenom)
+			// Add some locked coins
+			acc := suite.network.App.AccountKeeper.GetAccount(suite.network.GetContext(), addr)
+			if acc == nil {
+				acc = authtypes.NewBaseAccount(addr, nil, 0, 0)
+			}
+
+			vestingAcc, err := vestingtypes.NewPeriodicVestingAccount(
+				acc.(*authtypes.BaseAccount),
+				tt.giveLockedCoins,
+				suite.network.GetContext().BlockTime().Unix(),
+				vestingtypes.Periods{
+					vestingtypes.Period{
+						Length: 100,
+						Amount: tt.giveLockedCoins,
+					},
+				},
+			)
+			suite.Require().NoError(err)
+			suite.network.App.AccountKeeper.SetAccount(suite.network.GetContext(), vestingAcc)
+
+			fetchedLockedCoins := vestingAcc.LockedCoins(suite.network.GetContext().BlockTime())
+			suite.Require().Equal(
+				tt.giveLockedCoins,
+				fetchedLockedCoins,
+				"locked coins should be matching at current block time",
+			)
+
+			spendableCoinsWithLocked := suite.network.App.PreciseBankKeeper.SpendableCoin(suite.network.GetContext(), addr, tt.giveDenom)
 
 			suite.Require().Equalf(
 				tt.wantSpendableBal,
-				spendableCoins,
+				spendableCoinsWithLocked,
 				"expected spendable coins of denom %s",
 				tt.giveDenom,
 			)
