@@ -1,5 +1,7 @@
 # `x/precisebank`
 
+`Big thanks to the [Kava](https://www.kava.io/) team for their valuable contributions to this module.`
+
 ## Abstract
 
 This document specifies the precisebank module of Cosmos EVM.
