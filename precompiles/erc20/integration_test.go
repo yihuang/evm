@@ -719,7 +719,7 @@ var _ = Describe("ERC20 Extension -", func() {
 				)
 
 				When("the spender is the same as the sender", func() {
-					It("should return an error when transfer funds without an approval when calling the EVM extension", func() {
+					It("should return an error when transfer funds without an approval when calling the erc20 precompile", func() {
 						owner := is.keyring.GetKey(0)
 						spender := owner
 						receiver := utiltx.GenerateAddress()
@@ -1205,7 +1205,7 @@ var _ = Describe("ERC20 Extension -", func() {
 			)
 
 			When("querying the allowance for the own address", func() {
-				It("should return the 0 value when calling the EVM extension", func() {
+				It("should return the 0 value when calling the erc20 precompile", func() {
 					spender := is.keyring.GetAddr(0)
 					owner := is.keyring.GetKey(0)
 
@@ -1488,7 +1488,7 @@ var _ = Describe("ERC20 Extension -", func() {
 				)
 
 				When("the spender is the same as the owner", func() {
-					It("should return an error when calling the EVM extension", func() {
+					It("should return an error when calling the erc20 precompile", func() {
 						spender := is.keyring.GetKey(0)
 						owner := is.keyring.GetKey(0)
 						approveAmount := big.NewInt(100)
@@ -1547,6 +1547,45 @@ var _ = Describe("ERC20 Extension -", func() {
 						Entry(" - through erc20 v5 contract", erc20V5Call),
 					)
 				})
+
+				DescribeTable("it should return an error if approving 0 and allowance only exists for other tokens", func(callType CallType) {
+					owner := is.keyring.GetKey(0)
+					spender := is.keyring.GetKey(1)
+					prevAllowance := big.NewInt(200)
+
+					callTypeForOtherToken := directCallToken2
+
+					// set up a previous allowance for other token
+					is.setAllowanceForContract(callTypeForOtherToken, contractsData, owner.Priv, spender.Addr, prevAllowance)
+
+					// Approve allowance for target token
+					txArgs, approveArgs := is.getTxAndCallArgs(callType, contractsData, erc20.ApproveMethod, spender.Addr, common.Big0)
+
+					approveCheck := passCheck.WithExpEvents(erc20.EventTypeApproval)
+
+					_, ethRes, err := is.factory.CallContractAndCheckLogs(owner.Priv, txArgs, approveArgs, approveCheck)
+					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
+
+					// commit changes to chain state
+					err = is.network.NextBlock()
+					Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
+
+					is.ExpectTrueToBeReturned(ethRes, erc20.ApproveMethod)
+					is.ExpectAllowanceForContract(
+						callType, contractsData,
+						owner.Addr, spender.Addr, common.Big0,
+					)
+
+					// Check allowance of other token is not chaged
+					is.ExpectAllowanceForContract(
+						callTypeForOtherToken, contractsData,
+						owner.Addr, spender.Addr, prevAllowance,
+					)
+				},
+					Entry(" - direct call", directCall),
+					// NOTE: we are not passing the erc20 contract call here because the ERC20 contract
+					// only supports the actual token denomination and doesn't know of other allowances.
+				)
 			})
 
 			// NOTE: We have to split the tests for contract calls into a separate context because
@@ -2165,6 +2204,72 @@ var _ = Describe("ERC20 Extension -", func() {
 			})
 		})
 
+		When("an allowance exists for other tokens", func() {
+			var prevAllowance *big.Int
+
+			BeforeEach(func() {
+				prevAllowance = big.NewInt(200)
+			})
+
+			DescribeTable("increasing the allowance should add the token to the spend limit", func(callType, callTypeForOtherToken CallType) {
+				is.setAllowanceForContract(callTypeForOtherToken, contractsData, owner.Priv, spender.Addr, prevAllowance)
+
+				// Increase the allowance for target token
+				increaseAmount := big.NewInt(100)
+
+				txArgs, increaseArgs := is.getTxAndCallArgs(callType, contractsData, erc20.IncreaseAllowanceMethod, spender.Addr, increaseAmount)
+
+				approveCheck := passCheck.WithExpEvents(erc20.EventTypeApproval)
+
+				_, ethRes, err := is.factory.CallContractAndCheckLogs(owner.Priv, txArgs, increaseArgs, approveCheck)
+				Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
+
+				// commit changes to chain state
+				err = is.network.NextBlock()
+				Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
+
+				is.ExpectTrueToBeReturned(ethRes, erc20.IncreaseAllowanceMethod)
+				is.ExpectAllowanceForContract(callType, contractsData, owner.Addr, spender.Addr, increaseAmount)
+
+				// Check that the other token allowance is not affected
+				is.ExpectAllowanceForContract(callTypeForOtherToken, contractsData, owner.Addr, spender.Addr, prevAllowance)
+				Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
+			},
+				Entry(" - direct call", directCall, directCallToken2),
+				// NOTE: we are not passing the erc20 contract call here because the ERC20 contract
+				// only supports the actual token denomination and doesn't know of other allowances.
+			)
+
+			DescribeTable("decreasing the allowance should return an error", func(callType, callTypeForOtherToken CallType) {
+				is.setAllowanceForContract(callTypeForOtherToken, contractsData, owner.Priv, spender.Addr, prevAllowance)
+
+				// Decrease the allowance for target token
+				decreaseAmount := big.NewInt(100)
+
+				txArgs, decreaseArgs := is.getTxAndCallArgs(callType, contractsData, erc20.DecreaseAllowanceMethod, spender.Addr, decreaseAmount)
+
+				noAllowanceCheck := failCheck.WithErrContains(erc20.ErrNoAllowanceForToken, is.tokenDenom)
+
+				_, ethRes, err := is.factory.CallContractAndCheckLogs(owner.Priv, txArgs, decreaseArgs, noAllowanceCheck)
+				Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
+				Expect(ethRes).To(BeNil(), "expected empty result")
+
+				// commit changes to chain state
+				err = is.network.NextBlock()
+				Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
+
+				is.ExpectAllowanceForContract(callType, contractsData, owner.Addr, spender.Addr, common.Big0)
+				Expect(err).ToNot(HaveOccurred(), "error on NextBlock call")
+
+				// Check that the other token allowance is not affected
+				is.ExpectAllowanceForContract(callTypeForOtherToken, contractsData, owner.Addr, spender.Addr, prevAllowance)
+			},
+				Entry(" - direct call", directCall, directCallToken2),
+				// NOTE: we are not passing the erc20 contract call here because the ERC20 contract
+				// only supports the actual token denomination and doesn't know of other allowances.
+			)
+		})
+
 		When("an allowance exists for the same token", func() {
 			var approveAmount *big.Int
 
@@ -2637,7 +2742,7 @@ var _ = Describe("ERC20 Extension migration Flows -", func() {
 			// TODO: check here that the balance cannot be queried from the bank keeper before migrating the token
 		})
 
-		It("should add and enable the corresponding EVM extensions", func() {
+		It("should add and enable the corresponding erc20 precompiles", func() {
 			Skip("will be addressed in follow-up PR")
 
 			Expect(true).To(BeFalse(), "not implemented")
@@ -2661,7 +2766,7 @@ var _ = Describe("ERC20 Extension migration Flows -", func() {
 			// TODO: Add some IBC coins, register the token pair and then run migration logic
 		})
 
-		It("should add the corresponding EVM extensions", func() {
+		It("should add the corresponding erc20 precompiles", func() {
 			Skip("will be addressed in follow-up PR")
 
 			Expect(true).To(BeFalse(), "not implemented")

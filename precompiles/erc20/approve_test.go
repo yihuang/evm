@@ -78,6 +78,41 @@ func (s *PrecompileTestSuite) TestApprove() {
 			errContains: "causes integer overflow",
 		},
 		{
+			name: "pass - approve to zero with existing allowance only for other denominations",
+			malleate: func() []interface{} {
+				// NOTE: We are setting up an allowance for a different denomination
+				// and then trying to approve an amount of zero for the token denomination
+				s.setAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetPrivKey(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
+				)
+
+				return []interface{}{
+					s.keyring.GetAddr(1), common.Big0,
+				}
+			},
+			expPass: true,
+			postCheck: func() {
+				// Check that the allowance is zero
+				s.requireAllowance(
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(0),
+				)
+
+				// Check that the allowance for the other denomination was not deleted
+				s.requireAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
+				)
+			},
+		},
+		{
 			name: "pass - approve without existing allowance",
 			malleate: func() []interface{} {
 				return []interface{}{
@@ -115,6 +150,39 @@ func (s *PrecompileTestSuite) TestApprove() {
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
 					big.NewInt(amount),
+				)
+			},
+		},
+		{
+			name: "pass - approve with existing allowance in different denomination",
+			malleate: func() []interface{} {
+				s.setAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetPrivKey(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
+				)
+
+				return []interface{}{
+					s.keyring.GetAddr(1), big.NewInt(amount),
+				}
+			},
+			expPass: true,
+			postCheck: func() {
+				// Check that the allowance is set to the new amount
+				s.requireAllowance(
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
+				)
+
+				// Check that the allowance for the other denomination was not deleted
+				s.requireAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(1),
 				)
 			},
 		},
@@ -464,6 +532,46 @@ func (s *PrecompileTestSuite) TestDecreaseAllowance() {
 					s.keyring.GetAddr(0),
 					s.keyring.GetAddr(1),
 					common.Big0,
+				)
+			},
+		},
+		{
+			name: "pass - decrease allowance to zero for denom with existing allowance in other denominations",
+			malleate: func() []interface{} {
+				s.setAllowance(
+					s.precompile.Address(),
+					s.keyring.GetPrivKey(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
+				)
+
+				s.setAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetPrivKey(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
+				)
+
+				return []interface{}{
+					s.keyring.GetAddr(1), big.NewInt(amount),
+				}
+			},
+			expPass: true,
+			postCheck: func() {
+				// Check that the allowance was deleted
+				s.requireAllowance(
+					s.precompile.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(0),
+				)
+
+				// Check that the allowance for the other denomination was deleted
+				s.requireAllowance(
+					s.precompile2.Address(),
+					s.keyring.GetAddr(0),
+					s.keyring.GetAddr(1),
+					big.NewInt(amount),
 				)
 			},
 		},
