@@ -36,7 +36,7 @@ func TestMintAmountToAccount(t *testing.T) {
 		mockSetup func(*testutil.MockBankWrapper)
 	}{
 		{
-			name:      "success - convert 18 decimals amount to 6 decimals",
+			name:      "success - convert evm coin denom to extended denom",
 			coinInfo:  sixDecimalsCoinInfo,
 			evmDenom:  sixDecimalsCoinInfo.Denom,
 			amount:    big.NewInt(1e18), // 1 token in 18 decimals
@@ -141,7 +141,7 @@ func TestBurnAmountFromAccount(t *testing.T) {
 		mockSetup func(*testutil.MockBankWrapper)
 	}{
 		{
-			name:      "success - convert 18 decimals amount to 6 decimals",
+			name:      "success - convert evm coin denom to extended denom",
 			coinInfo:  sixDecimalsCoinInfo,
 			amount:    big.NewInt(1e18),
 			expectErr: "",
@@ -286,7 +286,7 @@ func TestSendCoinsFromModuleToAccount(t *testing.T) {
 			},
 		},
 		{
-			name:     "success - convert 18 decimals amount to 6 decimals with single token",
+			name:     "success - convert evm coin denom to extended denom with single token",
 			coinInfo: sixDecimalsCoinInfo,
 			coins: func() sdk.Coins {
 				coins := sdk.NewCoins([]sdk.Coin{
@@ -336,7 +336,7 @@ func TestSendCoinsFromModuleToAccount(t *testing.T) {
 			},
 		},
 		{
-			name:     "success - convert 18 decimals amount to 6 decimals with multiple tokens",
+			name:     "success - convert evm coin denom to extended denom with multiple tokens",
 			coinInfo: sixDecimalsCoinInfo,
 			coins: func() sdk.Coins {
 				coins := sdk.NewCoins([]sdk.Coin{
@@ -447,7 +447,7 @@ func TestSendCoinsFromAccountToModule(t *testing.T) {
 			},
 		},
 		{
-			name:     "success - convert 18 decimals amount to 6 decimals with single token",
+			name:     "success - convert evm coin denom to extended denom with single token",
 			coinInfo: sixDecimalsCoinInfo,
 			coins: func() sdk.Coins {
 				coins := sdk.NewCoins([]sdk.Coin{
@@ -497,7 +497,7 @@ func TestSendCoinsFromAccountToModule(t *testing.T) {
 			},
 		},
 		{
-			name:     "success - convert 18 decimals amount to 6 decimals with multiple tokens",
+			name:     "success - convert evm coin denom to extended denom with multiple tokens",
 			coinInfo: sixDecimalsCoinInfo,
 			coins: func() sdk.Coins {
 				coins := sdk.NewCoins([]sdk.Coin{
