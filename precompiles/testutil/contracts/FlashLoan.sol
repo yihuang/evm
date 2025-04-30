@@ -78,7 +78,7 @@ contract FlashLoan {
 
         try
             FlashLoan(address(this)).delegateWithRevert(
-                msg.sender,
+                address(this),
                 _validator,
                 _amount
             )
