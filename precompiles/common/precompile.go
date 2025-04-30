@@ -44,7 +44,7 @@ type balanceChangeEntry struct {
 	Op      Operation
 }
 
-func NewBalanceChangeEntry(acc common.Address, amt *big.Int, op Operation) balanceChangeEntry { //nolint:revive
+func NewBalanceChangeEntry(acc common.Address, amt *big.Int, op Operation) balanceChangeEntry {
 	return balanceChangeEntry{acc, amt, op}
 }
 
@@ -76,7 +76,7 @@ func (p Precompile) RunSetup(
 	contract *vm.Contract,
 	readOnly bool,
 	isTransaction func(name *abi.Method) bool,
-) (ctx sdk.Context, stateDB *statedb.StateDB, s snapshot, method *abi.Method, gasConfig storetypes.Gas, args []interface{}, err error) { //nolint:revive
+) (ctx sdk.Context, stateDB *statedb.StateDB, s snapshot, method *abi.Method, gasConfig storetypes.Gas, args []interface{}, err error) {
 	stateDB, ok := evm.StateDB.(*statedb.StateDB)
 	if !ok {
 		return sdk.Context{}, nil, s, nil, uint64(0), nil, errors.New(ErrNotRunInEvm)
