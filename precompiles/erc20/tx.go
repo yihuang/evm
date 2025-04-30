@@ -89,7 +89,11 @@ func (p *Precompile) transfer(
 		return nil, err
 	}
 
-	if method.Name == TransferFromMethod {
+	isTransferFrom := method.Name == TransferFromMethod
+	spenderAddr := contract.CallerAddress
+	newAllowance := big.NewInt(0)
+
+	if isTransferFrom {
 		spenderAddr := contract.CallerAddress
 
 		prevAllowance, err := p.erc20Keeper.GetAllowance(ctx, p.Address(), from, spenderAddr)
@@ -129,6 +133,14 @@ func (p *Precompile) transfer(
 
 	if err = p.EmitTransferEvent(ctx, stateDB, from, to, amount); err != nil {
 		return nil, err
+	}
+
+	// NOTE: if it's a direct transfer, we return here but if used through transferFrom,
+	// we need to emit the approval event with the new allowance.
+	if isTransferFrom {
+		if err = p.EmitApprovalEvent(ctx, stateDB, from, spenderAddr, newAllowance); err != nil {
+			return nil, err
+		}
 	}
 
 	return method.Outputs.Pack(true)

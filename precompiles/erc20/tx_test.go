@@ -185,22 +185,7 @@ func (s *PrecompileTestSuite) TestTransferFrom() {
 			erc20.ErrTransferAmountExceedsBalance.Error(),
 		},
 		{
-			"pass - spend on behalf of other account",
-			func() []interface{} {
-				err := s.network.App.Erc20Keeper.SetAllowance(ctx, s.precompile.Address(), owner.Addr, spender.Addr, big.NewInt(300))
-				s.Require().NoError(err, "failed to set allowance")
-
-				return []interface{}{owner.Addr, toAddr, big.NewInt(100)}
-			},
-			func() {
-				toAddrBalance := s.network.App.BankKeeper.GetBalance(ctx, toAddr.Bytes(), tokenDenom)
-				s.Require().Equal(big.NewInt(100), toAddrBalance.Amount.BigInt(), "expected toAddr to have 100 XMPL")
-			},
-			false,
-			"",
-		},
-		{
-			"pass - spend on behalf of own account",
+			"fail - spend on behalf of own account without allowance",
 			func() []interface{} {
 				// Mint some coins to the module account and then send to the spender address
 				err := s.network.App.BankKeeper.MintCoins(ctx, erc20types.ModuleName, XMPLCoin)
@@ -210,6 +195,43 @@ func (s *PrecompileTestSuite) TestTransferFrom() {
 
 				// NOTE: no allowance is necessary to spend on behalf of the same account
 				return []interface{}{spender.Addr, toAddr, big.NewInt(100)}
+			},
+			func() {
+				toAddrBalance := s.network.App.BankKeeper.GetBalance(ctx, toAddr.Bytes(), tokenDenom)
+				s.Require().Equal(big.NewInt(100), toAddrBalance.Amount.BigInt(), "expected toAddr to have 100 XMPL")
+			},
+			true,
+			"",
+		},
+		{
+			"pass - spend on behalf of own account with allowance",
+			func() []interface{} {
+				// Mint some coins to the module account and then send to the spender address
+				err := s.network.App.BankKeeper.MintCoins(ctx, erc20types.ModuleName, XMPLCoin)
+				s.Require().NoError(err, "failed to mint coins")
+				err = s.network.App.BankKeeper.SendCoinsFromModuleToAccount(ctx, erc20types.ModuleName, spender.AccAddr, XMPLCoin)
+				s.Require().NoError(err, "failed to send coins from module to account")
+
+				err = s.network.App.Erc20Keeper.SetAllowance(ctx, s.precompile.Address(), spender.Addr, spender.Addr, big.NewInt(100))
+				s.Require().NoError(err, "failed to set allowance")
+
+				// NOTE: no allowance is necessary to spend on behalf of the same account
+				return []interface{}{spender.Addr, toAddr, big.NewInt(100)}
+			},
+			func() {
+				toAddrBalance := s.network.App.BankKeeper.GetBalance(ctx, toAddr.Bytes(), tokenDenom)
+				s.Require().Equal(big.NewInt(100), toAddrBalance.Amount.BigInt(), "expected toAddr to have 100 XMPL")
+			},
+			false,
+			"",
+		},
+		{
+			"pass - spend on behalf of other account",
+			func() []interface{} {
+				err := s.network.App.Erc20Keeper.SetAllowance(ctx, s.precompile.Address(), owner.Addr, spender.Addr, big.NewInt(300))
+				s.Require().NoError(err, "failed to set allowance")
+
+				return []interface{}{owner.Addr, toAddr, big.NewInt(100)}
 			},
 			func() {
 				toAddrBalance := s.network.App.BankKeeper.GetBalance(ctx, toAddr.Bytes(), tokenDenom)
