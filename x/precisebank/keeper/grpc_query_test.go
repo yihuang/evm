@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/cosmos/evm/x/precisebank/types"
 
@@ -11,57 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
-
-func (suite *KeeperIntegrationTestSuite) TestQueryTotalFractionalBalance() {
-	testCases := []struct {
-		name         string
-		giveBalances []sdkmath.Int
-	}{
-		{
-			"empty",
-			[]sdkmath.Int{},
-		},
-		{
-			"min amount",
-			[]sdkmath.Int{
-				types.ConversionFactor().QuoRaw(2),
-				types.ConversionFactor().QuoRaw(2),
-			},
-		},
-		{
-			"exceeds conversion factor",
-			[]sdkmath.Int{
-				// 4 accounts * 0.5 == 2
-				types.ConversionFactor().QuoRaw(2),
-				types.ConversionFactor().QuoRaw(2),
-				types.ConversionFactor().QuoRaw(2),
-				types.ConversionFactor().QuoRaw(2),
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		suite.Run(tc.name, func() {
-			suite.SetupTest()
-
-			total := sdk.NewCoin(types.ExtendedCoinDenom(), sdkmath.ZeroInt())
-			for i, balance := range tc.giveBalances {
-				addr := sdk.AccAddress([]byte(strconv.Itoa(i)))
-				suite.network.App.PreciseBankKeeper.SetFractionalBalance(suite.network.GetContext(), addr, balance)
-
-				total.Amount = total.Amount.Add(balance)
-			}
-
-			res, err := suite.network.GetPreciseBankClient().TotalFractionalBalances(
-				context.Background(),
-				&types.QueryTotalFractionalBalancesRequest{},
-			)
-			suite.Require().NoError(err)
-
-			suite.Require().Equal(total, res.Total)
-		})
-	}
-}
 
 func (suite *KeeperIntegrationTestSuite) TestQueryRemainder() {
 	res, err := suite.network.GetPreciseBankClient().Remainder(

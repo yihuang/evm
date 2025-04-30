@@ -19,18 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_TotalFractionalBalances_FullMethodName = "/cosmos.evm.precisebank.v1.Query/TotalFractionalBalances"
-	Query_Remainder_FullMethodName               = "/cosmos.evm.precisebank.v1.Query/Remainder"
-	Query_FractionalBalance_FullMethodName       = "/cosmos.evm.precisebank.v1.Query/FractionalBalance"
+	Query_Remainder_FullMethodName         = "/cosmos.evm.precisebank.v1.Query/Remainder"
+	Query_FractionalBalance_FullMethodName = "/cosmos.evm.precisebank.v1.Query/FractionalBalance"
 )
 
 // QueryClient is the client API for Query service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
-	// TotalFractionalBalances returns the total sum of all fractional balances
-	// managed by the precisebank module.
-	TotalFractionalBalances(ctx context.Context, in *QueryTotalFractionalBalancesRequest, opts ...grpc.CallOption) (*QueryTotalFractionalBalancesResponse, error)
 	// Remainder returns the amount backed by the reserve, but not yet owned by
 	// any account, i.e. not in circulation.
 	Remainder(ctx context.Context, in *QueryRemainderRequest, opts ...grpc.CallOption) (*QueryRemainderResponse, error)
@@ -45,15 +41,6 @@ type queryClient struct {
 
 func NewQueryClient(cc grpc.ClientConnInterface) QueryClient {
 	return &queryClient{cc}
-}
-
-func (c *queryClient) TotalFractionalBalances(ctx context.Context, in *QueryTotalFractionalBalancesRequest, opts ...grpc.CallOption) (*QueryTotalFractionalBalancesResponse, error) {
-	out := new(QueryTotalFractionalBalancesResponse)
-	err := c.cc.Invoke(ctx, Query_TotalFractionalBalances_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *queryClient) Remainder(ctx context.Context, in *QueryRemainderRequest, opts ...grpc.CallOption) (*QueryRemainderResponse, error) {
@@ -78,9 +65,6 @@ func (c *queryClient) FractionalBalance(ctx context.Context, in *QueryFractional
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
 type QueryServer interface {
-	// TotalFractionalBalances returns the total sum of all fractional balances
-	// managed by the precisebank module.
-	TotalFractionalBalances(context.Context, *QueryTotalFractionalBalancesRequest) (*QueryTotalFractionalBalancesResponse, error)
 	// Remainder returns the amount backed by the reserve, but not yet owned by
 	// any account, i.e. not in circulation.
 	Remainder(context.Context, *QueryRemainderRequest) (*QueryRemainderResponse, error)
@@ -94,9 +78,6 @@ type QueryServer interface {
 type UnimplementedQueryServer struct {
 }
 
-func (UnimplementedQueryServer) TotalFractionalBalances(context.Context, *QueryTotalFractionalBalancesRequest) (*QueryTotalFractionalBalancesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TotalFractionalBalances not implemented")
-}
 func (UnimplementedQueryServer) Remainder(context.Context, *QueryRemainderRequest) (*QueryRemainderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remainder not implemented")
 }
@@ -114,24 +95,6 @@ type UnsafeQueryServer interface {
 
 func RegisterQueryServer(s grpc.ServiceRegistrar, srv QueryServer) {
 	s.RegisterService(&Query_ServiceDesc, srv)
-}
-
-func _Query_TotalFractionalBalances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTotalFractionalBalancesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).TotalFractionalBalances(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_TotalFractionalBalances_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TotalFractionalBalances(ctx, req.(*QueryTotalFractionalBalancesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_Remainder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -177,10 +140,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "cosmos.evm.precisebank.v1.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "TotalFractionalBalances",
-			Handler:    _Query_TotalFractionalBalances_Handler,
-		},
 		{
 			MethodName: "Remainder",
 			Handler:    _Query_Remainder_Handler,

@@ -20,39 +20,9 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		GetTotalFractionalBalancesCmd(),
 		GetRemainderCmd(),
 		GetFractionalBalanceCmd(),
 	)
-	return cmd
-}
-
-// GetTotalFractionalBalancesCmd queries the total sum of all fractional balances
-func GetTotalFractionalBalancesCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "total-fractional-balances",
-		Short: "Get the total sum of all fractional balances",
-		Long:  "Get the total sum of all fractional balances",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			queryClient := types.NewQueryClient(clientCtx)
-
-			ctx := cmd.Context()
-			res, err := queryClient.TotalFractionalBalances(ctx, &types.QueryTotalFractionalBalancesRequest{})
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 

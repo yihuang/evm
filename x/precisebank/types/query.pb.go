@@ -30,83 +30,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryTotalFractionalBalancesRequest defines the request type for Query/TotalFractionalBalances method.
-type QueryTotalFractionalBalancesRequest struct {
-}
-
-func (m *QueryTotalFractionalBalancesRequest) Reset()         { *m = QueryTotalFractionalBalancesRequest{} }
-func (m *QueryTotalFractionalBalancesRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryTotalFractionalBalancesRequest) ProtoMessage()    {}
-func (*QueryTotalFractionalBalancesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{0}
-}
-func (m *QueryTotalFractionalBalancesRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryTotalFractionalBalancesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryTotalFractionalBalancesRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryTotalFractionalBalancesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryTotalFractionalBalancesRequest.Merge(m, src)
-}
-func (m *QueryTotalFractionalBalancesRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryTotalFractionalBalancesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryTotalFractionalBalancesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryTotalFractionalBalancesRequest proto.InternalMessageInfo
-
-// QueryTotalFractionalBalancesResponse defines the response type for Query/TotalFractionalBalances method.
-type QueryTotalFractionalBalancesResponse struct {
-	// total is the total sum of all fractional balances managed by the precisebank
-	// module.
-	Total types.Coin `protobuf:"bytes,1,opt,name=total,proto3" json:"total"`
-}
-
-func (m *QueryTotalFractionalBalancesResponse) Reset()         { *m = QueryTotalFractionalBalancesResponse{} }
-func (m *QueryTotalFractionalBalancesResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryTotalFractionalBalancesResponse) ProtoMessage()    {}
-func (*QueryTotalFractionalBalancesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{1}
-}
-func (m *QueryTotalFractionalBalancesResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryTotalFractionalBalancesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryTotalFractionalBalancesResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryTotalFractionalBalancesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryTotalFractionalBalancesResponse.Merge(m, src)
-}
-func (m *QueryTotalFractionalBalancesResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryTotalFractionalBalancesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryTotalFractionalBalancesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryTotalFractionalBalancesResponse proto.InternalMessageInfo
-
 // QueryRemainderRequest defines the request type for Query/Remainder method.
 type QueryRemainderRequest struct {
 }
@@ -115,7 +38,7 @@ func (m *QueryRemainderRequest) Reset()         { *m = QueryRemainderRequest{} }
 func (m *QueryRemainderRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryRemainderRequest) ProtoMessage()    {}
 func (*QueryRemainderRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{2}
+	return fileDescriptor_8c5456889057ce50, []int{0}
 }
 func (m *QueryRemainderRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -155,7 +78,7 @@ func (m *QueryRemainderResponse) Reset()         { *m = QueryRemainderResponse{}
 func (m *QueryRemainderResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryRemainderResponse) ProtoMessage()    {}
 func (*QueryRemainderResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{3}
+	return fileDescriptor_8c5456889057ce50, []int{1}
 }
 func (m *QueryRemainderResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -194,7 +117,7 @@ func (m *QueryFractionalBalanceRequest) Reset()         { *m = QueryFractionalBa
 func (m *QueryFractionalBalanceRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryFractionalBalanceRequest) ProtoMessage()    {}
 func (*QueryFractionalBalanceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{4}
+	return fileDescriptor_8c5456889057ce50, []int{2}
 }
 func (m *QueryFractionalBalanceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -233,7 +156,7 @@ func (m *QueryFractionalBalanceResponse) Reset()         { *m = QueryFractionalB
 func (m *QueryFractionalBalanceResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryFractionalBalanceResponse) ProtoMessage()    {}
 func (*QueryFractionalBalanceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8c5456889057ce50, []int{5}
+	return fileDescriptor_8c5456889057ce50, []int{3}
 }
 func (m *QueryFractionalBalanceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -263,8 +186,6 @@ func (m *QueryFractionalBalanceResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_QueryFractionalBalanceResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*QueryTotalFractionalBalancesRequest)(nil), "cosmos.evm.precisebank.v1.QueryTotalFractionalBalancesRequest")
-	proto.RegisterType((*QueryTotalFractionalBalancesResponse)(nil), "cosmos.evm.precisebank.v1.QueryTotalFractionalBalancesResponse")
 	proto.RegisterType((*QueryRemainderRequest)(nil), "cosmos.evm.precisebank.v1.QueryRemainderRequest")
 	proto.RegisterType((*QueryRemainderResponse)(nil), "cosmos.evm.precisebank.v1.QueryRemainderResponse")
 	proto.RegisterType((*QueryFractionalBalanceRequest)(nil), "cosmos.evm.precisebank.v1.QueryFractionalBalanceRequest")
@@ -276,38 +197,34 @@ func init() {
 }
 
 var fileDescriptor_8c5456889057ce50 = []byte{
-	// 484 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0x4d, 0x6b, 0xd4, 0x40,
-	0x18, 0xc7, 0x13, 0x69, 0x95, 0x1d, 0x4f, 0x1d, 0xd4, 0xb6, 0x41, 0x47, 0x89, 0xad, 0x28, 0xc8,
-	0x8c, 0xa9, 0xaf, 0x0b, 0x6a, 0x61, 0x05, 0xbd, 0x09, 0x2e, 0x82, 0x20, 0x48, 0x99, 0x64, 0x9f,
-	0xc6, 0xe0, 0x66, 0x26, 0xcd, 0xcc, 0x06, 0x8b, 0x78, 0xf1, 0x13, 0x08, 0xde, 0xfd, 0x3c, 0xeb,
-	0xc9, 0x82, 0x97, 0x9e, 0x44, 0x77, 0xfd, 0x20, 0x92, 0xc9, 0xec, 0x5a, 0x77, 0xc9, 0x76, 0xbb,
-	0xb7, 0xc9, 0x3c, 0x2f, 0xff, 0xdf, 0x33, 0xcf, 0x9f, 0xa0, 0xcd, 0x48, 0xaa, 0x54, 0x2a, 0x06,
-	0x45, 0xca, 0xb2, 0x1c, 0xa2, 0x44, 0x41, 0xc8, 0xc5, 0x3b, 0x56, 0x04, 0x6c, 0xaf, 0x07, 0xf9,
-	0x3e, 0xcd, 0x72, 0xa9, 0x25, 0x5e, 0xaf, 0xd2, 0x28, 0x14, 0x29, 0x3d, 0x92, 0x46, 0x8b, 0xc0,
-	0x23, 0xb6, 0x43, 0xc8, 0x15, 0xb0, 0x22, 0x08, 0x41, 0xf3, 0x80, 0x45, 0x32, 0x11, 0x55, 0xa9,
-	0x77, 0x2e, 0x96, 0xb1, 0x34, 0x47, 0x56, 0x9e, 0xec, 0xed, 0xc5, 0x58, 0xca, 0xb8, 0x0b, 0x8c,
-	0x67, 0x09, 0xe3, 0x42, 0x48, 0xcd, 0x75, 0x22, 0x85, 0xaa, 0xa2, 0xfe, 0x26, 0xba, 0xfa, 0xa2,
-	0x54, 0x7f, 0x29, 0x35, 0xef, 0x3e, 0xcd, 0x79, 0x54, 0x06, 0x79, 0xb7, 0xc5, 0xbb, 0x5c, 0x44,
-	0xa0, 0xda, 0xb0, 0xd7, 0x03, 0xa5, 0xfd, 0x37, 0x68, 0x63, 0x76, 0x9a, 0xca, 0xa4, 0x50, 0x80,
-	0xef, 0xa2, 0x65, 0x5d, 0xa6, 0xac, 0xb9, 0x57, 0xdc, 0xeb, 0x67, 0xb7, 0xd6, 0xa9, 0x9d, 0xa6,
-	0x44, 0xa6, 0x16, 0x99, 0x3e, 0x91, 0x89, 0x68, 0x2d, 0xf5, 0x7f, 0x5e, 0x76, 0xda, 0x55, 0xb6,
-	0xbf, 0x8a, 0xce, 0x9b, 0xf6, 0x6d, 0x48, 0x79, 0x22, 0x3a, 0x90, 0x8f, 0x74, 0x5f, 0xa1, 0x0b,
-	0x93, 0x01, 0xab, 0xf4, 0x08, 0x35, 0xf2, 0xd1, 0xe5, 0xbc, 0x6a, 0xff, 0x2a, 0xfc, 0x26, 0xba,
-	0x64, 0x1a, 0x4f, 0xcd, 0x62, 0x95, 0xf1, 0x1a, 0x3a, 0xc3, 0x3b, 0x9d, 0x1c, 0x94, 0x32, 0xdd,
-	0x1b, 0xed, 0xd1, 0xa7, 0x9f, 0x21, 0x52, 0x57, 0x6a, 0xd9, 0x9e, 0x23, 0xbc, 0x3b, 0x0e, 0xee,
-	0x84, 0x55, 0x74, 0x5e, 0xc8, 0x95, 0xdd, 0xc9, 0xbe, 0x5b, 0xdf, 0x97, 0xd0, 0xb2, 0x91, 0xc4,
-	0x87, 0x2e, 0x5a, 0xad, 0xd9, 0x01, 0x7e, 0x4c, 0x6b, 0xad, 0x43, 0xe7, 0xd8, 0xb1, 0xb7, 0xbd,
-	0x70, 0x7d, 0x35, 0xb6, 0xff, 0xf0, 0xd3, 0x8f, 0x3f, 0x5f, 0x4e, 0xdd, 0xc3, 0x77, 0x58, 0xbd,
-	0xd5, 0xcd, 0xbe, 0x77, 0xa6, 0x5f, 0x47, 0xe1, 0xaf, 0x2e, 0x6a, 0x8c, 0xd7, 0x8c, 0x6f, 0x1d,
-	0x07, 0x33, 0x69, 0x15, 0x2f, 0x38, 0x41, 0x85, 0x05, 0xbe, 0x69, 0x80, 0xaf, 0xe1, 0x8d, 0x19,
-	0xc0, 0x63, 0xcb, 0xe0, 0x6f, 0x2e, 0x5a, 0x99, 0x9a, 0x1e, 0x3f, 0x38, 0x4e, 0xb6, 0xce, 0x61,
-	0x5e, 0x73, 0x81, 0x4a, 0x0b, 0xbe, 0x6d, 0xc0, 0x9b, 0xf8, 0xfe, 0x0c, 0xf0, 0xe9, 0x37, 0x66,
-	0x1f, 0xac, 0x85, 0x3f, 0xb6, 0x9e, 0xf5, 0x7f, 0x13, 0xa7, 0x3f, 0x20, 0xee, 0xc1, 0x80, 0xb8,
-	0xbf, 0x06, 0xc4, 0xfd, 0x3c, 0x24, 0xce, 0xc1, 0x90, 0x38, 0x87, 0x43, 0xe2, 0xbc, 0xbe, 0x11,
-	0x27, 0xfa, 0x6d, 0x2f, 0xa4, 0x91, 0x4c, 0x8f, 0x0a, 0xbc, 0xff, 0x4f, 0x42, 0xef, 0x67, 0xa0,
-	0xc2, 0xd3, 0xe6, 0x37, 0x72, 0xfb, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4a, 0x9e, 0x50, 0x87,
-	0xde, 0x04, 0x00, 0x00,
+	// 421 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x4d, 0xce, 0x2f, 0xce,
+	0xcd, 0x2f, 0xd6, 0x4f, 0x2d, 0xcb, 0xd5, 0x2f, 0x28, 0x4a, 0x4d, 0xce, 0x2c, 0x4e, 0x4d, 0x4a,
+	0xcc, 0xcb, 0xd6, 0x2f, 0x33, 0xd4, 0x2f, 0x2c, 0x4d, 0x2d, 0xaa, 0xd4, 0x2b, 0x28, 0xca, 0x2f,
+	0xc9, 0x17, 0x92, 0x84, 0x28, 0xd3, 0x4b, 0x2d, 0xcb, 0xd5, 0x43, 0x52, 0xa6, 0x57, 0x66, 0x28,
+	0x25, 0x07, 0x35, 0x21, 0x29, 0xb1, 0x38, 0x55, 0xbf, 0xcc, 0x30, 0x29, 0xb5, 0x24, 0xd1, 0x50,
+	0x3f, 0x39, 0x3f, 0x33, 0x0f, 0xa2, 0x55, 0x4a, 0x24, 0x3d, 0x3f, 0x3d, 0x1f, 0xcc, 0xd4, 0x07,
+	0xb1, 0xa0, 0xa2, 0x32, 0xe9, 0xf9, 0xf9, 0xe9, 0x39, 0xa9, 0xfa, 0x89, 0x05, 0x99, 0xfa, 0x89,
+	0x79, 0x79, 0xf9, 0x25, 0x89, 0x25, 0x99, 0xf9, 0x79, 0xc5, 0x10, 0x59, 0x25, 0x71, 0x2e, 0xd1,
+	0x40, 0x90, 0xed, 0x41, 0xa9, 0xb9, 0x89, 0x99, 0x79, 0x29, 0xa9, 0x45, 0x41, 0xa9, 0x85, 0xa5,
+	0xa9, 0xc5, 0x25, 0x4a, 0xe1, 0x5c, 0x62, 0xe8, 0x12, 0xc5, 0x05, 0xf9, 0x79, 0xc5, 0xa9, 0x42,
+	0xb6, 0x5c, 0x9c, 0x45, 0x30, 0x41, 0x09, 0x46, 0x05, 0x46, 0x0d, 0x6e, 0x23, 0x49, 0x3d, 0xa8,
+	0xab, 0x41, 0x4e, 0xd3, 0x83, 0x3a, 0x4d, 0xcf, 0x39, 0x3f, 0x33, 0xcf, 0x89, 0xe5, 0xc4, 0x3d,
+	0x79, 0x86, 0x20, 0x84, 0x0e, 0x25, 0x4b, 0x2e, 0x59, 0xb0, 0xc1, 0x6e, 0x45, 0x89, 0xc9, 0x20,
+	0x97, 0x24, 0xe6, 0x38, 0x25, 0xe6, 0x24, 0xe6, 0x25, 0xa7, 0x42, 0x6d, 0x16, 0x92, 0xe0, 0x62,
+	0x4f, 0x4c, 0x49, 0x29, 0x4a, 0x2d, 0x2e, 0x06, 0x9b, 0xce, 0x19, 0x04, 0xe3, 0x2a, 0x15, 0x70,
+	0xc9, 0xe1, 0xd2, 0x0a, 0x75, 0x9b, 0x1f, 0x97, 0x50, 0x1a, 0x5c, 0x32, 0x3e, 0x09, 0x22, 0x4b,
+	0xac, 0x23, 0x05, 0xd3, 0xd0, 0xcd, 0x35, 0xfa, 0xc2, 0xc4, 0xc5, 0x0a, 0xb6, 0x52, 0x68, 0x1e,
+	0x23, 0x17, 0x27, 0x3c, 0x2c, 0x84, 0x0c, 0xf4, 0x70, 0x46, 0x93, 0x1e, 0xd6, 0xf0, 0x94, 0x32,
+	0x24, 0x41, 0x07, 0xc4, 0x33, 0x4a, 0x3a, 0x4d, 0x97, 0x9f, 0x4c, 0x66, 0x52, 0x13, 0x52, 0xd1,
+	0xc7, 0x9d, 0x74, 0xe0, 0xe1, 0x2a, 0x74, 0x92, 0x91, 0x4b, 0x10, 0x23, 0x60, 0x84, 0x2c, 0x08,
+	0x59, 0x8b, 0x2b, 0x1a, 0xa4, 0x2c, 0xc9, 0xd0, 0x09, 0x75, 0xb8, 0x3d, 0xd8, 0xe1, 0x96, 0x42,
+	0xe6, 0x78, 0x1c, 0x8e, 0x19, 0x4d, 0xfa, 0xd5, 0xd0, 0x78, 0xae, 0x75, 0x72, 0x3f, 0xf1, 0x50,
+	0x8e, 0xe1, 0xc4, 0x23, 0x39, 0xc6, 0x0b, 0x8f, 0xe4, 0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0,
+	0x58, 0x8e, 0xe1, 0xc2, 0x63, 0x39, 0x86, 0x1b, 0x8f, 0xe5, 0x18, 0xa2, 0x34, 0xd3, 0x33, 0x4b,
+	0x32, 0x4a, 0x93, 0xf4, 0x92, 0xf3, 0x73, 0x91, 0x2d, 0xa8, 0x40, 0xb1, 0xa2, 0xa4, 0xb2, 0x20,
+	0xb5, 0x38, 0x89, 0x0d, 0x9c, 0xca, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x79, 0x05, 0x2f,
+	0x39, 0x7d, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -322,9 +239,6 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// TotalFractionalBalances returns the total sum of all fractional balances
-	// managed by the precisebank module.
-	TotalFractionalBalances(ctx context.Context, in *QueryTotalFractionalBalancesRequest, opts ...grpc.CallOption) (*QueryTotalFractionalBalancesResponse, error)
 	// Remainder returns the amount backed by the reserve, but not yet owned by
 	// any account, i.e. not in circulation.
 	Remainder(ctx context.Context, in *QueryRemainderRequest, opts ...grpc.CallOption) (*QueryRemainderResponse, error)
@@ -339,15 +253,6 @@ type queryClient struct {
 
 func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
-}
-
-func (c *queryClient) TotalFractionalBalances(ctx context.Context, in *QueryTotalFractionalBalancesRequest, opts ...grpc.CallOption) (*QueryTotalFractionalBalancesResponse, error) {
-	out := new(QueryTotalFractionalBalancesResponse)
-	err := c.cc.Invoke(ctx, "/cosmos.evm.precisebank.v1.Query/TotalFractionalBalances", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *queryClient) Remainder(ctx context.Context, in *QueryRemainderRequest, opts ...grpc.CallOption) (*QueryRemainderResponse, error) {
@@ -370,9 +275,6 @@ func (c *queryClient) FractionalBalance(ctx context.Context, in *QueryFractional
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// TotalFractionalBalances returns the total sum of all fractional balances
-	// managed by the precisebank module.
-	TotalFractionalBalances(context.Context, *QueryTotalFractionalBalancesRequest) (*QueryTotalFractionalBalancesResponse, error)
 	// Remainder returns the amount backed by the reserve, but not yet owned by
 	// any account, i.e. not in circulation.
 	Remainder(context.Context, *QueryRemainderRequest) (*QueryRemainderResponse, error)
@@ -385,9 +287,6 @@ type QueryServer interface {
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) TotalFractionalBalances(ctx context.Context, req *QueryTotalFractionalBalancesRequest) (*QueryTotalFractionalBalancesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TotalFractionalBalances not implemented")
-}
 func (*UnimplementedQueryServer) Remainder(ctx context.Context, req *QueryRemainderRequest) (*QueryRemainderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remainder not implemented")
 }
@@ -397,24 +296,6 @@ func (*UnimplementedQueryServer) FractionalBalance(ctx context.Context, req *Que
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
-}
-
-func _Query_TotalFractionalBalances_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTotalFractionalBalancesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).TotalFractionalBalances(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/cosmos.evm.precisebank.v1.Query/TotalFractionalBalances",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TotalFractionalBalances(ctx, req.(*QueryTotalFractionalBalancesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_Remainder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -458,10 +339,6 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "TotalFractionalBalances",
-			Handler:    _Query_TotalFractionalBalances_Handler,
-		},
-		{
 			MethodName: "Remainder",
 			Handler:    _Query_Remainder_Handler,
 		},
@@ -472,62 +349,6 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "cosmos/evm/precisebank/v1/query.proto",
-}
-
-func (m *QueryTotalFractionalBalancesRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryTotalFractionalBalancesRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryTotalFractionalBalancesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryTotalFractionalBalancesResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryTotalFractionalBalancesResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryTotalFractionalBalancesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size, err := m.Total.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintQuery(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
 }
 
 func (m *QueryRemainderRequest) Marshal() (dAtA []byte, err error) {
@@ -660,26 +481,6 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryTotalFractionalBalancesRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *QueryTotalFractionalBalancesResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Total.Size()
-	n += 1 + l + sovQuery(uint64(l))
-	return n
-}
-
 func (m *QueryRemainderRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -729,139 +530,6 @@ func sovQuery(x uint64) (n int) {
 }
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *QueryTotalFractionalBalancesRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryTotalFractionalBalancesRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryTotalFractionalBalancesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryTotalFractionalBalancesResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryTotalFractionalBalancesResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryTotalFractionalBalancesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Total", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Total.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *QueryRemainderRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)

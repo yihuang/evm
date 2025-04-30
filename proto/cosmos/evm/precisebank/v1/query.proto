@@ -10,12 +10,6 @@ option (gogoproto.goproto_getters_all) = false;
 
 // Query defines the gRPC querier service for precisebank module
 service Query {
-  // TotalFractionalBalances returns the total sum of all fractional balances
-  // managed by the precisebank module.
-  rpc TotalFractionalBalances(QueryTotalFractionalBalancesRequest) returns (QueryTotalFractionalBalancesResponse) {
-    option (google.api.http).get = "/cosmos/evm/precisebank/v1/total_fractional_balances";
-  }
-
   // Remainder returns the amount backed by the reserve, but not yet owned by
   // any account, i.e. not in circulation.
   rpc Remainder(QueryRemainderRequest) returns (QueryRemainderResponse) {
@@ -27,16 +21,6 @@ service Query {
   rpc FractionalBalance(QueryFractionalBalanceRequest) returns (QueryFractionalBalanceResponse) {
     option (google.api.http).get = "/cosmos/evm/precisebank/v1/fractional_balance/{address}";
   }
-}
-
-// QueryTotalFractionalBalancesRequest defines the request type for Query/TotalFractionalBalances method.
-message QueryTotalFractionalBalancesRequest {}
-
-// QueryTotalFractionalBalancesResponse defines the response type for Query/TotalFractionalBalances method.
-message QueryTotalFractionalBalancesResponse {
-  // total is the total sum of all fractional balances managed by the precisebank
-  // module.
-  cosmos.base.v1beta1.Coin total = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryRemainderRequest defines the request type for Query/Remainder method.
