@@ -33,9 +33,9 @@ func ConvertBigIntFrom18DecimalsToLegacyDec(amt *big.Int) sdkmath.LegacyDec {
 	return decAmt.QuoInt(evmCoinDecimal.ConversionFactor())
 }
 
-// ChangeEvmCoinDenomFrom18Decimals converts the coin's Amount from 18 decimals to its
-// original representation. Return an error if the coin denom is not the EVM.
-func ChangeEvmCoinDenomFrom18Decimals(coin sdk.Coin) (sdk.Coin, error) {
+// ConvertEvmCoinDenomToExtendedDenom converts the coin's Denom to the extended denom.
+// Return an error if the coin denom is not the EVM.
+func ConvertEvmCoinDenomToExtendedDenom(coin sdk.Coin) (sdk.Coin, error) {
 	if coin.Denom != GetEVMCoinDenom() {
 		return sdk.Coin{}, fmt.Errorf("expected coin denom %s, received %s", GetEVMCoinDenom(), coin.Denom)
 	}
@@ -43,14 +43,14 @@ func ChangeEvmCoinDenomFrom18Decimals(coin sdk.Coin) (sdk.Coin, error) {
 	return sdk.Coin{Denom: GetEVMCoinExtendedDenom(), Amount: coin.Amount}, nil
 }
 
-// ConvertCoinsFrom18Decimals returns the given coins with the Amount of the evm
-// coin converted from the 18 decimals representation to the original one.
-func ChangeCoinsDenomFrom18Decimals(coins sdk.Coins) sdk.Coins {
+// ConvertCoinsDenomToExtendedDenom returns the given coins with the Denom of the evm
+// coin converted to the extended denom.
+func ConvertCoinsDenomToExtendedDenom(coins sdk.Coins) sdk.Coins {
 	evmDenom := GetEVMCoinDenom()
 	convertedCoins := make(sdk.Coins, len(coins))
 	for i, coin := range coins {
 		if coin.Denom == evmDenom {
-			coin, _ = ChangeEvmCoinDenomFrom18Decimals(coin)
+			coin, _ = ConvertEvmCoinDenomToExtendedDenom(coin)
 		}
 		convertedCoins[i] = coin
 	}

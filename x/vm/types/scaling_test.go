@@ -78,7 +78,7 @@ func TestConvertEvmCoinFrom18Decimals(t *testing.T) {
 			configurator.ResetTestConfig()
 			require.NoError(t, configurator.WithEVMCoinInfo(tc.evmCoinInfo).Configure())
 
-			coinConverted, err := evmtypes.ChangeEvmCoinDenomFrom18Decimals(tc.coin)
+			coinConverted, err := evmtypes.ConvertEvmCoinDenomToExtendedDenom(tc.coin)
 
 			if !tc.expErr {
 				require.NoError(t, err)
@@ -142,7 +142,7 @@ func TestConvertCoinsFrom18Decimals(t *testing.T) {
 			configurator.ResetTestConfig()
 			require.NoError(t, configurator.WithEVMCoinInfo(tc.evmCoinInfo).Configure())
 
-			coinConverted := evmtypes.ChangeCoinsDenomFrom18Decimals(tc.coins)
+			coinConverted := evmtypes.ConvertCoinsDenomToExtendedDenom(tc.coins)
 			require.Equal(t, tc.expCoins, coinConverted, "expected a different coin")
 		})
 	}

@@ -39,7 +39,7 @@ func NewBankWrapper(
 func (w BankWrapper) MintAmountToAccount(ctx context.Context, recipientAddr sdk.AccAddress, amt *big.Int) error {
 	coin := sdk.Coin{Denom: types.GetEVMCoinDenom(), Amount: sdkmath.NewIntFromBigInt(amt)}
 
-	convertedCoin, err := types.ChangeEvmCoinDenomFrom18Decimals(coin)
+	convertedCoin, err := types.ConvertEvmCoinDenomToExtendedDenom(coin)
 	if err != nil {
 		return errors.Wrap(err, "failed to mint coin to account in bank wrapper")
 	}
@@ -57,7 +57,7 @@ func (w BankWrapper) MintAmountToAccount(ctx context.Context, recipientAddr sdk.
 func (w BankWrapper) BurnAmountFromAccount(ctx context.Context, account sdk.AccAddress, amt *big.Int) error {
 	coin := sdk.Coin{Denom: types.GetEVMCoinDenom(), Amount: sdkmath.NewIntFromBigInt(amt)}
 
-	convertedCoin, err := types.ChangeEvmCoinDenomFrom18Decimals(coin)
+	convertedCoin, err := types.ConvertEvmCoinDenomToExtendedDenom(coin)
 	if err != nil {
 		return errors.Wrap(err, "failed to burn coins from account in bank wrapper")
 	}
@@ -86,7 +86,7 @@ func (w BankWrapper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom 
 // SendCoinsFromAccountToModule method to convert the evm coin, if present in
 // the input, to its original representation.
 func (w BankWrapper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, coins sdk.Coins) error {
-	convertedCoins := types.ChangeCoinsDenomFrom18Decimals(coins)
+	convertedCoins := types.ConvertCoinsDenomToExtendedDenom(coins)
 	if convertedCoins.IsZero() {
 		// if after scaling the coins the amt is zero
 		// then is a no-op.
@@ -102,7 +102,7 @@ func (w BankWrapper) SendCoinsFromAccountToModule(ctx context.Context, senderAdd
 // SendCoinsFromModuleToAccount method to convert the evm coin, if present in
 // the input, to its original representation.
 func (w BankWrapper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, coins sdk.Coins) error {
-	convertedCoins := types.ChangeCoinsDenomFrom18Decimals(coins)
+	convertedCoins := types.ConvertCoinsDenomToExtendedDenom(coins)
 	if convertedCoins.IsZero() {
 		return nil
 	}
