@@ -52,20 +52,6 @@ func (k Keeper) IterateAccountBalances(ctx context.Context, account sdk.AccAddre
 	k.bk.IterateAccountBalances(ctx, account, cb)
 }
 
-func (k Keeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
-	allBalances := k.bk.GetAllBalances(ctx, addr)
-
-	// remove extended coin balance from all balances
-	extendedAmount := allBalances.AmountOf(types.ExtendedCoinDenom())
-	allBalances = allBalances.Sub(sdk.NewCoin(types.ExtendedCoinDenom(), extendedAmount))
-
-	// add extended coin balance calculated from precisebank to all balances
-	correctExtendedBalance := k.GetBalance(ctx, addr, types.ExtendedCoinDenom())
-	allBalances = allBalances.Add(sdk.NewCoin(types.ExtendedCoinDenom(), correctExtendedBalance.Amount))
-
-	return allBalances
-}
-
 // SpendableCoins returns the total balances of spendable coins for an account
 // by address. If the account has no spendable coins, an empty Coins slice is
 // returned.
