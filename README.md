@@ -143,7 +143,7 @@ thus moving the standard forward.
 
 ## Getting started
 
-To run the example `evmd` chain, run the script using `./local_node.sh` 
+To run the example `evmd` chain, run the script using `./local_node.sh`
 from the root folder of the respository.
 
 ### Testing
