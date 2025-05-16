@@ -149,7 +149,7 @@ from the root folder of the respository.
 ### Testing
 
 All of the test scripts are found in `Makefile` in the root of the repository.
-Listed below are the commands for various tests
+Listed below are the commands for various tests:
 
 #### Unit Testing
 
@@ -158,6 +158,9 @@ make test-unit
 ```
 
 #### Coverage Test
+
+This generates a code coverage file `filtered_coverage.txt` and prints out the
+covered code percentage for the working files.
 
 ```bash
 make test-unit-cover
