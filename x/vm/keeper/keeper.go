@@ -49,6 +49,11 @@ type Keeper struct {
 
 	// access historical headers for EVM state transition execution
 	stakingKeeper types.StakingKeeper
+
+	// used for migrations from cointype 118 to cointype 60 accounts
+	feegrantKeeper types.FeegrantKeeper
+	authzKeeper    types.AuthzKeeper
+
 	// fetch EIP1559 base fee and parameters
 	feeMarketWrapper *wrappers.FeeMarketWrapper
 	// erc20Keeper interface needed to instantiate erc20 precompiles

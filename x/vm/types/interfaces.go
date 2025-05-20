@@ -2,7 +2,10 @@ package types
 
 import (
 	"context"
+	"cosmossdk.io/x/feegrant"
+	"github.com/cosmos/cosmos-sdk/x/authz"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
@@ -35,7 +38,9 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	authtypes.BankKeeper
 	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
+	GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins
 	SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 }
@@ -45,6 +50,22 @@ type StakingKeeper interface {
 	GetHistoricalInfo(ctx context.Context, height int64) (stakingtypes.HistoricalInfo, error)
 	GetValidatorByConsAddr(ctx context.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, error)
 	ValidatorAddressCodec() address.Codec
+	GetDelegatorDelegations(ctx context.Context, delegator sdk.AccAddress, maxRetrieve uint16) (delegations []stakingtypes.Delegation, err error)
+	Unbond(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress, shares math.LegacyDec) (amount math.Int, err error)
+	GetValidator(ctx context.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, err error)
+	BondDenom(ctx context.Context) (string, error)
+	SetDelegation(ctx context.Context, delegation stakingtypes.Delegation) error
+	RemoveDelegation(ctx context.Context, delegation stakingtypes.Delegation) error
+}
+
+type FeegrantKeeper interface {
+	AllowancesByGranter(c context.Context, req *feegrant.QueryAllowancesByGranterRequest) (*feegrant.QueryAllowancesByGranterResponse, error)
+}
+
+type AuthzKeeper interface {
+	GranterGrants(ctx context.Context, req *authz.QueryGranterGrantsRequest) (*authz.QueryGranterGrantsResponse, error)
+	DeleteGrant(ctx context.Context, grantee, granter sdk.AccAddress, msgType string) error
+	SaveGrant(ctx context.Context, grantee, granter sdk.AccAddress, authorization authz.Authorization, expiration *time.Time) error
 }
 
 // FeeMarketKeeper defines the expected interfaces needed for the feemarket
