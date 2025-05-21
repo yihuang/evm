@@ -8,7 +8,6 @@ import (
 	"fmt"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/cosmos/cosmos-sdk/types/registry"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"strconv"
@@ -226,8 +225,31 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 
 	allowances := allowancesResponse.Allowances
 
-	for _, allowance := range allowances {
-		k.feegrantKeeper
+	for _, grant := range allowances {
+		//todo: when keeper call is introduced for revoking, replace this call with it: https://github.com/cosmos/cosmos-sdk/issues/24773
+		msgRevoke := feegrant.MsgRevokeAllowance{
+			Granter: grant.Granter,
+			Grantee: grant.Grantee,
+		}
+		k.Router().Handler(&msgRevoke)
+
+		granteeAddress, err := sdk.AccAddressFromBech32(grant.Grantee)
+		if err != nil {
+			return nil, err
+		}
+
+		var allowance feegrant.FeeAllowanceI
+
+		// todo: test this
+		err = k.cdc.UnpackAny(grant.Allowance, &allowance)
+		if err != nil {
+			return nil, fmt.Errorf("unknown message type: %s", grant.Allowance.TypeUrl)
+		}
+
+		err = k.feegrantKeeper.GrantAllowance(ctx, newAddress, granteeAddress, allowance)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// === Authz ===

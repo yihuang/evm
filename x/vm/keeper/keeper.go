@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/cosmos/cosmos-sdk/baseapp"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -53,6 +54,8 @@ type Keeper struct {
 	// used for migrations from cointype 118 to cointype 60 accounts
 	feegrantKeeper types.FeegrantKeeper
 	authzKeeper    types.AuthzKeeper
+	// Msg server router
+	router baseapp.MessageRouter
 
 	// fetch EIP1559 base fee and parameters
 	feeMarketWrapper *wrappers.FeeMarketWrapper
@@ -345,4 +348,8 @@ func (k Keeper) AddTransientGasUsed(ctx sdk.Context, gasUsed uint64) (uint64, er
 	}
 	k.SetTransientGasUsed(ctx, result)
 	return result, nil
+}
+
+func (k Keeper) Router() baseapp.MessageRouter {
+	return k.router
 }

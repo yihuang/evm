@@ -60,6 +60,7 @@ type StakingKeeper interface {
 
 type FeegrantKeeper interface {
 	AllowancesByGranter(c context.Context, req *feegrant.QueryAllowancesByGranterRequest) (*feegrant.QueryAllowancesByGranterResponse, error)
+	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrant.FeeAllowanceI) error
 }
 
 type AuthzKeeper interface {
