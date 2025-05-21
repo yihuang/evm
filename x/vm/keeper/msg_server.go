@@ -2,14 +2,10 @@ package keeper
 
 import (
 	"context"
-	"cosmossdk.io/x/feegrant"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"strconv"
 
 	"github.com/hashicorp/go-metrics"
@@ -155,6 +151,17 @@ func (k *Keeper) UpdateParams(goCtx context.Context, req *types.MsgUpdateParams)
 func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAccount) (*types.MsgMigrateAccountResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	const (
+		// all active validators in the network
+		maxValidators = 180
+		// 99.99th percentile of tokens held per account
+		maxTokens = 20
+		// >99th percentile of feegrants granted per granter
+		maxFeeGrants = 55
+		// >99th percentile of authz grants granted per granter
+		maxAuthzGrants = 5
+	)
+
 	// todo: should someone need to sign with both keys?
 	// one key signing is probably fine - this functions with similar effect to bank send.
 	// on the other hand, may be good for users to confirm that the other address is actually functional;
@@ -165,140 +172,37 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid original address: %s", err)
 	}
 
+	if k.bankWrapper.BlockedAddr(originalAddress) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive external funds", originalAddress)
+	}
+
 	newAddress, err := sdk.AccAddressFromBech32(req.NewAddress)
 	if err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid new address: %s", err)
 	}
 
-	// === Bank ===
+	if k.bankWrapper.BlockedAddr(newAddress) {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive external funds", newAddress)
+	}
 
-	// todo: paginate this as there can be a large number of coins and that could exceed the number of gas that the block supports
-	// scope out the max, average number of tokens that accounts hold
-	// this will never be a ddos vector, but we want to make sure that the normal upper case is properly handled
-	balances := k.bankWrapper.GetAllBalances(ctx, originalAddress)
-
-	err = k.bankWrapper.SendCoins(ctx, originalAddress, newAddress, balances)
+	err = k.migrateBankTokens(err, ctx, originalAddress, maxTokens, newAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	// === Staking ===
-
-	// todo: paginate and select the proper number of maximal retrievals
-	delegations, err := k.stakingKeeper.GetDelegatorDelegations(ctx, originalAddress, 10)
-
-	for _, delegation := range delegations {
-		// Seems like we don't need to go through the whole unbond -> send to user -> send to new address -> bond
-		// and that we can remove / reset the delegation instead. Tokens aren't moving anywhere anyways
-		err = k.stakingKeeper.RemoveDelegation(ctx, delegation)
-		if err != nil {
-			return nil, err
-		}
-
-		err = k.stakingKeeper.SetDelegation(ctx, stakingtypes.Delegation{
-			DelegatorAddress: newAddress.String(),
-			ValidatorAddress: delegation.ValidatorAddress,
-			Shares:           delegation.Shares,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// todo: handle vesting accounts and migrate only amounts that are not in the process of vesting
-	}
-
-	// === Feegrant ===
-	// todo: paginate and select the proper number of maximal retrievals
-	allowancesResponse, err := k.feegrantKeeper.AllowancesByGranter(ctx, &feegrant.QueryAllowancesByGranterRequest{
-		Granter: originalAddress.String(),
-		Pagination: &query.PageRequest{
-			Key:        nil,
-			Offset:     0,
-			Limit:      0,
-			CountTotal: false,
-			Reverse:    false,
-		},
-	})
+	err = k.migrateDelegations(ctx, originalAddress, maxValidators, newAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	allowances := allowancesResponse.Allowances
-
-	for _, grant := range allowances {
-		//todo: when keeper call is introduced for revoking, replace this call with it: https://github.com/cosmos/cosmos-sdk/issues/24773
-		msgRevoke := feegrant.MsgRevokeAllowance{
-			Granter: grant.Granter,
-			Grantee: grant.Grantee,
-		}
-		k.Router().Handler(&msgRevoke)
-
-		granteeAddress, err := sdk.AccAddressFromBech32(grant.Grantee)
-		if err != nil {
-			return nil, err
-		}
-
-		var allowance feegrant.FeeAllowanceI
-
-		// todo: test this
-		err = k.cdc.UnpackAny(grant.Allowance, &allowance)
-		if err != nil {
-			return nil, fmt.Errorf("unknown message type: %s", grant.Allowance.TypeUrl)
-		}
-
-		err = k.feegrantKeeper.GrantAllowance(ctx, newAddress, granteeAddress, allowance)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// === Authz ===
-	// todo: paginate and select the proper number of maximal retrievals
-	authzGrantsResponse, err := k.authzKeeper.GranterGrants(ctx, &authz.QueryGranterGrantsRequest{
-		Granter: originalAddress.String(),
-		Pagination: &query.PageRequest{
-			Key:        nil,
-			Offset:     0,
-			Limit:      0,
-			CountTotal: false,
-			Reverse:    false,
-		},
-	})
+	err = k.migrateFeeGrants(ctx, originalAddress, maxFeeGrants, newAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	authzGrants := authzGrantsResponse.Grants
-
-	for _, grant := range authzGrants {
-		granteeAddress, err := sdk.AccAddressFromBech32(grant.Granter)
-		if err != nil {
-			return nil, err
-		}
-
-		granterAddress, err := sdk.AccAddressFromBech32(grant.Granter)
-		if err != nil {
-			return nil, err
-		}
-
-		// todo: is the message type string the same as the type url?
-		err = k.authzKeeper.DeleteGrant(ctx, granteeAddress, granterAddress, grant.Authorization.TypeUrl)
-		if err != nil {
-			return nil, err
-		}
-
-		var authorization authz.Authorization
-
-		// todo: test this
-		err = k.cdc.UnpackAny(grant.Authorization, &authorization)
-		if err != nil {
-			return nil, fmt.Errorf("unknown message type: %s", grant.Authorization.TypeUrl)
-		}
-
-		err = k.authzKeeper.SaveGrant(ctx, granteeAddress, granterAddress, authorization, grant.Expiration)
-		if err != nil {
-			return nil, err
-		}
+	err = k.migrateAuthzGrants(ctx, originalAddress, maxAuthzGrants)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.MsgMigrateAccountResponse{}, nil
