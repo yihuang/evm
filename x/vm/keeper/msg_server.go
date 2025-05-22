@@ -185,12 +185,13 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive external funds", newAddress)
 	}
 
-	err = k.migrateBankTokens(err, ctx, originalAddress, maxTokens, newAddress)
+	// delegations need to be migrated first to withdraw any staking rewards to handle them in the bank migration
+	err = k.migrateDelegations(ctx, originalAddress, maxValidators, newAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	err = k.migrateDelegations(ctx, originalAddress, maxValidators, newAddress)
+	err = k.migrateBankTokens(err, ctx, originalAddress, maxTokens, newAddress)
 	if err != nil {
 		return nil, err
 	}
