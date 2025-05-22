@@ -185,9 +185,18 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive external funds", newAddress)
 	}
 
+	// call the before-delegation-modified hook
+	if err := k.migrateAccountHooks.BeforeAll(ctx, originalAddress, newAddress); err != nil {
+		return nil, err
+	}
+
 	// delegations need to be migrated first to withdraw any staking rewards to handle them in the bank migration
 	err = k.migrateDelegations(ctx, originalAddress, maxValidators, newAddress)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := k.migrateAccountHooks.AfterMigrateDelegations(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 
@@ -196,13 +205,25 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, err
 	}
 
+	if err := k.migrateAccountHooks.AfterMigrateBankTokens(ctx, originalAddress, newAddress); err != nil {
+		return nil, err
+	}
+
 	err = k.migrateFeeGrants(ctx, originalAddress, maxFeeGrants, newAddress)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := k.migrateAccountHooks.AfterMigrateFeeGrants(ctx, originalAddress, newAddress); err != nil {
+		return nil, err
+	}
+
 	err = k.migrateAuthzGrants(ctx, originalAddress, maxAuthzGrants)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := k.migrateAccountHooks.AfterAll(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 

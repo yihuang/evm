@@ -55,7 +55,8 @@ type Keeper struct {
 	feegrantKeeper types.FeegrantKeeper
 	authzKeeper    types.AuthzKeeper
 	// Msg server router
-	router baseapp.MessageRouter
+	router              baseapp.MessageRouter
+	migrateAccountHooks MigrateAccountHooks
 
 	// fetch EIP1559 base fee and parameters
 	feeMarketWrapper *wrappers.FeeMarketWrapper
@@ -65,8 +66,8 @@ type Keeper struct {
 	// Tracer used to collect execution traces from the EVM transaction execution
 	tracer string
 
-	hooks types.EvmHooks
 	// EVM Hooks for tx post-processing
+	hooks types.EvmHooks
 
 	// precompiles defines the map of all available precompiled smart contracts.
 	// Some of these precompiled contracts might not be active depending on the EVM
@@ -187,6 +188,17 @@ func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
 	}
 
 	k.hooks = eh
+	return k
+}
+
+// SetMigrateAccountHooks sets the hooks for the EVM module
+// Called only once during initialization, panics if called more than once.
+func (k *Keeper) SetMigrateAccountHooks(hooks MigrateAccountHooks) *Keeper {
+	if k.migrateAccountHooks != nil {
+		panic("cannot set migrate account hooks twice")
+	}
+
+	k.migrateAccountHooks = hooks
 	return k
 }
 

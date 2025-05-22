@@ -10,35 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"time"
 )
-
-// CheckVestedDelegationInVestingAccount verifies whether the provided vesting account
-// holds a vested delegation for an equal or greater amount of the specified coin
-// at the given block time.
-//
-// Note that this function facilitates a specific use-case in the LSM module for tokenizing vested delegations.
-// For more details, see https://github.com/cosmos/gaia/issues/2877.
-func CheckVestedDelegationInVestingAccount(account vesting.VestingAccount, blockTime time.Time, coin sdk.Coin) bool {
-	// Get the vesting coins at the current block time
-	vestingAmount := account.GetVestingCoins(blockTime).AmountOf(coin.Denom)
-
-	// Note that the "DelegatedVesting" and "DelegatedFree" values
-	// were computed during the last delegation or undelegation operation
-	delVestingAmount := account.GetDelegatedVesting().AmountOf(coin.Denom)
-	delVested := account.GetDelegatedFree()
-
-	// Calculate the new vested delegated coins
-	x := math.MinInt(vestingAmount.Sub(delVestingAmount), math.ZeroInt())
-
-	// Add the newly vested delegated coins to the existing delegated vested amount
-	if !x.IsZero() {
-		delVested = delVested.Add(sdk.NewCoin(coin.Denom, x.Abs()))
-	}
-
-	// Check if the total delegated vested amount is greater than or equal to the specified coin amount
-	return delVested.AmountOf(coin.Denom).GTE(coin.Amount)
-}
 
 // ===============
 // === Staking ===
