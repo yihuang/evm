@@ -512,8 +512,11 @@ func NewExampleApp(
 		app.AccountKeeper,
 		app.PreciseBankKeeper,
 		app.StakingKeeper,
+		app.FeeGrantKeeper,
+		app.AuthzKeeper,
 		app.FeeMarketKeeper,
 		&app.Erc20Keeper,
+		baseapp.NewMsgServiceRouter(),
 		tracer,
 	)
 

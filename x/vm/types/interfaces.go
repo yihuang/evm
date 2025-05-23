@@ -90,6 +90,15 @@ type EvmHooks interface {
 	PostTxProcessing(ctx sdk.Context, sender common.Address, msg core.Message, receipt *ethtypes.Receipt) error
 }
 
+// MigrateAccountHooks TODO
+type MigrateAccountHooks interface {
+	BeforeAll(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
+	AfterMigrateDelegations(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
+	AfterMigrateBankTokens(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
+	AfterMigrateFeeGrants(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
+	AfterAll(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
+}
+
 // BankWrapper defines the methods required by the wrapper around
 // the Cosmos SDK x/bank keeper that is used to manage an EVM coin
 // with a configurable value for decimals.

@@ -56,7 +56,7 @@ type Keeper struct {
 	authzKeeper    types.AuthzKeeper
 	// Msg server router
 	router              baseapp.MessageRouter
-	migrateAccountHooks MigrateAccountHooks
+	migrateAccountHooks types.MigrateAccountHooks
 
 	// fetch EIP1559 base fee and parameters
 	feeMarketWrapper *wrappers.FeeMarketWrapper
@@ -83,8 +83,11 @@ func NewKeeper(
 	ak types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	sk types.StakingKeeper,
+	feegrantKeeper types.FeegrantKeeper,
+	authzKeeper types.AuthzKeeper,
 	fmk types.FeeMarketKeeper,
 	erc20Keeper types.Erc20Keeper,
+	router baseapp.MessageRouter,
 	tracer string,
 ) *Keeper {
 	// ensure evm module account is set
@@ -107,9 +110,12 @@ func NewKeeper(
 		accountKeeper:    ak,
 		bankWrapper:      bankWrapper,
 		stakingKeeper:    sk,
+		feegrantKeeper:   feegrantKeeper,
+		authzKeeper:      authzKeeper,
 		feeMarketWrapper: feeMarketWrapper,
 		storeKey:         storeKey,
 		transientKey:     transientKey,
+		router:           router,
 		tracer:           tracer,
 		erc20Keeper:      erc20Keeper,
 	}
@@ -180,9 +186,9 @@ func (k Keeper) GetTxIndexTransient(ctx sdk.Context) uint64 {
 // Hooks
 // ----------------------------------------------------------------------------
 
-// SetHooks sets the hooks for the EVM module
+// SetEVMHooks sets the hooks for the EVM module
 // Called only once during initialization, panics if called more than once.
-func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
+func (k *Keeper) SetEVMHooks(eh types.EvmHooks) *Keeper {
 	if k.hooks != nil {
 		panic("cannot set evm hooks twice")
 	}
@@ -193,13 +199,21 @@ func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
 
 // SetMigrateAccountHooks sets the hooks for the EVM module
 // Called only once during initialization, panics if called more than once.
-func (k *Keeper) SetMigrateAccountHooks(hooks MigrateAccountHooks) *Keeper {
+func (k *Keeper) SetMigrateAccountHooks(hooks types.MigrateAccountHooks) *Keeper {
 	if k.migrateAccountHooks != nil {
 		panic("cannot set migrate account hooks twice")
 	}
 
 	k.migrateAccountHooks = hooks
 	return k
+}
+
+// todo: docs
+func (k *Keeper) MigrateAccountHooks() types.MigrateAccountHooks {
+	if k.migrateAccountHooks == nil {
+		return MultiMigrateAccountHooks{}
+	}
+	return k.migrateAccountHooks
 }
 
 // PostTxProcessing delegates the call to the hooks.

@@ -186,7 +186,7 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 	}
 
 	// call the before-delegation-modified hook
-	if err := k.migrateAccountHooks.BeforeAll(ctx, originalAddress, newAddress); err != nil {
+	if err := k.MigrateAccountHooks().BeforeAll(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 
@@ -196,7 +196,7 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, err
 	}
 
-	if err := k.migrateAccountHooks.AfterMigrateDelegations(ctx, originalAddress, newAddress); err != nil {
+	if err := k.MigrateAccountHooks().AfterMigrateDelegations(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 
@@ -205,7 +205,7 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, err
 	}
 
-	if err := k.migrateAccountHooks.AfterMigrateBankTokens(ctx, originalAddress, newAddress); err != nil {
+	if err := k.MigrateAccountHooks().AfterMigrateBankTokens(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 
@@ -214,7 +214,7 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, err
 	}
 
-	if err := k.migrateAccountHooks.AfterMigrateFeeGrants(ctx, originalAddress, newAddress); err != nil {
+	if err := k.MigrateAccountHooks().AfterMigrateFeeGrants(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 
@@ -223,7 +223,7 @@ func (k *Keeper) MigrateAccount(goCtx context.Context, req *types.MsgMigrateAcco
 		return nil, err
 	}
 
-	if err := k.migrateAccountHooks.AfterAll(ctx, originalAddress, newAddress); err != nil {
+	if err := k.MigrateAccountHooks().AfterAll(ctx, originalAddress, newAddress); err != nil {
 		return nil, err
 	}
 

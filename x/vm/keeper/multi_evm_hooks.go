@@ -34,12 +34,3 @@ func (mh MultiEvmHooks) PostTxProcessing(ctx sdk.Context, sender common.Address,
 	}
 	return nil
 }
-
-// MigrateAccountHooks TODO
-type MigrateAccountHooks interface {
-	BeforeAll(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
-	AfterMigrateDelegations(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
-	AfterMigrateBankTokens(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
-	AfterMigrateFeeGrants(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
-	AfterAll(ctx sdk.Context, originalAddress sdk.AccAddress, newAddress sdk.AccAddress) error
-}
