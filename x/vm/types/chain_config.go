@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"github.com/cosmos/evm/server/config"
 	"math/big"
 	"strings"
 
@@ -22,7 +23,7 @@ var chainConfig *ChainConfig
 // EthereumConfig returns an Ethereum ChainConfig for EVM state transitions.
 // All the negative or nil values are converted to nil
 func (cc ChainConfig) EthereumConfig(chainID *big.Int) *gethparams.ChainConfig {
-	cID := new(big.Int).SetUint64(cc.ChainId)
+	cID := new(big.Int).SetUint64(config.DefaultEVMChainID)
 	if chainID != nil {
 		cID = chainID
 	}
@@ -53,11 +54,7 @@ func (cc ChainConfig) EthereumConfig(chainID *big.Int) *gethparams.ChainConfig {
 	}
 }
 
-func DefaultChainConfig(evmChainID uint64) *ChainConfig {
-	if evmChainID == 0 {
-		evmChainID = testChainID
-	}
-
+func DefaultChainConfig() *ChainConfig {
 	homesteadBlock := sdkmath.ZeroInt()
 	daoForkBlock := sdkmath.ZeroInt()
 	eip150Block := sdkmath.ZeroInt()
@@ -76,7 +73,6 @@ func DefaultChainConfig(evmChainID uint64) *ChainConfig {
 	shanghaiBlock := sdkmath.ZeroInt()
 	cancunBlock := sdkmath.ZeroInt()
 	cfg := &ChainConfig{
-		ChainId:             evmChainID,
 		HomesteadBlock:      &homesteadBlock,
 		DAOForkBlock:        &daoForkBlock,
 		DAOForkSupport:      true,
@@ -107,14 +103,14 @@ func setChainConfig(cc *ChainConfig) error {
 	if chainConfig != nil {
 		return errors.New("chainConfig already set. Cannot set again the chainConfig")
 	}
-	config := DefaultChainConfig(0)
+	defaultChainConfig := DefaultChainConfig()
 	if cc != nil {
-		config = cc
+		defaultChainConfig = cc
 	}
-	if err := config.Validate(); err != nil {
+	if err := defaultChainConfig.Validate(); err != nil {
 		return err
 	}
-	chainConfig = config
+	chainConfig = defaultChainConfig
 
 	return nil
 }

@@ -23,6 +23,12 @@ var ChainsCoinInfo = map[uint64]evmtypes.EvmCoinInfo{
 		DisplayDenom:  config.ExampleDisplayDenom,
 		Decimals:      evmtypes.EighteenDecimals,
 	},
+	config.CosmosChainID: {
+		Denom:         config.ExampleChainDenom,
+		ExtendedDenom: config.ExampleChainDenom,
+		DisplayDenom:  config.ExampleDisplayDenom,
+		Decimals:      evmtypes.EighteenDecimals,
+	},
 	config.SixDecimalsChainID: {
 		Denom:         "utest",
 		ExtendedDenom: "atest",
@@ -79,7 +85,7 @@ func EvmAppOptions(chainID uint64) error {
 		return err
 	}
 
-	ethCfg := evmtypes.DefaultChainConfig(chainID)
+	ethCfg := evmtypes.DefaultChainConfig()
 
 	configurator := evmtypes.NewEVMConfigurator()
 	// reset configuration to set the new one

@@ -40,7 +40,7 @@ func (b *Backend) Resend(args evmtypes.TransactionArgs, gasPrice *hexutil.Big, g
 	// signers to be backwards-compatible with old transactions.
 	cfg := b.ChainConfig()
 	if cfg == nil {
-		cfg = evmtypes.DefaultChainConfig(b.chainID.Uint64()).EthereumConfig(nil)
+		cfg = evmtypes.DefaultChainConfig().EthereumConfig(evmtypes.GetEthChainConfig().ChainID)
 	}
 
 	signer := ethtypes.LatestSigner(cfg)

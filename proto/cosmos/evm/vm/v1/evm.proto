@@ -10,31 +10,24 @@ option go_package = "github.com/cosmos/evm/x/vm/types";
 // Params defines the EVM module parameters
 message Params {
   option (amino.name) = "cosmos/evm/x/vm/Params";
-  // evm_denom represents the token denomination used to run the EVM state
-  // transitions.
-  string evm_denom = 1 [ (gogoproto.moretags) = "yaml:\"evm_denom\"" ];
-  // enable_create and enable call have been deprecated
-  reserved 2, 3;
   // extra_eips defines the additional EIPs for the vm.Config
-  repeated int64 extra_eips = 4 [
+  repeated int64 extra_eips = 1 [
     (gogoproto.customname) = "ExtraEIPs",
     (gogoproto.moretags) = "yaml:\"extra_eips\""
   ];
   // allow_unprotected_txs defines if replay-protected (i.e non EIP155
   // signed) transactions can be executed on the state machine.
-  bool allow_unprotected_txs = 5;
-  // renamed active_precompiles to active_static_precompiles
-  reserved 6;
+  bool allow_unprotected_txs = 2;
   // evm_channels is the list of channel identifiers from EVM compatible chains
-  repeated string evm_channels = 7 [ (gogoproto.customname) = "EVMChannels" ];
+  repeated string evm_channels = 3 [ (gogoproto.customname) = "EVMChannels" ];
   // access_control defines the permission policy of the EVM
-  AccessControl access_control = 8 [
+  AccessControl access_control = 4 [
     (gogoproto.customname) = "AccessControl",
     (gogoproto.nullable) = false
   ];
   // active_static_precompiles defines the slice of hex addresses of the
   // precompiled contracts that are active
-  repeated string active_static_precompiles = 9;
+  repeated string active_static_precompiles = 5;
 }
 
 // AccessControl defines the permission policy of the EVM
@@ -160,52 +153,39 @@ message ChainConfig {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"berlin_block\""
   ];
-  // DEPRECATED: EWASM, YOLOV3 and Catalyst block have been deprecated
-  reserved 14, 15, 16;
-  reserved "yolo_v3_block", "ewasm_block", "catalyst_block";
   // london_block: London switch block (nil = no fork, 0 = already on london)
-  string london_block = 17 [
+  string london_block = 14 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"london_block\""
   ];
   // arrow_glacier_block: Eip-4345 (bomb delay) switch block (nil = no fork, 0 =
   // already activated)
-  string arrow_glacier_block = 18 [
+  string arrow_glacier_block = 15 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"arrow_glacier_block\""
   ];
-  // DEPRECATED: merge fork block was deprecated:
-  // https://github.com/ethereum/go-ethereum/pull/24904
-  reserved 19;
-  reserved "merge_fork_block";
   // gray_glacier_block: EIP-5133 (bomb delay) switch block (nil = no fork, 0 =
   // already activated)
-  string gray_glacier_block = 20 [
+  string gray_glacier_block = 16 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"gray_glacier_block\""
   ];
   // merge_netsplit_block: Virtual fork after The Merge to use as a network
   // splitter
-  string merge_netsplit_block = 21 [
+  string merge_netsplit_block = 17 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"merge_netsplit_block\""
   ];
   // shanghai_block switch block (nil = no fork, 0 = already on shanghai)
-  string shanghai_block = 22 [
+  string shanghai_block = 18 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"shanghai_block\""
   ];
   // cancun_block switch block (nil = no fork, 0 = already on cancun)
-  string cancun_block = 23 [
+  string cancun_block = 19 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.moretags) = "yaml:\"cancun_block\""
   ];
-  // chain_id is the id of the chain (EIP-155)
-  uint64 chain_id = 24;
-  // denom is the denomination used on the EVM
-  string denom = 25;
-  // decimals is the real decimal precision of the denomination used on the EVM
-  uint64 decimals = 26;
 }
 
 // State represents a single Storage key value pair item.
@@ -295,11 +275,6 @@ message AccessTuple {
 
 // TraceConfig holds extra parameters to trace functions.
 message TraceConfig {
-  // DEPRECATED: DisableMemory and DisableReturnData have been renamed to
-  // Enable*.
-  reserved 4, 7;
-  reserved "disable_memory", "disable_return_data";
-
   // tracer is a custom javascript tracer
   string tracer = 1;
   // timeout overrides the default timeout of 5 seconds for JavaScript-based
@@ -312,15 +287,15 @@ message TraceConfig {
   // disable_storage switches storage capture
   bool disable_storage = 6 [ (gogoproto.jsontag) = "disableStorage" ];
   // debug can be used to print output during capture end
-  bool debug = 8;
+  bool debug = 7;
   // limit defines the maximum length of output, but zero means unlimited
-  int32 limit = 9;
+  int32 limit = 8;
   // overrides can be used to execute a trace using future fork rules
-  ChainConfig overrides = 10;
+  ChainConfig overrides = 9;
   // enable_memory switches memory capture
-  bool enable_memory = 11 [ (gogoproto.jsontag) = "enableMemory" ];
+  bool enable_memory = 10 [ (gogoproto.jsontag) = "enableMemory" ];
   // enable_return_data switches the capture of return data
-  bool enable_return_data = 12 [ (gogoproto.jsontag) = "enableReturnData" ];
+  bool enable_return_data = 11 [ (gogoproto.jsontag) = "enableReturnData" ];
   // tracer_json_config configures the tracer using a JSON string
-  string tracer_json_config = 13 [ (gogoproto.jsontag) = "tracerConfig" ];
+  string tracer_json_config = 12 [ (gogoproto.jsontag) = "tracerConfig" ];
 }

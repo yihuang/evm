@@ -38,7 +38,7 @@ func EvmAppOptions(chainID uint64) error {
 		return err
 	}
 
-	ethCfg := evmtypes.DefaultChainConfig(chainID)
+	ethCfg := evmtypes.DefaultChainConfig()
 
 	err := evmtypes.NewEVMConfigurator().
 		WithExtendedEips(cosmosEVMActivators).

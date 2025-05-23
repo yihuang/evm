@@ -26,13 +26,11 @@ message Params {
   // enable_erc20 is the parameter to enable the conversion of Cosmos coins <-->
   // ERC20 tokens.
   bool enable_erc20 = 1;
-  // enable_evm_hook is now depecrated
-  reserved 2;
   // native_precompiles defines the slice of hex addresses of the
   // active precompiles that are used to interact with native staking coins as
   // ERC20s
-  repeated string native_precompiles = 3;
+  repeated string native_precompiles = 2;
   // dynamic_precompiles defines the slice of hex addresses of the
   // active precompiles that are used to interact with Bank coins as ERC20s
-  repeated string dynamic_precompiles = 4;
+  repeated string dynamic_precompiles = 3;
 }
