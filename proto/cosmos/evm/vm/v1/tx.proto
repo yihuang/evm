@@ -24,6 +24,9 @@ service Msg {
   // parameters. The authority is hard-coded to the Cosmos SDK x/gov module
   // account
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  //todo: comments
+  rpc MigrateAccount(MsgMigrateAccount) returns (MsgMigrateAccountResponse);
 }
 
 // MsgEthereumTx encapsulates an Ethereum transaction as an SDK message.
