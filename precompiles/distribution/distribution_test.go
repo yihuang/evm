@@ -7,8 +7,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	gethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/holiman/uint256"
 
 	chainutil "github.com/cosmos/evm/evmd/testutil"
+	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/precompiles/distribution"
 	"github.com/cosmos/evm/precompiles/testutil"
 	"github.com/cosmos/evm/testutil/constants"
@@ -185,7 +187,12 @@ func (s *PrecompileTestSuite) TestRun() {
 				input, err := s.precompile.Pack(
 					distribution.FundCommunityPoolMethod,
 					s.keyring.GetAddr(0),
-					big.NewInt(1e18),
+					[]cmn.Coin{
+						{
+							Denom:  constants.ExampleAttoDenom,
+							Amount: big.NewInt(1e18),
+						},
+					},
 				)
 				s.Require().NoError(err, "failed to pack input")
 
@@ -195,12 +202,25 @@ func (s *PrecompileTestSuite) TestRun() {
 			expPass:  true,
 		},
 		{
-			name: "pass - fund community pool transaction",
+			name: "pass - fund multi coins community pool transaction",
 			malleate: func() (common.Address, []byte) {
 				input, err := s.precompile.Pack(
 					distribution.FundCommunityPoolMethod,
 					s.keyring.GetAddr(0),
-					big.NewInt(1e18),
+					[]cmn.Coin{
+						{
+							Denom:  constants.ExampleAttoDenom,
+							Amount: big.NewInt(1e18),
+						},
+						{
+							Denom:  "foo",
+							Amount: big.NewInt(1e18),
+						},
+						{
+							Denom:  "bar",
+							Amount: big.NewInt(1e18),
+						},
+					},
 				)
 				s.Require().NoError(err, "failed to pack input")
 
@@ -221,7 +241,7 @@ func (s *PrecompileTestSuite) TestRun() {
 			// malleate testcase
 			caller, input := tc.malleate()
 
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, uint256.NewInt(0), uint64(1e6))
 			contract.Input = input
 
 			contractAddr := contract.Address()
@@ -255,7 +275,7 @@ func (s *PrecompileTestSuite) TestRun() {
 
 			// Instantiate EVM
 			evm := s.network.App.EVMKeeper.NewEVM(
-				ctx, msg, cfg, nil, s.network.GetStateDB(),
+				ctx, *msg, cfg, nil, s.network.GetStateDB(),
 			)
 
 			precompiles, found, err := s.network.App.EVMKeeper.GetPrecompileInstance(ctx, contractAddr)
@@ -392,7 +412,12 @@ func (s *PrecompileTestSuite) TestCMS() {
 				input, err := s.precompile.Pack(
 					distribution.FundCommunityPoolMethod,
 					s.keyring.GetAddr(0),
-					big.NewInt(1e18),
+					[]cmn.Coin{
+						{
+							Denom:  constants.ExampleAttoDenom,
+							Amount: big.NewInt(1e18),
+						},
+					},
 				)
 				s.Require().NoError(err, "failed to pack input")
 
@@ -401,12 +426,25 @@ func (s *PrecompileTestSuite) TestCMS() {
 			expPass: true,
 		},
 		{
-			name: "pass - fund community pool transaction",
+			name: "pass - fund multi coins community pool transaction",
 			malleate: func() (common.Address, []byte) {
 				input, err := s.precompile.Pack(
 					distribution.FundCommunityPoolMethod,
 					s.keyring.GetAddr(0),
-					big.NewInt(1e18),
+					[]cmn.Coin{
+						{
+							Denom:  constants.ExampleAttoDenom,
+							Amount: big.NewInt(1e18),
+						},
+						{
+							Denom:  "foo",
+							Amount: big.NewInt(1e18),
+						},
+						{
+							Denom:  "bar",
+							Amount: big.NewInt(1e18),
+						},
+					},
 				)
 				s.Require().NoError(err, "failed to pack input")
 
@@ -431,7 +469,7 @@ func (s *PrecompileTestSuite) TestCMS() {
 
 			// malleate testcase
 			caller, input := tc.malleate()
-			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, big.NewInt(0), uint64(1e6))
+			contract := vm.NewPrecompile(vm.AccountRef(caller), s.precompile, uint256.NewInt(0), uint64(1e6))
 
 			contractAddr := contract.Address()
 			// Build and sign Ethereum transaction
