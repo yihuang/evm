@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
@@ -98,15 +99,15 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		switch method.Name {
 		// gov transactions
 		case VoteMethod:
-			bz, err = p.Vote(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.Vote(ctx, contract, stateDB, method, args)
 		case VoteWeightedMethod:
-			bz, err = p.VoteWeighted(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.VoteWeighted(ctx, contract, stateDB, method, args)
 		case SubmitProposalMethod:
-			bz, err = p.SubmitProposal(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.SubmitProposal(ctx, contract, stateDB, method, args)
 		case DepositMethod:
-			bz, err = p.Deposit(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.Deposit(ctx, contract, stateDB, method, args)
 		case CancelProposalMethod:
-			bz, err = p.CancelProposal(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.CancelProposal(ctx, contract, stateDB, method, args)
 
 		// gov queries
 		case GetVoteMethod:
@@ -137,7 +138,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 		cost := ctx.GasMeter().GasConsumed() - initialGas
 
-		if !contract.UseGas(cost) {
+		if !contract.UseGas(cost, nil, tracing.GasChangeCallPrecompiledContract) {
 			return nil, vm.ErrOutOfGas
 		}
 

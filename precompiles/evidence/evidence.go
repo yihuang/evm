@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
@@ -94,7 +95,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		switch method.Name {
 		// evidence transactions
 		case SubmitEvidenceMethod:
-			bz, err = p.SubmitEvidence(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.SubmitEvidence(ctx, contract, stateDB, method, args)
 		// evidence queries
 		case EvidenceMethod:
 			bz, err = p.Evidence(ctx, method, args)
@@ -110,7 +111,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 		cost := ctx.GasMeter().GasConsumed() - initialGas
 
-		if !contract.UseGas(cost) {
+		if !contract.UseGas(cost, nil, tracing.GasChangeCallPrecompiledContract) {
 			return nil, vm.ErrOutOfGas
 		}
 

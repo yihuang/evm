@@ -130,7 +130,7 @@ func (s *PrecompileTestSuite) TestValidatorDistributionInfo() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.ValidatorDistributionInfo(ctx, contract, &method, tc.malleate())
 
@@ -223,7 +223,7 @@ func (s *PrecompileTestSuite) TestValidatorOutstandingRewards() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.ValidatorOutstandingRewards(ctx, contract, &method, tc.malleate())
 
@@ -321,7 +321,7 @@ func (s *PrecompileTestSuite) TestValidatorCommission() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.ValidatorCommission(ctx, contract, &method, tc.malleate())
 
@@ -490,7 +490,7 @@ func (s *PrecompileTestSuite) TestValidatorSlashes() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.ValidatorSlashes(ctx, contract, &method, tc.malleate())
 
@@ -605,7 +605,7 @@ func (s *PrecompileTestSuite) TestDelegationRewards() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			args := tc.malleate()
 			bz, err := s.precompile.DelegationRewards(ctx, contract, &method, args)
@@ -739,7 +739,7 @@ func (s *PrecompileTestSuite) TestDelegationTotalRewards() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
 
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			args := tc.malleate()
 			bz, err := s.precompile.DelegationTotalRewards(ctx, contract, &method, args)
@@ -823,7 +823,7 @@ func (s *PrecompileTestSuite) TestDelegatorValidators() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.DelegatorValidators(ctx, contract, &method, tc.malleate())
 
@@ -880,7 +880,7 @@ func (s *PrecompileTestSuite) TestDelegatorWithdrawAddress() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, common.U2560, tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.DelegatorWithdrawAddress(ctx, contract, &method, tc.malleate())
 
@@ -956,7 +956,7 @@ func (s *PrecompileTestSuite) TestCommunityPool() {
 		s.Run(tc.name, func() {
 			s.SetupTest() // reset
 			ctx = s.network.GetContext()
-			contract := vm.NewContract(vm.AccountRef(s.keyring.GetAddr(0)), s.precompile, uint256.NewInt(0), tc.gas)
+			contract := vm.NewContract(s.keyring.GetAddr(0), s.precompile.Address(), uint256.NewInt(0), tc.gas, nil)
 
 			bz, err := s.precompile.CommunityPool(ctx, contract, &method, tc.malleate())
 

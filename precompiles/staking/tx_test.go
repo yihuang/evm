@@ -81,7 +81,7 @@ func (s *PrecompileTestSuite) TestCreateValidator() {
 			nil,
 			func([]byte) {},
 			true,
-			"is not the same as delegator address",
+			"does not match the requester address",
 		},
 		{
 			"fail - invalid description",
@@ -243,7 +243,7 @@ func (s *PrecompileTestSuite) TestCreateValidator() {
 			&diffAddr,
 			func([]byte) {},
 			true,
-			"this method can only be called directly to the precompile",
+			"does not match the requester address",
 		},
 		{
 			"success",
@@ -306,14 +306,15 @@ func (s *PrecompileTestSuite) TestCreateValidator() {
 			// reset sender
 			validator := s.keyring.GetKey(0)
 			validatorAddress = validator.Addr
-
-			var contract *vm.Contract
-			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, validatorAddress, s.precompile, tc.gas)
+			caller := validatorAddress
 			if tc.callerAddress != nil {
-				contract.CallerAddress = *tc.callerAddress
+				caller = *tc.callerAddress
 			}
 
-			bz, err := s.precompile.CreateValidator(ctx, validatorAddress, contract, stDB, &method, tc.malleate())
+			var contract *vm.Contract
+			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, caller, s.precompile.Address(), tc.gas)
+
+			bz, err := s.precompile.CreateValidator(ctx, contract, stDB, &method, tc.malleate())
 
 			if tc.expError {
 				s.Require().ErrorContains(err, tc.errContains)
@@ -406,7 +407,7 @@ func (s *PrecompileTestSuite) TestEditValidator() {
 			nil,
 			func([]byte) {},
 			true,
-			"is not the same as validator operator address",
+			"does not match the requester address",
 		},
 		{
 			"fail - invalid description",
@@ -537,7 +538,7 @@ func (s *PrecompileTestSuite) TestEditValidator() {
 			}(),
 			func([]byte) {},
 			true,
-			"this method can only be called directly to the precompile",
+			"does not match the requester address",
 		},
 		{
 			"success",
@@ -663,14 +664,15 @@ func (s *PrecompileTestSuite) TestEditValidator() {
 			s.Require().NoError(err)
 
 			validatorAddress = common.BytesToAddress(valAddr.Bytes())
-
-			var contract *vm.Contract
-			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, validatorAddress, s.precompile, tc.gas)
+			caller := validatorAddress
 			if tc.callerAddress != nil {
-				contract.CallerAddress = *tc.callerAddress
+				caller = *tc.callerAddress
 			}
 
-			bz, err := s.precompile.EditValidator(ctx, validatorAddress, contract, stDB, &method, tc.malleate())
+			var contract *vm.Contract
+			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, caller, s.precompile.Address(), tc.gas)
+
+			bz, err := s.precompile.EditValidator(ctx, contract, stDB, &method, tc.malleate())
 
 			if tc.expError {
 				s.Require().ErrorContains(err, tc.errContains)
@@ -746,7 +748,7 @@ func (s *PrecompileTestSuite) TestDelegate() {
 			},
 			gas:         200000,
 			expError:    true,
-			errContains: "is not the same as delegator address",
+			errContains: "does not match the requester address",
 		},
 		{
 			"fail - invalid delegator address",
@@ -831,13 +833,13 @@ func (s *PrecompileTestSuite) TestDelegate() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile, tc.gas)
+			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile.Address(), tc.gas)
 
 			delegateArgs := tc.malleate(
 				delegator,
 				s.network.GetValidators()[0].OperatorAddress,
 			)
-			bz, err := s.precompile.Delegate(ctx, delegator.Addr, contract, stDB, &method, delegateArgs)
+			bz, err := s.precompile.Delegate(ctx, contract, stDB, &method, delegateArgs)
 
 			// query the delegation in the staking keeper
 			valAddr, valErr := sdk.ValAddressFromBech32(s.network.GetValidators()[0].OperatorAddress)
@@ -901,7 +903,7 @@ func (s *PrecompileTestSuite) TestUndelegate() {
 			},
 			gas:         200000,
 			expError:    true,
-			errContains: "is not the same as delegator",
+			errContains: "does not match the requester address",
 		},
 		{
 			"fail - invalid delegator address",
@@ -972,10 +974,10 @@ func (s *PrecompileTestSuite) TestUndelegate() {
 			delegator := s.keyring.GetKey(0)
 
 			var contract *vm.Contract
-			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile, tc.gas)
+			contract, ctx = testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile.Address(), tc.gas)
 
 			undelegateArgs := tc.malleate(delegator, s.network.GetValidators()[0].OperatorAddress)
-			bz, err := s.precompile.Undelegate(ctx, delegator.Addr, contract, stDB, &method, undelegateArgs)
+			bz, err := s.precompile.Undelegate(ctx, contract, stDB, &method, undelegateArgs)
 
 			// query the unbonding delegations in the staking keeper
 			undelegations, _ := s.network.App.StakingKeeper.GetAllUnbondingDelegations(ctx, delegator.AccAddr)
@@ -1033,7 +1035,7 @@ func (s *PrecompileTestSuite) TestRedelegate() {
 			},
 			gas:         200000,
 			expError:    true,
-			errContains: "is not the same as delegator",
+			errContains: "does not match the requester address",
 		},
 		{
 			"fail - invalid delegator address",
@@ -1117,14 +1119,14 @@ func (s *PrecompileTestSuite) TestRedelegate() {
 			ctx = s.network.GetContext()
 			delegator := s.keyring.GetKey(0)
 
-			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile, tc.gas)
+			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile.Address(), tc.gas)
 
 			redelegateArgs := tc.malleate(
 				delegator,
 				s.network.GetValidators()[0].OperatorAddress,
 				s.network.GetValidators()[1].OperatorAddress,
 			)
-			bz, err := s.precompile.Redelegate(ctx, delegator.Addr, contract, s.network.GetStateDB(), &method, redelegateArgs)
+			bz, err := s.precompile.Redelegate(ctx, contract, s.network.GetStateDB(), &method, redelegateArgs)
 
 			// query the redelegations in the staking keeper
 			redelegations, redelErr := s.network.App.StakingKeeper.GetRedelegations(ctx, delegator.AccAddr, 5)
@@ -1281,11 +1283,11 @@ func (s *PrecompileTestSuite) TestCancelUnbondingDelegation() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile, tc.gas)
+			contract, ctx := testutil.NewPrecompileContract(s.T(), ctx, delegator.Addr, s.precompile.Address(), tc.gas)
 			cancelArgs := tc.malleate(delegator, s.network.GetValidators()[0].OperatorAddress)
 
 			if tc.expError {
-				bz, err := s.precompile.CancelUnbondingDelegation(ctx, delegator.Addr, contract, stDB, &method, cancelArgs)
+				bz, err := s.precompile.CancelUnbondingDelegation(ctx, contract, stDB, &method, cancelArgs)
 				s.Require().ErrorContains(err, tc.errContains)
 				s.Require().Empty(bz)
 			} else {
@@ -1295,7 +1297,7 @@ func (s *PrecompileTestSuite) TestCancelUnbondingDelegation() {
 					big.NewInt(1000000000000000000),
 				}
 
-				_, err := s.precompile.Undelegate(ctx, delegator.Addr, contract, stDB, &undelegateMethod, undelegateArgs)
+				_, err := s.precompile.Undelegate(ctx, contract, stDB, &undelegateMethod, undelegateArgs)
 				s.Require().NoError(err)
 
 				valAddr, err := sdk.ValAddressFromBech32(s.network.GetValidators()[0].GetOperator())
@@ -1305,7 +1307,7 @@ func (s *PrecompileTestSuite) TestCancelUnbondingDelegation() {
 				s.Require().Error(err)
 				s.Require().Contains("no delegation for (address, validator) tuple", err.Error())
 
-				bz, err := s.precompile.CancelUnbondingDelegation(ctx, delegator.Addr, contract, stDB, &method, cancelArgs)
+				bz, err := s.precompile.CancelUnbondingDelegation(ctx, contract, stDB, &method, cancelArgs)
 				s.Require().NoError(err)
 				tc.postCheck(bz)
 

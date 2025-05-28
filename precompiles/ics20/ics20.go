@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
@@ -101,7 +102,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		switch method.Name {
 		// ICS20 transactions
 		case TransferMethod:
-			bz, err = p.Transfer(ctx, evm.Origin, contract, stateDB, method, args)
+			bz, err = p.Transfer(ctx, contract, stateDB, method, args)
 		// ICS20 queries
 		case DenomMethod:
 			bz, err = p.Denom(ctx, contract, method, args)
@@ -119,7 +120,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 
 		cost := ctx.GasMeter().GasConsumed() - initialGas
 
-		if !contract.UseGas(cost) {
+		if !contract.UseGas(cost, nil, tracing.GasChangeCallPrecompiledContract) {
 			return nil, vm.ErrOutOfGas
 		}
 

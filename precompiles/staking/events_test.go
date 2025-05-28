@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/holiman/uint256"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/precompiles/staking"
@@ -82,8 +83,8 @@ func (s *PrecompileTestSuite) TestCreateValidatorEvent() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract := vm.NewContract(vm.AccountRef(delegator.Addr), s.precompile, common.U2560, 200000)
-			_, err := s.precompile.CreateValidator(ctx, delegator.Addr, contract, stDB, &method, tc.malleate(delegator.Addr))
+			contract := vm.NewContract(delegator.Addr, s.precompile.Address(), common.U2560, 200000, nil)
+			_, err := s.precompile.CreateValidator(ctx, contract, stDB, &method, tc.malleate(delegator.Addr))
 
 			if tc.expErr {
 				s.Require().Error(err)
@@ -159,8 +160,8 @@ func (s *PrecompileTestSuite) TestEditValidatorEvent() {
 			s.Require().NoError(err)
 			valOperAddr = common.BytesToAddress(acc.Bytes())
 
-			contract := vm.NewContract(vm.AccountRef(valOperAddr), s.precompile, common.U2560, 200000)
-			_, err = s.precompile.EditValidator(ctx, valOperAddr, contract, stDB, &method, tc.malleate())
+			contract := vm.NewContract(valOperAddr, s.precompile.Address(), common.U2560, 200000, nil)
+			_, err = s.precompile.EditValidator(ctx, contract, stDB, &method, tc.malleate())
 
 			if tc.expErr {
 				s.Require().Error(err)
@@ -232,8 +233,8 @@ func (s *PrecompileTestSuite) TestDelegateEvent() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract := vm.NewContract(vm.AccountRef(delegator.Addr), s.precompile, common.U2560, 20000)
-			_, err := s.precompile.Delegate(ctx, delegator.Addr, contract, stDB, &method, tc.malleate(delegator.Addr))
+			contract := vm.NewContract(delegator.Addr, s.precompile.Address(), common.U2560, 20000, nil)
+			_, err := s.precompile.Delegate(ctx, contract, stDB, &method, tc.malleate(delegator.Addr))
 
 			if tc.expErr {
 				s.Require().Error(err)
@@ -301,8 +302,8 @@ func (s *PrecompileTestSuite) TestUnbondEvent() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract := vm.NewContract(vm.AccountRef(delegator.Addr), s.precompile, common.U2560, 20000)
-			_, err := s.precompile.Undelegate(ctx, delegator.Addr, contract, stDB, &method, tc.malleate(delegator.Addr))
+			contract := vm.NewContract(delegator.Addr, s.precompile.Address(), common.U2560, 20000, nil)
+			_, err := s.precompile.Undelegate(ctx, contract, stDB, &method, tc.malleate(delegator.Addr))
 
 			if tc.expErr {
 				s.Require().Error(err)
@@ -375,8 +376,8 @@ func (s *PrecompileTestSuite) TestRedelegateEvent() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract := vm.NewContract(vm.AccountRef(delegator.Addr), s.precompile, common.U2560, 20000)
-			_, err := s.precompile.Redelegate(ctx, delegator.Addr, contract, stDB, &method, tc.malleate(delegator.Addr))
+			contract := vm.NewContract(delegator.Addr, s.precompile.Address(), common.U2560, 20000, nil)
+			_, err := s.precompile.Redelegate(ctx, contract, stDB, &method, tc.malleate(delegator.Addr))
 			s.Require().NoError(err)
 
 			if tc.expErr {
@@ -412,7 +413,7 @@ func (s *PrecompileTestSuite) TestCancelUnbondingDelegationEvent() {
 					s.network.GetValidators()[0].OperatorAddress,
 					big.NewInt(1000000000000000000),
 				}
-				_, err := s.precompile.Undelegate(ctx, delegator.Addr, contract, stDB, &methodUndelegate, undelegateArgs)
+				_, err := s.precompile.Undelegate(ctx, contract, stDB, &methodUndelegate, undelegateArgs)
 				s.Require().NoError(err)
 
 				return []interface{}{
@@ -456,9 +457,9 @@ func (s *PrecompileTestSuite) TestCancelUnbondingDelegationEvent() {
 
 			delegator := s.keyring.GetKey(0)
 
-			contract := vm.NewContract(vm.AccountRef(delegator.Addr), s.precompile, common.U2560, 20000)
+			contract := vm.NewContract(delegator.Addr, s.precompile.Address(), uint256.NewInt(0), 20000, nil)
 			callArgs := tc.malleate(contract, delegator)
-			_, err := s.precompile.CancelUnbondingDelegation(ctx, delegator.Addr, contract, stDB, &methodCancelUnbonding, callArgs)
+			_, err := s.precompile.CancelUnbondingDelegation(ctx, contract, stDB, &methodCancelUnbonding, callArgs)
 			s.Require().NoError(err)
 
 			if tc.expErr {
