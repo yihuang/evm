@@ -89,19 +89,6 @@ func TestInitGenesis(t *testing.T) {
 			expPanic: false,
 		},
 		{
-			name:     "account not found",
-			malleate: func(_ *testnetwork.UnitTestNetwork) {},
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
-				Accounts: []types.GenesisAccount{
-					{
-						Address: address.String(),
-					},
-				},
-			},
-			expPanic: true,
-		},
-		{
 			name: "ignore empty account code checking",
 			malleate: func(network *testnetwork.UnitTestNetwork) {
 				acc := network.App.AccountKeeper.NewAccountWithAddress(ctx, address.Bytes())

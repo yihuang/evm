@@ -33,14 +33,6 @@ func InitGenesis(
 
 	for _, account := range data.Accounts {
 		address := common.HexToAddress(account.Address)
-		accAddress := sdk.AccAddress(address.Bytes())
-
-		// check that the account is actually found in the account keeper
-		acc := accountKeeper.GetAccount(ctx, accAddress)
-		if acc == nil {
-			panic(fmt.Errorf("account not found for address %s", account.Address))
-		}
-
 		code := common.Hex2Bytes(account.Code)
 		codeHash := crypto.Keccak256Hash(code).Bytes()
 
