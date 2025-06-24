@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-const DefaultHeaderHashNum = int64(10000)
+
 
 // BeginBlock emits a base fee event which will be adjusted to the evm decimals
 func (k *Keeper) BeginBlock(ctx sdk.Context) error {
@@ -36,7 +36,9 @@ func (k *Keeper) BeginBlock(ctx sdk.Context) error {
 
 	// store block header hash and rotate the old ones.
 	k.SetHeaderHash(ctx)
-	if i := ctx.BlockHeight() - DefaultHeaderHashNum; i > 0 {
+	historySize := k.GetParams(ctx).HeaderHashHistorySize
+	if historySize > 0 && ctx.BlockHeight() > historySize {
+		i := ctx.BlockHeight() - historySize
 		k.DeleteHeaderHash(ctx, i)
 	}
 
