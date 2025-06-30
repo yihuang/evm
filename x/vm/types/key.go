@@ -70,6 +70,6 @@ func StateKey(address common.Address, key []byte) []byte {
 func GetHeaderHashKey(height int64) []byte {
 	var key [1 + 8]byte
 	key[0] = prefixHeaderHash
-	binary.BigEndian.PutUint64(key[1:], uint64(height))
+	binary.BigEndian.PutUint64(key[1:], uint64(height)) //nolint:gosec // G115 // block number won't exceed uint64
 	return key[:]
 }

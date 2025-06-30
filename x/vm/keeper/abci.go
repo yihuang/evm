@@ -10,8 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-
-
 // BeginBlock emits a base fee event which will be adjusted to the evm decimals
 func (k *Keeper) BeginBlock(ctx sdk.Context) error {
 	logger := ctx.Logger().With("begin_block", "evm")
