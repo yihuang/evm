@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -360,6 +362,7 @@ func (k Keeper) AddTransientGasUsed(ctx sdk.Context, gasUsed uint64) (uint64, er
 // SetHeaderHash stores the hash of the current block header in the store.
 func (k Keeper) SetHeaderHash(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
+	fmt.Println("HeaderHash", hex.EncodeToString(ctx.HeaderHash()))
 	store.Set(types.GetHeaderHashKey(ctx.BlockHeight()), ctx.HeaderHash())
 }
 

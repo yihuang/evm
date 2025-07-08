@@ -84,6 +84,12 @@ func (k Keeper) GetHashFn(ctx sdk.Context) vm.GetHashFunc {
 			return common.Hash{}
 		}
 
+		if ctx.BlockHeight() == h {
+			headerHash := ctx.HeaderHash()
+			if len(headerHash) > 0 {
+				return common.BytesToHash(headerHash)
+			}
+		}
 		return common.BytesToHash(k.GetHeaderHash(ctx, h))
 	}
 }
