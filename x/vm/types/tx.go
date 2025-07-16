@@ -41,6 +41,10 @@ func (args *EvmTxArgs) ToTxData() *TransactionArgs {
 	}
 }
 
+func (args *EvmTxArgs) ToTx() *ethtypes.Transaction {
+	return args.ToTxData().ToTransaction(ethtypes.LegacyTxType)
+}
+
 // GetTxPriority returns the priority of a given Ethereum tx. It relies of the
 // priority reduction global variable to calculate the tx priority given the tx
 // tip price:
