@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -39,7 +40,28 @@ var _ evmtypes.QueryClient = &mocks.EVMQueryClient{}
 func RegisterTraceTransactionWithPredecessors(queryClient *mocks.EVMQueryClient, msgEthTx *evmtypes.MsgEthereumTx, predecessors []*evmtypes.MsgEthereumTx) {
 	data := []byte{0x7b, 0x22, 0x74, 0x65, 0x73, 0x74, 0x22, 0x3a, 0x20, 0x22, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x22, 0x7d}
 	queryClient.On("TraceTx", rpc.ContextWithHeight(1),
-		&evmtypes.QueryTraceTxRequest{Msg: msgEthTx, BlockNumber: 1, Predecessors: predecessors, ChainId: config.EVMChainID, BlockMaxGas: -1}).
+		mock.MatchedBy(func(req *evmtypes.QueryTraceTxRequest) bool {
+			if req.BlockNumber != 1 {
+				return false
+			}
+			bytes, _ := json.Marshal(msgEthTx)
+			bytes2, _ := json.Marshal(req.Msg)
+			if slices.Compare(bytes, bytes2) != 0 {
+				return false
+			}
+			if len(req.Predecessors) != len(predecessors) {
+				return false
+			}
+			bytes, _ = json.Marshal(req.Predecessors)
+			bytes2, _ = json.Marshal(predecessors)
+			if slices.Compare(bytes, bytes2) != 0 {
+				return false
+			}
+			if req.ChainId != 9000 {
+				return false
+			}
+			return true
+		})).
 		Return(&evmtypes.QueryTraceTxResponse{Data: data}, nil)
 }
 
