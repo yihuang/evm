@@ -1,6 +1,7 @@
 package staking
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -421,7 +422,7 @@ func (s *PrecompileTestSuite) TestRun() {
 				To:        &contractAddr,
 				Amount:    nil,
 				GasLimit:  tc.gas,
-				GasPrice:  chainutil.ExampleMinGasPrices.BigInt(),
+				GasPrice:  chainutil.ExampleMinGasPrices,
 				GasFeeCap: baseFee,
 				GasTipCap: big.NewInt(1),
 				Accesses:  &ethtypes.AccessList{},
@@ -761,11 +762,12 @@ func (s *PrecompileTestSuite) TestCMS() {
 				To:        &contractAddr,
 				Amount:    nil,
 				GasLimit:  tc.gas,
-				GasPrice:  chainutil.ExampleMinGasPrices.BigInt(),
+				GasPrice:  chainutil.ExampleMinGasPrices,
 				GasFeeCap: baseFee,
 				GasTipCap: big.NewInt(1),
 				Accesses:  &ethtypes.AccessList{},
 			}
+			fmt.Println("gasPrice", chainutil.ExampleMinGasPrices, chainutil.ExampleMinGasPrices)
 
 			msgEthereumTx, err := s.factory.GenerateMsgEthereumTx(s.keyring.GetPrivKey(0), txArgs)
 			s.Require().NoError(err, "failed to generate Ethereum message")
