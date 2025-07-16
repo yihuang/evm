@@ -1,7 +1,6 @@
 package factory
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -14,7 +13,6 @@ import (
 
 // buildMsgEthereumTx builds an Ethereum transaction from the given arguments and populates the From field.
 func buildMsgEthereumTx(txArgs evmtypes.EvmTxArgs, fromAddr common.Address) evmtypes.MsgEthereumTx {
-	fmt.Println("tx args", txArgs.GasPrice, txArgs.GasFeeCap, txArgs.GasTipCap)
 	msgEthereumTx := evmtypes.NewTx(&txArgs)
 	msgEthereumTx.From = fromAddr.Bytes()
 	return *msgEthereumTx

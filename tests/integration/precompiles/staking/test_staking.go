@@ -1,7 +1,6 @@
 package staking
 
 import (
-	"fmt"
 	"math/big"
 	"time"
 
@@ -767,7 +766,6 @@ func (s *PrecompileTestSuite) TestCMS() {
 				GasTipCap: big.NewInt(1),
 				Accesses:  &ethtypes.AccessList{},
 			}
-			fmt.Println("gasPrice", chainutil.ExampleMinGasPrices, chainutil.ExampleMinGasPrices)
 
 			msgEthereumTx, err := s.factory.GenerateMsgEthereumTx(s.keyring.GetPrivKey(0), txArgs)
 			s.Require().NoError(err, "failed to generate Ethereum message")
