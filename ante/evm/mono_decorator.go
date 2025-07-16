@@ -120,7 +120,6 @@ func (md MonoDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, ne
 		if err := ValidateMsg(
 			decUtils.EvmParams,
 			txData,
-			ethMsg.GetFrom(),
 		); err != nil {
 			return ctx, err
 		}

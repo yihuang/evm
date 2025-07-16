@@ -178,7 +178,6 @@ func (s *EvmUnitAnteTestSuite) TestValidateMsg() {
 			err := evm.ValidateMsg(
 				params.evmParams,
 				params.txData,
-				params.from,
 			)
 
 			if tc.expectedError != nil {
