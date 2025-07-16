@@ -240,6 +240,10 @@ func (k Keeper) EthCall(c context.Context, req *types.EthCallRequest) (*types.Ms
 	nonce := k.GetNonce(ctx, args.GetFrom())
 	args.Nonce = (*hexutil.Uint64)(&nonce)
 
+	if err := args.CallDefaults(req.GasCap, cfg.BaseFee, types.GetEthChainConfig().ChainID); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	msg := args.ToMessage(cfg.BaseFee, false, false)
 	txConfig := statedb.NewEmptyTxConfig(common.BytesToHash(ctx.HeaderHash()))
 
@@ -319,7 +323,7 @@ func (k Keeper) EstimateGasInternal(c context.Context, req *types.EthCallRequest
 	if args.Gas == nil {
 		args.Gas = new(hexutil.Uint64)
 	}
-	if err := args.CallDefaults(gasCap, new(big.Int), types.GetEthChainConfig().ChainID); err != nil {
+	if err := args.CallDefaults(req.GasCap, cfg.BaseFee, types.GetEthChainConfig().ChainID); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
