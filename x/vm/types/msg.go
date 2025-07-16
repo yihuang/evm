@@ -76,6 +76,19 @@ func (msg *MsgEthereumTx) FromEthereumTx(tx *ethtypes.Transaction) error {
 	return nil
 }
 
+// FromSignedEthereumTx populates the message fields from the given signed ethereum transaction, and set From field.
+func (msg *MsgEthereumTx) FromSignedEthereumTx(tx *ethtypes.Transaction, signer ethtypes.Signer) error {
+	msg.Raw.Transaction = tx
+
+	from, err := ethtypes.Sender(signer, tx)
+	if err != nil {
+		return err
+	}
+
+	msg.From = from.Bytes()
+	return nil
+}
+
 // Route returns the route value of an MsgEthereumTx.
 func (msg MsgEthereumTx) Route() string { return RouterKey }
 

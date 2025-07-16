@@ -299,7 +299,8 @@ func (s *TestSuite) TestSendRawTransaction() {
 	err := ethTx.Sign(ethSigner, s.signer)
 	s.Require().NoError(err)
 
-	rlpEncodedBz, _ := rlp.EncodeToBytes(ethTx.AsTransaction())
+	rlpEncodedBz, err := ethTx.AsTransaction().MarshalBinary()
+	s.Require().NoError(err)
 	evmDenom := evmtypes.GetEVMCoinDenom()
 
 	testCases := []struct {
