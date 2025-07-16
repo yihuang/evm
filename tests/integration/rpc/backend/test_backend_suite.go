@@ -118,7 +118,7 @@ func (s *TestSuite) buildEthereumTx() (*evmtypes.MsgEthereumTx, []byte) {
 	msgEthereumTx := evmtypes.NewTx(&ethTxParams)
 
 	// A valid msg should have empty `From`
-	msgEthereumTx.From = s.from.Hex()
+	msgEthereumTx.From = s.from.Bytes()
 
 	txBuilder := s.backend.ClientCtx.TxConfig.NewTxBuilder()
 	err := txBuilder.SetMsgs(msgEthereumTx)
@@ -142,7 +142,7 @@ func (s *TestSuite) buildEthereumTxWithChainID(eip155ChainID *big.Int) *evmtypes
 	msgEthereumTx := evmtypes.NewTx(&ethTxParams)
 
 	// A valid msg should have empty `From`
-	msgEthereumTx.From = s.from.Hex()
+	msgEthereumTx.From = s.from.Bytes()
 
 	txBuilder := s.backend.ClientCtx.TxConfig.NewTxBuilder()
 	err := txBuilder.SetMsgs(msgEthereumTx)
@@ -182,7 +182,7 @@ func (s *TestSuite) buildFormattedBlock(
 			s.Require().NoError(err)
 			ethRPCTxs = []interface{}{rpcTx}
 		} else {
-			ethRPCTxs = []interface{}{common.HexToHash(tx.Hash)}
+			ethRPCTxs = []interface{}{tx.Hash()}
 		}
 	}
 
@@ -209,7 +209,7 @@ func (s *TestSuite) signAndEncodeEthTx(msgEthereumTx *evmtypes.MsgEthereumTx) []
 	signer := utiltx.NewSigner(priv)
 
 	ethSigner := ethtypes.LatestSigner(s.backend.ChainConfig())
-	msgEthereumTx.From = from.String()
+	msgEthereumTx.From = from.Bytes()
 	err := msgEthereumTx.Sign(ethSigner, signer)
 	s.Require().NoError(err)
 

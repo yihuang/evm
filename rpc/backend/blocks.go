@@ -544,7 +544,7 @@ func (b *Backend) GetBlockReceipts(
 			common.BytesToHash(resBlock.Block.Header.Hash()).Hex(),
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get transaction receipt for tx %s: %w", msg.Hash, err)
+			return nil, fmt.Errorf("failed to get transaction receipt for tx %s: %w", msg.Hash().Hex(), err)
 		}
 	}
 

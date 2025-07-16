@@ -1109,7 +1109,7 @@ func (s *TestSuite) TestGetEthBlockFromTendermint() {
 					s.Require().NoError(err)
 					ethRPCTxs = []interface{}{rpcTx}
 				} else {
-					ethRPCTxs = []interface{}{common.HexToHash(msgEthereumTx.Hash)}
+					ethRPCTxs = []interface{}{msgEthereumTx.Hash()}
 				}
 			}
 

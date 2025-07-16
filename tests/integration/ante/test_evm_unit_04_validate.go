@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/cosmos/evm/ante/evm"
 	testconstants "github.com/cosmos/evm/testutil/constants"
@@ -21,7 +22,7 @@ import (
 type validateMsgParams struct {
 	evmParams evmtypes.Params
 	from      sdktypes.AccAddress
-	txData    evmtypes.TxData
+	txData    *ethtypes.Transaction
 }
 
 func (s *EvmUnitAnteTestSuite) TestValidateMsg() {
@@ -48,8 +49,7 @@ func (s *EvmUnitAnteTestSuite) TestValidateMsg() {
 			expectedError: nil,
 			getFunctionParams: func() validateMsgParams {
 				txArgs := getTxByType("transfer", keyring.GetAddr(1))
-				txData, err := txArgs.ToTxData()
-				s.Require().NoError(err)
+				txData := txArgs.ToTxData()
 				return validateMsgParams{
 					evmParams: evmtypes.DefaultParams(),
 					txData:    txData,
@@ -62,9 +62,7 @@ func (s *EvmUnitAnteTestSuite) TestValidateMsg() {
 			expectedError: evmtypes.ErrCallDisabled,
 			getFunctionParams: func() validateMsgParams {
 				txArgs := getTxByType("transfer", keyring.GetAddr(1))
-				txData, err := txArgs.ToTxData()
-				s.Require().NoError(err)
-
+				txData := txArgs.ToTxData()
 				params := evmtypes.DefaultParams()
 				params.AccessControl.Call.AccessType = evmtypes.AccessTypeRestricted
 				params.AccessControl.Create.AccessType = evmtypes.AccessTypeRestricted
@@ -81,8 +79,7 @@ func (s *EvmUnitAnteTestSuite) TestValidateMsg() {
 			expectedError: nil,
 			getFunctionParams: func() validateMsgParams {
 				txArgs := getTxByType("call", keyring.GetAddr(1))
-				txData, err := txArgs.ToTxData()
-				s.Require().NoError(err)
+				txData := txArgs.ToTxData()
 				return validateMsgParams{
 					evmParams: evmtypes.DefaultParams(),
 					txData:    txData,
