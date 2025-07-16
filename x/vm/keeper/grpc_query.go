@@ -316,6 +316,13 @@ func (k Keeper) EstimateGasInternal(c context.Context, req *types.EthCallRequest
 
 	txConfig := statedb.NewEmptyTxConfig(common.BytesToHash(ctx.HeaderHash()))
 
+	if args.Gas == nil {
+		args.Gas = new(hexutil.Uint64)
+	}
+	if err := args.CallDefaults(gasCap, new(big.Int), types.GetEthChainConfig().ChainID); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	// convert the tx args to an ethereum message
 	msg := args.ToMessage(cfg.BaseFee, true, true)
 

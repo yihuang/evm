@@ -25,10 +25,6 @@ func ValidateMsg(
 	txData *ethtypes.Transaction,
 	from sdktypes.AccAddress,
 ) error {
-	if from != nil {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid from address; expected nil; got: %q", from.String())
-	}
-
 	return checkDisabledCreateCall(
 		txData,
 		&evmParams.AccessControl,
