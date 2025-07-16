@@ -126,7 +126,11 @@ func (s *TestSuite) buildEthereumTx() (*evmtypes.MsgEthereumTx, []byte) {
 
 	bz, err := s.backend.ClientCtx.TxConfig.TxEncoder()(txBuilder.GetTx())
 	s.Require().NoError(err)
-	return msgEthereumTx, bz
+
+	// decode again to get canonical representation
+	tx, err := s.backend.ClientCtx.TxConfig.TxDecoder()(bz)
+	s.Require().NoError(err)
+	return tx.GetMsgs()[0].(*evmtypes.MsgEthereumTx), bz
 }
 
 // buildEthereumTx returns an example legacy Ethereum transaction
