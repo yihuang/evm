@@ -249,12 +249,14 @@ func (s *KeeperTestSuite) TestCheckSenderBalance() {
 				Accesses:  tc.accessList,
 			}
 			tx := evmtypes.NewTx(ethTxParams)
-			tx.From = common.HexToAddress(tc.from).Bytes()
+			tx.From = tc.from
+
+			txData, _ := evmtypes.UnpackTxData(tx.Data)
 
 			acct := s.Network.App.GetEVMKeeper().GetAccountOrEmpty(s.Network.GetContext(), addr)
 			err := keeper.CheckSenderBalance(
 				sdkmath.NewIntFromBigInt(acct.Balance.ToBig()),
-				tx.AsTransaction(),
+				txData,
 			)
 
 			if tc.expectPass {
@@ -498,9 +500,9 @@ func (s *KeeperTestSuite) TestVerifyFeeAndDeductTxCostsFromUserBalance() {
 				Accesses:  tc.accessList,
 			}
 			tx := evmtypes.NewTx(ethTxParams)
-			tx.From = common.HexToAddress(tc.from).Bytes()
+			tx.From = tc.from
 
-			txData := tx.AsTransaction()
+			txData, _ := evmtypes.UnpackTxData(tx.Data)
 
 			baseFee := s.Network.App.GetEVMKeeper().GetBaseFee(s.Network.GetContext())
 			priority := evmtypes.GetTxPriority(txData, baseFee)
@@ -515,7 +517,7 @@ func (s *KeeperTestSuite) TestVerifyFeeAndDeductTxCostsFromUserBalance() {
 					s.Require().Equal(
 						fees,
 						sdk.NewCoins(
-							sdk.NewCoin(baseDenom, sdkmath.NewIntFromBigInt(tx.GetEffectiveFee(baseFee.BigInt()))),
+							sdk.NewCoin(baseDenom, sdkmath.NewIntFromBigInt(txData.EffectiveFee(baseFee.TruncateInt().BigInt()))),
 						),
 						"valid test %d failed, fee value is wrong  - '%s'", i, tc.name,
 					)
@@ -534,7 +536,7 @@ func (s *KeeperTestSuite) TestVerifyFeeAndDeductTxCostsFromUserBalance() {
 				s.Require().Nil(fees, "invalid test %d passed. fees value must be nil - '%s'", i, tc.name)
 			}
 
-			err = s.Network.App.GetEVMKeeper().DeductTxCostsFromUserBalance(s.Network.GetContext(), fees, common.BytesToAddress(tx.From))
+			err = s.Network.App.GetEVMKeeper().DeductTxCostsFromUserBalance(s.Network.GetContext(), fees, common.HexToAddress(tx.From))
 			if tc.expectPassDeduct {
 				s.Require().NoError(err, "valid test %d failed - '%s'", i, tc.name)
 			} else {

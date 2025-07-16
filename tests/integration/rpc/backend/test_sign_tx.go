@@ -128,7 +128,7 @@ func (s *TestSuite) TestSendTransaction() {
 				// Sign the transaction and get the hash
 
 				ethSigner := ethtypes.LatestSigner(s.backend.ChainConfig())
-				msg := callArgsDefault.ToTransaction(ethtypes.LegacyTxType)
+				msg := callArgsDefault.ToTransaction()
 				err := msg.Sign(ethSigner, s.backend.ClientCtx.Keyring)
 				s.Require().NoError(err)
 				tc.expHash = msg.AsTransaction().Hash()
@@ -254,7 +254,7 @@ func broadcastTx(suite *TestSuite, priv *ethsecp256k1.PrivKey, baseFee math.Int,
 	suite.Require().NoError(err)
 	RegisterBaseFee(QueryClient, baseFee)
 	ethSigner := ethtypes.LatestSigner(suite.backend.ChainConfig())
-	msg := callArgsDefault.ToTransaction(ethtypes.LegacyTxType)
+	msg := callArgsDefault.ToTransaction()
 	err = msg.Sign(ethSigner, suite.backend.ClientCtx.Keyring)
 	suite.Require().NoError(err)
 	baseDenom := evmtypes.GetEVMCoinDenom()
