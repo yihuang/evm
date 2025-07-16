@@ -199,7 +199,7 @@ func (args *TransactionArgs) ToMessage(baseFee *big.Int, skipNonceCheck, skipEoA
 
 // ToTransaction converts the arguments to a transaction.
 // This assumes that setDefaults has been called.
-func (args *TransactionArgs) ToTransaction(defaultType int) *types.Transaction {
+func (args *TransactionArgs) ToTransaction(defaultType int) *MsgEthereumTx {
 	usedType := types.LegacyTxType
 	switch {
 	case args.AuthorizationList != nil || defaultType == types.SetCodeTxType:
@@ -304,7 +304,12 @@ func (args *TransactionArgs) ToTransaction(defaultType int) *types.Transaction {
 			Data:     args.GetData(),
 		}
 	}
-	return types.NewTx(data)
+
+	tx := NewTxWithData(data)
+	if args.From != nil {
+		tx.From = args.From.Bytes()
+	}
+	return tx
 }
 
 // IsEIP4844 returns an indicator if the args contains EIP4844 fields.

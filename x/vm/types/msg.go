@@ -54,20 +54,55 @@ func NewTxWithData(txData ethtypes.TxData) *MsgEthereumTx {
 func NewTx(
 	tx *EvmTxArgs,
 ) *MsgEthereumTx {
-	return newMsgEthereumTx(tx)
+	return newMsgEthereumTx(tx.ChainID, tx.Nonce, tx.To, tx.Amount, tx.GasLimit, tx.GasPrice, tx.GasFeeCap, tx.GasTipCap, tx.Input, tx.Accesses)
 }
 
 func newMsgEthereumTx(
-	tx *EvmTxArgs,
+	chainID *big.Int, nonce uint64, to *common.Address, amount *big.Int,
+	gasLimit uint64, gasPrice, gasFeeCap, gasTipCap *big.Int, input []byte, accesses *ethtypes.AccessList,
 ) *MsgEthereumTx {
-	return NewTxFromTransactionArgs(tx.ToTxData())
-}
+	var txData ethtypes.TxData
 
-func NewTxFromTransactionArgs(args *TransactionArgs) *MsgEthereumTx {
-	var msg MsgEthereumTx
-	msg.FromEthereumTx(args.ToTransaction(ethtypes.LegacyTxType))
-	msg.From = args.GetFrom().Bytes()
-	return &msg
+	switch {
+	case gasFeeCap != nil:
+		var accessList ethtypes.AccessList
+		if accesses != nil {
+			accessList = *accesses
+		}
+		txData = &ethtypes.DynamicFeeTx{
+			ChainID:    chainID,
+			Nonce:      nonce,
+			To:         to,
+			Value:      amount,
+			Gas:        gasLimit,
+			GasTipCap:  gasTipCap,
+			GasFeeCap:  gasFeeCap,
+			Data:       input,
+			AccessList: accessList,
+		}
+	case accesses != nil:
+		txData = &ethtypes.AccessListTx{
+			ChainID:    chainID,
+			Nonce:      nonce,
+			To:         to,
+			Value:      amount,
+			Gas:        gasLimit,
+			GasPrice:   gasPrice,
+			Data:       input,
+			AccessList: *accesses,
+		}
+	default:
+		txData = &ethtypes.LegacyTx{
+			Nonce:    nonce,
+			To:       to,
+			Value:    amount,
+			Gas:      gasLimit,
+			GasPrice: gasPrice,
+			Data:     input,
+		}
+	}
+
+	return NewTxWithData(txData)
 }
 
 // FromEthereumTx populates the message fields from the given ethereum transaction

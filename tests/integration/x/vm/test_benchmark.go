@@ -72,6 +72,7 @@ func DoBenchmark(b *testing.B, txBuilder TxBuilder) {
 	for i := 0; i < b.N; i++ {
 		ctx, _ := suite.Network.GetContext().CacheContext()
 
+		// deduct fee first
 		fees := sdk.Coins{sdk.NewCoin(suite.EvmDenom(), sdkmath.NewIntFromBigInt(msg.GetFee()))}
 		err = authante.DeductFees(suite.Network.App.GetBankKeeper(), suite.Network.GetContext(), suite.Network.App.GetAccountKeeper().GetAccount(ctx, msg.GetFrom()), fees)
 		require.NoError(b, err)
