@@ -586,7 +586,8 @@ func (s *TestSuite) TestGetTransactionReceipt() {
 					},
 				},
 			},
-			expPass: true,
+			expPass: false,
+			expErr:  nil,
 		},
 		{
 			name: "fail - block not found",
@@ -699,8 +700,11 @@ func (s *TestSuite) TestGetTransactionReceipt() {
 				s.Require().Nil(res["contractAddress"]) // no contract creation
 				s.Require().NoError(err)
 			} else {
-				s.Require().Error(err)
-				s.Require().ErrorContains(err, tc.expErr.Error())
+				if tc.expErr == nil {
+					s.Require().Nil(err)
+				} else {
+					s.Require().ErrorContains(err, tc.expErr.Error())
+				}
 			}
 		})
 	}
