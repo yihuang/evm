@@ -507,7 +507,7 @@ func (k *Keeper) ApplyMessageWithConfig(ctx sdk.Context, msg core.Message, trace
 		ret = evm.Interpreter().ReturnData()
 	}
 
-	logs := stateDB.GetLogs(uint64(ctx.BlockHeight()), common.BytesToHash(ctx.HeaderHash()), evm.Context.Time)
+	logs := stateDB.GetLogs(uint64(ctx.BlockHeight()), common.BytesToHash(ctx.HeaderHash()), evm.Context.Time) //#nosec G115 -- int overflow is not a concern here
 	return &types.MsgEthereumTxResponse{
 		GasUsed: gasUsed.TruncateInt().Uint64(),
 		VmError: vmError,
