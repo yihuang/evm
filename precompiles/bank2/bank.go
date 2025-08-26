@@ -174,11 +174,6 @@ func (p Precompile) TransferFrom(ctx sdk.Context, caller common.Address, input [
 }
 
 func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]byte, error) {
-	if readonly {
-		// only support normal message call
-		return nil, vm.ErrWriteProtection
-	}
-
 	stateDB, ok := evm.StateDB.(*statedb.StateDB)
 	if !ok {
 		return nil, vm.ErrExecutionReverted
@@ -195,8 +190,11 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 	}
 
 	action := BankMethod(contract.Input[0])
-	input := contract.Input[1:]
+	if readonly && action == MethodTransferFrom {
+		return nil, vm.ErrWriteProtection
+	}
 
+	input := contract.Input[1:]
 	switch action {
 	case MethodName:
 		return p.Name(ctx, input)
