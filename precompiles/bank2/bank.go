@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	// generated with:
+	// generated with solc 0.8.30+commit.73712a01:
 	// solc --overwrite --optimize --optimize-runs 100000 --via-ir --bin -o . ERC20.sol
 	//
 	//go:embed ERC20.bin
