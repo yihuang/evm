@@ -218,6 +218,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 //
 // `keccak(0xff || factory || salt || keccak(bytecode || ctor))[12:]`
 func ERC20ContractAddress(contract common.Address, denom string) common.Address {
+	// constructor args of ERC20 contract
 	// abi.encode(string, address)
 	staticBuf := make([]byte, 64)
 	staticBuf[31] = 32 * 2 // offset of string
