@@ -10,13 +10,15 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	_ "embed"
+
 	"github.com/cosmos/evm/x/vm/statedb"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
-	_ "embed"
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 var (
@@ -50,9 +52,7 @@ const (
 	MethodTransferFrom
 )
 
-var (
-	_ vm.PrecompiledContract = &Precompile{}
-)
+var _ vm.PrecompiledContract = &Precompile{}
 
 type Precompile struct {
 	msgServer  BankMsgServer
@@ -113,7 +113,7 @@ func (p Precompile) Decimals(ctx sdk.Context, input []byte) ([]byte, error) {
 		return nil, vm.ErrExecutionReverted
 	}
 
-	return []byte{uint8(metadata.DenomUnits[0].Exponent)}, nil
+	return []byte{uint8(metadata.DenomUnits[0].Exponent)}, nil //nolint:gosec // G115: range is checked above
 }
 
 // TotalSupply

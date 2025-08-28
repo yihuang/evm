@@ -4,16 +4,19 @@ import (
 	"context"
 	"math/big"
 
-	errorsmod "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/evm/x/vm/statedb"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/vm"
+
+	"github.com/cosmos/evm/x/vm/statedb"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
+
+	errorsmod "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 type MockBankKeeper struct {
@@ -49,12 +52,11 @@ func (k MockBankKeeper) registerDenom(denom string, metadata banktypes.Metadata)
 }
 
 func (k MockBankKeeper) mint(to sdk.AccAddress, amt sdk.Coins) {
-	addrKey := string(to)
 	for _, coin := range amt {
-		m := k.balances[addrKey]
+		m := k.balances[string(to)]
 		if m == nil {
 			m = make(map[string]int64)
-			k.balances[addrKey] = m
+			k.balances[string(to)] = m
 		}
 		amount := coin.Amount.Int64()
 		m[coin.Denom] += amount
@@ -63,10 +65,9 @@ func (k MockBankKeeper) mint(to sdk.AccAddress, amt sdk.Coins) {
 }
 
 func (k MockBankKeeper) burn(from sdk.AccAddress, amt sdk.Coins) error {
-	addrKey := string(from)
 	for _, coin := range amt {
 		amount := coin.Amount.Int64()
-		m, ok := k.balances[addrKey]
+		m, ok := k.balances[string(from)]
 		if !ok {
 			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "address: 0x%x, denom: %s, expect: %d, got: %d", from.Bytes(), coin.Denom, amount, 0)
 		}
@@ -98,9 +99,8 @@ func (k MockBankKeeper) GetDenomMetaData(ctx context.Context, denom string) (ban
 }
 
 func (k MockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
-	addrKey := string(addr)
 	amount := int64(0)
-	if m, ok := k.balances[addrKey]; ok {
+	if m, ok := k.balances[string(addr)]; ok {
 		amount = m[denom]
 	}
 

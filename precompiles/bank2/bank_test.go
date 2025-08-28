@@ -2,27 +2,30 @@ package bank2
 
 import (
 	"math/big"
+	"slices"
 	"strings"
 	"testing"
-
-	"github.com/holiman/uint256"
-	"github.com/stretchr/testify/require"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/holiman/uint256"
+	"github.com/stretchr/testify/require"
+
+	_ "embed"
+
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/evm/testutil/constants"
+	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	dbm "github.com/cosmos/cosmos-db"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/evm/testutil/constants"
-	evmtypes "github.com/cosmos/evm/x/vm/types"
-
-	_ "embed"
 )
 
 var (
@@ -55,6 +58,7 @@ type TokenInfo struct {
 }
 
 func Setup(t *testing.T, token TokenInfo, mintTo common.Address, mintAmount uint64) *vm.EVM {
+	t.Helper()
 	nativeDenom := evmtypes.GetEVMCoinDenom()
 
 	rawdb := dbm.NewMemDB()
@@ -119,6 +123,7 @@ func TestBankPrecompile(t *testing.T) {
 	erc20 := ERC20ContractAddress(BankPrecompile, token.Denom)
 
 	setup := func(t *testing.T) *vm.EVM {
+		t.Helper()
 		return Setup(t, token, user1, amount)
 	}
 
@@ -133,38 +138,45 @@ func TestBankPrecompile(t *testing.T) {
 		{"name", MethodName, user1, []byte(token.Denom), []byte(token.Name), nil},
 		{"symbol", MethodSymbol, user1, []byte(token.Denom), []byte(token.Symbol), nil},
 		{"decimals", MethodDecimals, user1, []byte(token.Denom), []byte{token.Decimals}, nil},
-		{"totalSupply", MethodTotalSupply, user1,
+		{
+			"totalSupply", MethodTotalSupply, user1,
 			[]byte(token.Denom),
 			common.LeftPadBytes(new(big.Int).SetUint64(amount).Bytes(), 32),
 			nil,
 		},
-		{"balanceOf", MethodBalanceOf, user1,
-			append(user1.Bytes(), []byte(token.Denom)...),
+		{
+			"balanceOf", MethodBalanceOf, user1,
+			slices.Concat(user1.Bytes(), []byte(token.Denom)),
 			common.LeftPadBytes(new(big.Int).SetUint64(amount).Bytes(), 32),
 			nil,
 		},
-		{"balanceOf-empty", MethodBalanceOf, user2,
-			append(user2.Bytes(), []byte(token.Denom)...),
+		{
+			"balanceOf-empty", MethodBalanceOf, user2,
+			slices.Concat(user2.Bytes(), []byte(token.Denom)),
 			common.LeftPadBytes([]byte{}, 32),
 			nil,
 		},
-		{"transferFrom-owner", MethodTransferFrom, user1,
-			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+		{
+			"transferFrom-owner", MethodTransferFrom, user1,
+			slices.Concat(user1.Bytes(), user2.Bytes(), common.LeftPadBytes(big.NewInt(100).Bytes(), 32), []byte(token.Denom)),
 			[]byte{1},
 			nil,
 		},
-		{"transferFrom-erc20", MethodTransferFrom, erc20,
-			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+		{
+			"transferFrom-erc20", MethodTransferFrom, erc20,
+			slices.Concat(user1.Bytes(), user2.Bytes(), common.LeftPadBytes(big.NewInt(100).Bytes(), 32), []byte(token.Denom)),
 			[]byte{1},
 			nil,
 		},
-		{"transferFrom-unauthorized", MethodTransferFrom, user2,
-			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+		{
+			"transferFrom-unauthorized", MethodTransferFrom, user2,
+			slices.Concat(user1.Bytes(), user2.Bytes(), common.LeftPadBytes(big.NewInt(100).Bytes(), 32), []byte(token.Denom)),
 			nil,
 			vm.ErrExecutionReverted,
 		},
-		{"transferFrom-insufficient-balance", MethodTransferFrom, user2,
-			TransferFromInput(user2, user1, big.NewInt(100), token.Denom),
+		{
+			"transferFrom-insufficient-balance", MethodTransferFrom, user2,
+			slices.Concat(user2.Bytes(), user1.Bytes(), common.LeftPadBytes(big.NewInt(100).Bytes(), 32), []byte(token.Denom)),
 			nil,
 			vm.ErrExecutionReverted,
 		},
@@ -177,7 +189,7 @@ func TestBankPrecompile(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			evm := setup(t)
-			input := append([]byte{byte(tc.method)}, tc.input...)
+			input := slices.Concat([]byte{byte(tc.method)}, tc.input)
 			ret, _, err := evm.Call(tc.caller, BankPrecompile, input, GasLimit, uint256.NewInt(0))
 			if tc.expErr != nil {
 				require.Equal(t, tc.expErr, err)
@@ -206,6 +218,7 @@ func TestBankERC20(t *testing.T) {
 	nativeERC20 := ERC20ContractAddress(BankPrecompile, evmtypes.GetEVMCoinDenom())
 
 	setup := func(t *testing.T) *vm.EVM {
+		t.Helper()
 		evm := Setup(t, token, user1, amount)
 		DeployERC20(t, evm, BankPrecompile, evmtypes.GetEVMCoinDenom())
 		return evm
@@ -224,27 +237,32 @@ func TestBankERC20(t *testing.T) {
 		{"symbol", "symbol", zero, erc20, nil, []interface{}{token.Symbol}, nil},
 		{"decimals", "decimals", zero, erc20, nil, []interface{}{token.Decimals}, nil},
 		{"totalSupply", "totalSupply", zero, erc20, nil, []interface{}{bigAmount}, nil},
-		{"balanceOf", "balanceOf", zero, erc20,
+		{
+			"balanceOf", "balanceOf", zero, erc20,
 			[]interface{}{user1},
 			[]interface{}{bigAmount},
 			nil,
 		},
-		{"balanceOf-empty", "balanceOf", zero, erc20,
+		{
+			"balanceOf-empty", "balanceOf", zero, erc20,
 			[]interface{}{user2},
 			[]interface{}{common.Big0},
 			nil,
 		},
-		{"transfer", "transfer", user1, erc20,
+		{
+			"transfer", "transfer", user1, erc20,
 			[]interface{}{user2, big.NewInt(100)},
 			[]interface{}{true},
 			nil,
 		},
-		{"transfer-insufficient-balance", "transfer", user2, erc20,
+		{
+			"transfer-insufficient-balance", "transfer", user2, erc20,
 			[]interface{}{user1, big.NewInt(100)},
 			nil,
 			vm.ErrExecutionReverted,
 		},
-		{"native-fail", "transfer", user1, nativeERC20,
+		{
+			"native-fail", "transfer", user1, nativeERC20,
 			[]interface{}{user2, big.NewInt(100)},
 			nil,
 			vm.ErrExecutionReverted,
@@ -261,7 +279,7 @@ func TestBankERC20(t *testing.T) {
 			input, err := method.Inputs.Pack(tc.input...)
 			require.NoError(t, err)
 
-			ret, _, err := evm.Call(tc.caller, tc.token, append(method.ID, input...), GasLimit, uint256.NewInt(0))
+			ret, _, err := evm.Call(tc.caller, tc.token, slices.Concat(method.ID, input), GasLimit, uint256.NewInt(0))
 			if tc.expErr != nil {
 				require.Equal(t, tc.expErr, err)
 				return
@@ -275,17 +293,10 @@ func TestBankERC20(t *testing.T) {
 	}
 }
 
-func TransferFromInput(from, to common.Address, amount *big.Int, denom string) []byte {
-	fixedBuf := make([]byte, 20+20+32) // from + to + amount
-	copy(fixedBuf[0:20], from.Bytes())
-	copy(fixedBuf[20:40], to.Bytes())
-	copy(fixedBuf[40:72], common.LeftPadBytes(amount.Bytes(), 32))
-	return append(fixedBuf, []byte(denom)...)
-}
-
 // DeployCreate2 deploys the deterministic contract factory
 // https://github.com/Arachnid/deterministic-deployment-proxy
 func DeployCreate2(t *testing.T, evm *vm.EVM) {
+	t.Helper()
 	caller := common.HexToAddress("0x3fAB184622Dc19b6109349B94811493BF2a45362")
 	code := common.FromHex("604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3")
 	_, address, _, err := evm.Create(caller, code, GasLimit, uint256.NewInt(0))
@@ -294,10 +305,10 @@ func DeployCreate2(t *testing.T, evm *vm.EVM) {
 }
 
 func DeployERC20(t *testing.T, evm *vm.EVM, bank common.Address, denom string) {
+	t.Helper()
 	caller := common.BigToAddress(common.Big0)
 
-	initcode := append(ERC20Bin, ERC20Constructor(denom, bank)...)
-	input := append(ERC20Salt, initcode...)
+	input := slices.Concat(ERC20Salt, ERC20Bin, ERC20Constructor(denom, bank))
 	_, _, err := evm.Call(caller, Create2FactoryAddress, input, GasLimit, uint256.NewInt(0))
 	require.NoError(t, err)
 
