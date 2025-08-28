@@ -2,11 +2,13 @@ package bank2
 
 import (
 	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 
@@ -19,14 +21,80 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/evm/testutil/constants"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
+
+	_ "embed"
+)
+
+var (
+	Create2Address = common.HexToAddress("0x4e59b44847b379578588920ca78fbf26c0b4956c")
+	BankPrecompile = common.HexToAddress(evmtypes.Bank2PrecompileAddress)
+
+	//go:embed erc20abi.json
+	ERC20ABIStr string
+	ERC20ABI    abi.ABI
+
+	GasLimit = uint64(100000000)
 )
 
 func init() {
-	if err := evmtypes.NewEVMConfigurator().
-		WithEVMCoinInfo(constants.ExampleChainCoinInfo[constants.ExampleChainID]).
-		Configure(); err != nil {
+	var err error
+	ERC20ABI, err = abi.JSON(strings.NewReader(ERC20ABIStr))
+	if err != nil {
 		panic(err)
 	}
+
+	_ = evmtypes.NewEVMConfigurator().
+		WithEVMCoinInfo(constants.ExampleChainCoinInfo[constants.ExampleChainID]).
+		Configure()
+}
+
+type TokenInfo struct {
+	Denom    string
+	Name     string
+	Symbol   string
+	Decimals byte
+}
+
+func Setup(t *testing.T, token TokenInfo, mintTo common.Address, mintAmount uint64) *vm.EVM {
+	nativeDenom := evmtypes.GetEVMCoinDenom()
+
+	rawdb := dbm.NewMemDB()
+	logger := log.NewNopLogger()
+	ms := store.NewCommitMultiStore(rawdb, logger, nil)
+	ctx := sdk.NewContext(ms, cmtproto.Header{}, false, logger)
+	evm := NewMockEVM(ctx)
+
+	bankKeeper := NewMockBankKeeper()
+	msgServer := NewBankMsgServer(bankKeeper)
+	precompile := NewPrecompile(msgServer, bankKeeper)
+	evm.WithPrecompiles(map[common.Address]vm.PrecompiledContract{
+		precompile.Address(): precompile,
+	})
+
+	// init token
+	bankKeeper.registerDenom(token.Denom, banktypes.Metadata{
+		Symbol: token.Symbol, Name: token.Name, DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    token.Denom,
+				Exponent: uint32(token.Decimals),
+			},
+		},
+	})
+	bankKeeper.registerDenom(nativeDenom, banktypes.Metadata{
+		Symbol: "NATIVE", Name: "Native Token", DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    nativeDenom,
+				Exponent: 18,
+			},
+		},
+	})
+	bankKeeper.mint(mintTo.Bytes(), sdk.NewCoins(sdk.NewCoin(token.Denom, sdkmath.NewIntFromUint64(mintAmount))))
+	bankKeeper.mint(mintTo.Bytes(), sdk.NewCoins(sdk.NewCoin(nativeDenom, sdkmath.NewIntFromUint64(mintAmount))))
+
+	DeployCreate2(t, evm)
+	DeployERC20(t, evm, BankPrecompile, token.Denom)
+
+	return evm
 }
 
 func TestERC20ContractAddress(t *testing.T) {
@@ -38,86 +106,68 @@ func TestERC20ContractAddress(t *testing.T) {
 	require.Equal(t, expected, result)
 }
 
-func Setup() *vm.EVM {
-	rawdb := dbm.NewMemDB()
-	logger := log.NewNopLogger()
-	ms := store.NewCommitMultiStore(rawdb, logger, nil)
-	ctx := sdk.NewContext(ms, cmtproto.Header{}, false, logger)
-	return NewMockEVM(ctx)
-}
-
+// TestBankPrecompile tests calling bank precompile directly
 func TestBankPrecompile(t *testing.T) {
 	user1 := common.BigToAddress(big.NewInt(1))
 	user2 := common.BigToAddress(big.NewInt(2))
-
-	denom := "denom"
-	symbol := "COIN"
-	name := "Test Coin"
-	decimals := byte(18)
-	amount := int64(1000)
-	precompile := common.HexToAddress(evmtypes.Bank2PrecompileAddress)
-	erc20 := ERC20ContractAddress(precompile, denom)
+	token := TokenInfo{
+		Denom:    "denom",
+		Symbol:   "COIN",
+		Name:     "Test Coin",
+		Decimals: byte(18),
+	}
+	amount := uint64(1000)
+	erc20 := ERC20ContractAddress(BankPrecompile, token.Denom)
 
 	setup := func(t *testing.T) *vm.EVM {
-		evm := Setup()
-
-		bankKeeper := NewMockBankKeeper()
-		msgServer := NewBankMsgServer(bankKeeper)
-		precompile := NewPrecompile(msgServer, bankKeeper)
-		evm.WithPrecompiles(map[common.Address]vm.PrecompiledContract{
-			precompile.Address(): precompile,
-		})
-
-		bankKeeper.registerDenom(denom, banktypes.Metadata{
-			Symbol: symbol, Name: name, DenomUnits: []*banktypes.DenomUnit{
-				{
-					Denom:    denom,
-					Exponent: uint32(decimals),
-				},
-			},
-		})
-		bankKeeper.mint(user1.Bytes(), sdk.NewCoins(sdk.NewCoin(denom, sdkmath.NewInt(amount))))
-
-		return evm
+		return Setup(t, token, user1, amount)
 	}
 
 	testCases := []struct {
 		name   string
 		method BankMethod
-		expErr error
 		caller common.Address
 		input  []byte
 		output []byte
+		expErr error
 	}{
-		{"name", MethodName, nil, user1, []byte(denom), []byte(name)},
-		{"symbol", MethodSymbol, nil, user1, []byte(denom), []byte(symbol)},
-		{"decimals", MethodDecimals, nil, user1, []byte(denom), []byte{decimals}},
-		{"totalSupply", MethodTotalSupply, nil, user1, []byte(denom),
-			common.LeftPadBytes(big.NewInt(amount).Bytes(), 32),
+		{"name", MethodName, user1, []byte(token.Denom), []byte(token.Name), nil},
+		{"symbol", MethodSymbol, user1, []byte(token.Denom), []byte(token.Symbol), nil},
+		{"decimals", MethodDecimals, user1, []byte(token.Denom), []byte{token.Decimals}, nil},
+		{"totalSupply", MethodTotalSupply, user1,
+			[]byte(token.Denom),
+			common.LeftPadBytes(new(big.Int).SetUint64(amount).Bytes(), 32),
+			nil,
 		},
-		{"balanceOf", MethodBalanceOf, nil, user1,
-			append(user1.Bytes(), []byte(denom)...),
-			common.LeftPadBytes(big.NewInt(amount).Bytes(), 32),
+		{"balanceOf", MethodBalanceOf, user1,
+			append(user1.Bytes(), []byte(token.Denom)...),
+			common.LeftPadBytes(new(big.Int).SetUint64(amount).Bytes(), 32),
+			nil,
 		},
-		{"balanceOf-empty", MethodBalanceOf, nil, user2,
-			append(user2.Bytes(), []byte(denom)...),
+		{"balanceOf-empty", MethodBalanceOf, user2,
+			append(user2.Bytes(), []byte(token.Denom)...),
 			common.LeftPadBytes([]byte{}, 32),
-		},
-		{"transferFrom-owner", MethodTransferFrom, nil, user1,
-			transferFromInput(user1, user2, big.NewInt(100), denom),
-			[]byte{1},
-		},
-		{"transferFrom-erc20", MethodTransferFrom, nil, erc20,
-			transferFromInput(user1, user2, big.NewInt(100), denom),
-			[]byte{1},
-		},
-		{"transferFrom-unauthorized", MethodTransferFrom, vm.ErrExecutionReverted, user2,
-			transferFromInput(user1, user2, big.NewInt(100), denom),
 			nil,
 		},
-		{"transferFrom-insufficient-balance", MethodTransferFrom, vm.ErrExecutionReverted, user2,
-			transferFromInput(user2, user1, big.NewInt(100), denom),
+		{"transferFrom-owner", MethodTransferFrom, user1,
+			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+			[]byte{1},
 			nil,
+		},
+		{"transferFrom-erc20", MethodTransferFrom, erc20,
+			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+			[]byte{1},
+			nil,
+		},
+		{"transferFrom-unauthorized", MethodTransferFrom, user2,
+			TransferFromInput(user1, user2, big.NewInt(100), token.Denom),
+			nil,
+			vm.ErrExecutionReverted,
+		},
+		{"transferFrom-insufficient-balance", MethodTransferFrom, user2,
+			TransferFromInput(user2, user1, big.NewInt(100), token.Denom),
+			nil,
+			vm.ErrExecutionReverted,
 		},
 	}
 
@@ -125,7 +175,7 @@ func TestBankPrecompile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			evm := setup(t)
 			input := append([]byte{byte(tc.method)}, tc.input...)
-			ret, _, err := evm.Call(tc.caller, precompile, input, 1000000, uint256.NewInt(0))
+			ret, _, err := evm.Call(tc.caller, BankPrecompile, input, GasLimit, uint256.NewInt(0))
 			if tc.expErr != nil {
 				require.Equal(t, tc.expErr, err)
 			} else {
@@ -136,10 +186,118 @@ func TestBankPrecompile(t *testing.T) {
 	}
 }
 
-func transferFromInput(from, to common.Address, amount *big.Int, denom string) []byte {
+// TestBankERC20 tests bank precompile through the ERC20 interface
+func TestBankERC20(t *testing.T) {
+	zero := common.BigToAddress(big.NewInt(0))
+	user1 := common.BigToAddress(big.NewInt(1))
+	user2 := common.BigToAddress(big.NewInt(2))
+	token := TokenInfo{
+		Denom:    "denom",
+		Symbol:   "COIN",
+		Name:     "Test Coin",
+		Decimals: byte(18),
+	}
+	amount := uint64(1000)
+	bigAmount := new(big.Int).SetUint64(amount)
+	erc20 := ERC20ContractAddress(BankPrecompile, token.Denom)
+	nativeERC20 := ERC20ContractAddress(BankPrecompile, evmtypes.GetEVMCoinDenom())
+
+	setup := func(t *testing.T) *vm.EVM {
+		evm := Setup(t, token, user1, amount)
+		DeployERC20(t, evm, BankPrecompile, evmtypes.GetEVMCoinDenom())
+		return evm
+	}
+
+	testCases := []struct {
+		name   string
+		method string
+		caller common.Address
+		token  common.Address
+		input  []interface{}
+		output []interface{}
+		expErr error
+	}{
+		{"name", "name", zero, erc20, nil, []interface{}{token.Name}, nil},
+		{"symbol", "symbol", zero, erc20, nil, []interface{}{token.Symbol}, nil},
+		{"decimals", "decimals", zero, erc20, nil, []interface{}{token.Decimals}, nil},
+		{"totalSupply", "totalSupply", zero, erc20, nil, []interface{}{bigAmount}, nil},
+		{"balanceOf", "balanceOf", zero, erc20,
+			[]interface{}{user1},
+			[]interface{}{bigAmount},
+			nil,
+		},
+		{"balanceOf-empty", "balanceOf", zero, erc20,
+			[]interface{}{user2},
+			[]interface{}{common.Big0},
+			nil,
+		},
+		{"transfer", "transfer", user1, erc20,
+			[]interface{}{user2, big.NewInt(100)},
+			[]interface{}{true},
+			nil,
+		},
+		{"transfer-insufficient-balance", "transfer", user2, erc20,
+			[]interface{}{user1, big.NewInt(100)},
+			nil,
+			vm.ErrExecutionReverted,
+		},
+		{"native-fail", "transfer", user1, nativeERC20,
+			[]interface{}{user2, big.NewInt(100)},
+			nil,
+			vm.ErrExecutionReverted,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			evm := setup(t)
+
+			method, ok := ERC20ABI.Methods[tc.method]
+			require.True(t, ok, "method not found: %s", tc.method)
+
+			input, err := method.Inputs.Pack(tc.input...)
+			require.NoError(t, err)
+
+			ret, _, err := evm.Call(tc.caller, tc.token, append(method.ID, input...), GasLimit, uint256.NewInt(0))
+			if tc.expErr != nil {
+				require.Equal(t, tc.expErr, err)
+				return
+			}
+
+			require.NoError(t, err)
+			expOutput, err := method.Outputs.Pack(tc.output...)
+			require.NoError(t, err)
+			require.Equal(t, expOutput, ret)
+		})
+	}
+}
+
+func TransferFromInput(from, to common.Address, amount *big.Int, denom string) []byte {
 	fixedBuf := make([]byte, 20+20+32) // from + to + amount
 	copy(fixedBuf[0:20], from.Bytes())
 	copy(fixedBuf[20:40], to.Bytes())
 	copy(fixedBuf[40:72], common.LeftPadBytes(amount.Bytes(), 32))
 	return append(fixedBuf, []byte(denom)...)
+}
+
+// DeployCreate2 deploys the deterministic contract factory
+// https://github.com/Arachnid/deterministic-deployment-proxy
+func DeployCreate2(t *testing.T, evm *vm.EVM) {
+	caller := common.HexToAddress("0x3fAB184622Dc19b6109349B94811493BF2a45362")
+	code := common.FromHex("604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3")
+	_, address, _, err := evm.Create(caller, code, GasLimit, uint256.NewInt(0))
+	require.NoError(t, err)
+	require.Equal(t, Create2Address, address)
+}
+
+func DeployERC20(t *testing.T, evm *vm.EVM, bank common.Address, denom string) {
+	caller := common.BigToAddress(common.Big0)
+
+	initcode := append(ERC20Bin, ERC20Constructor(denom, bank)...)
+	input := append(ERC20Salt, initcode...)
+	_, _, err := evm.Call(caller, Create2Address, input, GasLimit, uint256.NewInt(0))
+	require.NoError(t, err)
+
+	expAddress := ERC20ContractAddress(bank, denom)
+	require.NotEmpty(t, evm.StateDB.GetCode(expAddress))
 }

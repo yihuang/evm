@@ -217,37 +217,39 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 //
 // `keccak(0xff || factory || salt || keccak(bytecode || ctor))[12:]`
 func ERC20ContractAddress(contract common.Address, denom string) common.Address {
-	// constructor args of ERC20 contract
-	// abi.encode(string, address)
-	staticBuf := make([]byte, 64)
-	staticBuf[31] = 32 * 2 // offset of string
-	copy(staticBuf[32+12:], contract.Bytes())
-
-	sizeBuf := make([]byte, 32)
-	binary.BigEndian.PutUint64(sizeBuf[24:], uint64(len(denom)))
-
-	codeHash := crypto.Keccak256(
-		ERC20Bin,
-		staticBuf,
-		sizeBuf,
-		[]byte(denom),
-		make([]byte, padTo32(len(denom))),
-	)
-
-	return common.BytesToAddress(
+	bz := crypto.Keccak256(
+		[]byte{0xff},
+		Create2FactoryAddress.Bytes(),
+		ERC20Salt,
 		crypto.Keccak256(
-			[]byte{0xff},
-			Create2FactoryAddress.Bytes(),
-			ERC20Salt,
-			codeHash,
-		)[12:],
+			ERC20Bin,
+			ERC20Constructor(denom, contract),
+		),
+	)[12:]
+	return common.BytesToAddress(bz)
+}
+
+// ERC20Constructor builds the constructor args for the ERC20 contract,
+// equivalent to `abi.encode(string denom, address bank)`
+func ERC20Constructor(denom string, bank common.Address) []byte {
+	paddedDenomLen := padTo32(len(denom))
+	bufSize := 32*3 + paddedDenomLen // string offset + bank + string length + denom
+
+	buf := make([]byte, bufSize)
+	buf[31] = 32 * 2                // string offset
+	copy(buf[32+12:], bank.Bytes()) // bank contract
+	binary.BigEndian.PutUint64(     // string length
+		buf[32*2+24:],
+		uint64(len(denom)),
 	)
+	copy(buf[32*3:], []byte(denom)) // string data
+	return buf
 }
 
 func padTo32(size int) int {
 	remainder := size % 32
 	if remainder == 0 {
-		return 0
+		return size
 	}
-	return 32 - remainder
+	return size + 32 - remainder
 }
