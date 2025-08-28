@@ -106,7 +106,7 @@ func (p Precompile) Decimals(ctx sdk.Context, input []byte) ([]byte, error) {
 	}
 
 	if len(metadata.DenomUnits) == 0 {
-		return nil, vm.ErrExecutionReverted
+		return []byte{0}, nil
 	}
 
 	if metadata.DenomUnits[0].Exponent > math.MaxUint8 {

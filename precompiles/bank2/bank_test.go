@@ -169,6 +169,10 @@ func TestBankPrecompile(t *testing.T) {
 			nil,
 			vm.ErrExecutionReverted,
 		},
+		{"invalid-method", 6, user1, nil, nil, vm.ErrExecutionReverted},
+		{"name-invalid-denom", MethodName, user1, []byte("non-exist"), nil, vm.ErrExecutionReverted},
+		{"symbol-invalid-denom", MethodSymbol, user1, []byte("non-exist"), nil, vm.ErrExecutionReverted},
+		{"decimals-invalid-denom", MethodDecimals, user1, []byte("non-exist"), nil, vm.ErrExecutionReverted},
 	}
 
 	for _, tc := range testCases {
