@@ -62,15 +62,19 @@ func (k MockBankKeeper) mint(to sdk.AccAddress, amt sdk.Coins) {
 	}
 }
 
-func (k MockBankKeeper) burn(to sdk.AccAddress, amt sdk.Coins) error {
-	addrKey := string(to)
+func (k MockBankKeeper) burn(from sdk.AccAddress, amt sdk.Coins) error {
+	addrKey := string(from)
 	for _, coin := range amt {
+		amount := coin.Amount.Int64()
 		m, ok := k.balances[addrKey]
 		if !ok {
-			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "address: %s, denom: %s, expect: %s, got: %s", to.String(), coin.Denom, coin.Amount.String(), "0")
+			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "address: 0x%x, denom: %s, expect: %d, got: %d", from.Bytes(), coin.Denom, amount, 0)
 		}
-		amount := m[coin.Denom]
-		m[coin.Denom] -= amount
+		available := m[coin.Denom]
+		if available < amount {
+			return errorsmod.Wrapf(sdkerrors.ErrInsufficientFunds, "address: 0x%x, denom: %s, expect: %d, got: %d", from.Bytes(), coin.Denom, amount, available)
+		}
+		m[coin.Denom] = available - amount
 		k.supplies[coin.Denom] -= amount
 	}
 	return nil
@@ -104,7 +108,15 @@ func (k MockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, den
 }
 
 func (ms MockBankMsgServer) Send(goCtx context.Context, msg *banktypes.MsgSend) (*banktypes.MsgSendResponse, error) {
-	if err := ms.keeper.send(sdk.AccAddress(msg.FromAddress), sdk.AccAddress(msg.ToAddress), msg.Amount); err != nil {
+	from, err := sdk.AccAddressFromBech32(msg.FromAddress)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid from address: %s", err)
+	}
+	to, err := sdk.AccAddressFromBech32(msg.ToAddress)
+	if err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid to address: %s", err)
+	}
+	if err := ms.keeper.send(from, to, msg.Amount); err != nil {
 		return nil, err
 	}
 	return &banktypes.MsgSendResponse{}, nil
