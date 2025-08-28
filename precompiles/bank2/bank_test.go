@@ -26,7 +26,6 @@ import (
 )
 
 var (
-	Create2Address = common.HexToAddress("0x4e59b44847b379578588920ca78fbf26c0b4956c")
 	BankPrecompile = common.HexToAddress(evmtypes.Bank2PrecompileAddress)
 
 	//go:embed erc20abi.json
@@ -291,7 +290,7 @@ func DeployCreate2(t *testing.T, evm *vm.EVM) {
 	code := common.FromHex("604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3")
 	_, address, _, err := evm.Create(caller, code, GasLimit, uint256.NewInt(0))
 	require.NoError(t, err)
-	require.Equal(t, Create2Address, address)
+	require.Equal(t, Create2FactoryAddress, address)
 }
 
 func DeployERC20(t *testing.T, evm *vm.EVM, bank common.Address, denom string) {
@@ -299,7 +298,7 @@ func DeployERC20(t *testing.T, evm *vm.EVM, bank common.Address, denom string) {
 
 	initcode := append(ERC20Bin, ERC20Constructor(denom, bank)...)
 	input := append(ERC20Salt, initcode...)
-	_, _, err := evm.Call(caller, Create2Address, input, GasLimit, uint256.NewInt(0))
+	_, _, err := evm.Call(caller, Create2FactoryAddress, input, GasLimit, uint256.NewInt(0))
 	require.NoError(t, err)
 
 	expAddress := ERC20ContractAddress(bank, denom)
