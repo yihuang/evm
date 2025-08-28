@@ -164,7 +164,7 @@ func NewAvailableStaticPrecompiles(
 		panic(fmt.Errorf("failed to instantiate slashing precompile: %w", err))
 	}
 
-	bank2Precompile := bank2precompile.NewPrecompile(bankKeeper2)
+	bank2Precompile := bank2precompile.NewPrecompile(bankkeeper.NewMsgServerImpl(bankKeeper2), bankKeeper2)
 
 	// Stateless precompiles
 	precompiles[bech32Precompile.Address()] = bech32Precompile

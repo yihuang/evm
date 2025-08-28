@@ -6,14 +6,13 @@ import (
 	"math"
 	"math/big"
 
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/evm/x/vm/statedb"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
@@ -56,11 +55,12 @@ var (
 )
 
 type Precompile struct {
-	bankKeeper bankkeeper.Keeper
+	msgServer  BankMsgServer
+	bankKeeper BankKeeper
 }
 
-func NewPrecompile(bankKeeper bankkeeper.Keeper) *Precompile {
-	return &Precompile{bankKeeper}
+func NewPrecompile(msgServer BankMsgServer, bankKeeper BankKeeper) *Precompile {
+	return &Precompile{msgServer, bankKeeper}
 }
 
 func (p Precompile) Address() common.Address {
@@ -164,9 +164,8 @@ func (p Precompile) TransferFrom(ctx sdk.Context, caller common.Address, input [
 	}
 
 	// execute the transfer with bank keeper
-	msgSrv := bankkeeper.NewMsgServerImpl(p.bankKeeper)
 	msg := banktypes.NewMsgSend(from.Bytes(), to.Bytes(), coins)
-	if _, err := msgSrv.Send(ctx, msg); err != nil {
+	if _, err := p.msgServer.Send(ctx, msg); err != nil {
 		return nil, vm.ErrExecutionReverted
 	}
 
