@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
+	"cosmossdk.io/core/address"
 	"github.com/cosmos/evm/contracts"
 	"github.com/cosmos/evm/ibc"
 	callbacksabi "github.com/cosmos/evm/precompiles/callbacks"
@@ -34,17 +35,19 @@ type ContractKeeper struct {
 	evmKeeper             types.EVMKeeper
 	erc20Keeper           types.ERC20Keeper
 	packetDataUnmarshaler porttypes.PacketDataUnmarshaler
+	addressCodec          address.Codec
 }
 
 // NewKeeper creates and initializes a new ContractKeeper instance.
 //
 // The ContractKeeper manages cross-chain contract execution and handles IBC packet
 // callbacks for smart contract interactions.
-func NewKeeper(authKeeper types.AccountKeeper, evmKeeper types.EVMKeeper, erc20Keeper types.ERC20Keeper) ContractKeeper {
+func NewKeeper(authKeeper types.AccountKeeper, evmKeeper types.EVMKeeper, erc20Keeper types.ERC20Keeper, addressCodec address.Codec) ContractKeeper {
 	ck := ContractKeeper{
-		authKeeper:  authKeeper,
-		evmKeeper:   evmKeeper,
-		erc20Keeper: erc20Keeper,
+		authKeeper:   authKeeper,
+		evmKeeper:    evmKeeper,
+		erc20Keeper:  erc20Keeper,
+		addressCodec: addressCodec,
 	}
 	ck.packetDataUnmarshaler = types.Unmarshaler{}
 	return ck
@@ -130,17 +133,12 @@ func (k ContractKeeper) IBCReceivePacketCallback(
 	cachedCtx = evmante.BuildEvmExecutionCtx(cachedCtx).
 		WithGasMeter(types2.NewInfiniteGasMeterWithLimit(cbData.CommitGasLimit))
 
-	// receiver := sdk.MustAccAddressFromBech32(data.Receiver)
-	receiver, err := sdk.AccAddressFromBech32(data.Receiver)
+	receiver, err := k.addressCodec.StringToBytes(data.Receiver)
 	if err != nil {
 		return errorsmod.Wrapf(types.ErrInvalidReceiverAddress,
 			"acc addr from bech32 conversion failed for receiver address: %s", data.Receiver)
 	}
-	receiverHex, err := utils.HexAddressFromBech32String(receiver.String())
-	if err != nil {
-		return errorsmod.Wrapf(types.ErrInvalidReceiverAddress,
-			"hex address conversion failed for receiver address: %s", receiver)
-	}
+	receiverHex := common.BytesToAddress(receiver)
 
 	// Generate secure isolated address from sender.
 	isolatedAddr := types.GenerateIsolatedAddress(packet.GetDestChannel(), data.Sender)
@@ -404,11 +402,11 @@ func (k ContractKeeper) IBCOnTimeoutPacketCallback(
 		return errorsmod.Wrap(types.ErrInvalidCalldata, "timeout callback data should not contain calldata")
 	}
 
-	senderAccount, err := sdk.AccAddressFromBech32(packetSenderAddress)
+	senderAccount, err := k.addressCodec.StringToBytes(packetSenderAddress)
 	if err != nil {
 		return errorsmod.Wrapf(err, "unable to parse packet sender address %s", packetSenderAddress)
 	}
-	sender := common.BytesToAddress(senderAccount.Bytes())
+	sender := common.BytesToAddress(senderAccount)
 	contractAddr := common.HexToAddress(contractAddress)
 	contractAccount := k.evmKeeper.GetAccountOrEmpty(ctx, contractAddr)
 
