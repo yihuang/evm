@@ -5,7 +5,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"cosmossdk.io/core/address"
 	"github.com/cosmos/evm/contracts"
 	"github.com/cosmos/evm/ibc"
 	callbacksabi "github.com/cosmos/evm/precompiles/callbacks"
@@ -21,6 +20,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 
+	"cosmossdk.io/core/address"
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 
