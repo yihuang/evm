@@ -503,6 +503,7 @@ func NewExampleApp(
 		app.EVMKeeper,
 		app.StakingKeeper,
 		&app.TransferKeeper,
+		app.AccountKeeper.AddressCodec(),
 	)
 
 	// instantiate IBC transfer keeper AFTER the ERC-20 keeper to use it in the instantiation
