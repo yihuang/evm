@@ -85,6 +85,7 @@ func (p Precompile) Name(ctx sdk.Context, input []byte) ([]byte, error) {
 }
 
 // Symbol
+//
 // input format: abi.encodePacked(string denom)
 // output format: abi.encodePacked(string)
 func (p Precompile) Symbol(ctx sdk.Context, input []byte) ([]byte, error) {
@@ -96,24 +97,41 @@ func (p Precompile) Symbol(ctx sdk.Context, input []byte) ([]byte, error) {
 	return []byte(metadata.Symbol), nil
 }
 
-// Decimals
+// Decimals returns the exponent of the display denom unit
+//
 // input format: abi.encodePacked(string denom)
 // output format: abi.encodePacked(uint8)
 func (p Precompile) Decimals(ctx sdk.Context, input []byte) ([]byte, error) {
-	metadata, found := p.bankKeeper.GetDenomMetaData(ctx, string(input))
+	m, found := p.bankKeeper.GetDenomMetaData(ctx, string(input))
 	if !found {
 		return nil, vm.ErrExecutionReverted
 	}
 
-	if len(metadata.DenomUnits) == 0 {
+	if len(m.DenomUnits) == 0 {
 		return []byte{0}, nil
 	}
 
-	if metadata.DenomUnits[0].Exponent > math.MaxUint8 {
+	// look up Display denom unit
+	index := -1
+	for i, denomUnit := range m.DenomUnits {
+		if denomUnit.Denom == m.Display {
+			index = i
+			break
+		}
+	}
+
+	var exponent uint32
+	if index == -1 {
+		exponent = 0
+	} else {
+		exponent = m.DenomUnits[index].Exponent
+	}
+
+	if exponent > math.MaxUint8 {
 		return nil, vm.ErrExecutionReverted
 	}
 
-	return []byte{uint8(metadata.DenomUnits[0].Exponent)}, nil //nolint:gosec // G115: range is checked above
+	return []byte{uint8(exponent)}, nil //nolint:gosec // G115: range is checked above
 }
 
 // TotalSupply
