@@ -544,6 +544,7 @@ func NewExampleApp(
 		app.AccountKeeper,
 		app.EVMKeeper,
 		app.Erc20Keeper,
+		app.AccountKeeper.AddressCodec(),
 	)
 	transferStack = ibccallbacks.NewIBCMiddleware(transferStack, app.IBCKeeper.ChannelKeeper, app.CallbackKeeper, maxCallbackGas)
 
