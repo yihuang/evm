@@ -3,14 +3,18 @@ package common
 import (
 	"errors"
 
-	storetypes "cosmossdk.io/store/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/evm/x/vm/statedb"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
+
+	"github.com/cosmos/evm/x/vm/statedb"
+
+	storetypes "cosmossdk.io/store/types"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// NativeExecutor abstract the execution of the stateful precompile
 type NativeExecutor interface {
 	Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]byte, error)
 }
@@ -26,15 +30,6 @@ type Precompile struct {
 
 	Executor NativeExecutor
 }
-
-// Operation is a type that defines if the precompile call
-// produced an addition or subtraction of an account's balance
-type Operation int8
-
-const (
-	Sub Operation = iota
-	Add
-)
 
 // RequiredGas calculates the base minimum required gas for a transaction or a query.
 // It uses the method ID to determine if the input is a transaction or a query and
@@ -61,31 +56,31 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]by
 }
 
 func (p Precompile) run(evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]byte, error) {
-	s, ok := evm.StateDB.(*statedb.StateDB)
+	stateDB, ok := evm.StateDB.(*statedb.StateDB)
 	if !ok {
 		return nil, errors.New(ErrNotRunInEvm)
 	}
 
 	// get the stateDB cache ctx
-	ctx, err := s.GetCacheContext()
+	ctx, err := stateDB.GetCacheContext()
 	if err != nil {
 		return nil, err
 	}
 
 	// take a snapshot of the current state before any changes
 	// to be able to revert the changes
-	snapshot := s.MultiStoreSnapshot()
+	snapshot := stateDB.MultiStoreSnapshot()
 	events := ctx.EventManager().Events()
 
 	// add precompileCall entry on the stateDB journal
 	// this allows to revert the changes within an evm tx
-	if err := s.AddPrecompileFn(snapshot, events); err != nil {
+	if err := stateDB.AddPrecompileFn(snapshot, events); err != nil {
 		return nil, err
 	}
 
 	// commit the current changes in the cache ctx
 	// to get the updated state for the precompile call
-	if err := s.CommitWithCacheCtx(); err != nil {
+	if err := stateDB.CommitWithCacheCtx(); err != nil {
 		return nil, err
 	}
 
@@ -95,9 +90,9 @@ func (p Precompile) run(evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]by
 
 	// set the default SDK gas configuration to track gas usage
 	// we are changing the gas meter type, so it panics gracefully when out of gas
-	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(contract.Gas))
-
-	ctx = ctx.WithKVGasConfig(p.KvGasConfig).WithTransientKVGasConfig(p.TransientKVGasConfig)
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeter(contract.Gas)).
+		WithKVGasConfig(p.KvGasConfig).
+		WithTransientKVGasConfig(p.TransientKVGasConfig)
 
 	// we need to consume the gas that was already used by the EVM
 	ctx.GasMeter().ConsumeGas(initialGas, "creating a new gas meter")
@@ -111,14 +106,16 @@ func (p Precompile) run(evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]by
 		return output, err
 	}
 
-	if p.BalanceHandler != nil {
-		p.BalanceHandler.AfterBalanceChange(ctx, s)
-	}
-
 	cost := ctx.GasMeter().GasConsumed() - initialGas
 
 	if !contract.UseGas(cost, nil, tracing.GasChangeCallPrecompiledContract) {
 		return nil, vm.ErrOutOfGas
+	}
+
+	if p.BalanceHandler != nil {
+		if err := p.BalanceHandler.AfterBalanceChange(ctx, stateDB); err != nil {
+			return nil, err
+		}
 	}
 
 	return output, nil
