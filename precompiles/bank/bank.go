@@ -120,14 +120,16 @@ func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract,
 	switch method.Name {
 	// Bank queries
 	case BalancesMethod:
-		return p.Balances(ctx, contract, method, args)
+		bz, err = p.Balances(ctx, contract, method, args)
 	case TotalSupplyMethod:
-		return p.TotalSupply(ctx, contract, method, args)
+		bz, err = p.TotalSupply(ctx, contract, method, args)
 	case SupplyOfMethod:
-		return p.SupplyOf(ctx, contract, method, args)
+		bz, err = p.SupplyOf(ctx, contract, method, args)
 	default:
 		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
+
+	return
 }
 
 // IsTransaction checks if the given method name corresponds to a transaction or query.
