@@ -30,4 +30,5 @@ var AvailableStaticPrecompiles = []string{
 	BankPrecompileAddress,
 	GovPrecompileAddress,
 	SlashingPrecompileAddress,
+	Bank2PrecompileAddress,
 }
