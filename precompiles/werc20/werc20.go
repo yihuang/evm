@@ -100,13 +100,14 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 	}
 }
 
-func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz []byte, err error) {
+func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]byte, error) {
 	method, args, err := cmn.SetupABI(p.ABI, contract, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 
 	stateDB := evm.StateDB
+	var bz []byte
 
 	switch {
 	case method.Type == abi.Fallback,
@@ -120,7 +121,7 @@ func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract,
 		bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
 	}
 
-	return
+	return bz, err
 }
 
 // IsTransaction returns true if the given method name correspond to a

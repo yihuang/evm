@@ -2,6 +2,7 @@ package staking
 
 import (
 	"embed"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -92,13 +93,15 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 	return p.Precompile.RequiredGas(input, p.IsTransaction(method))
 }
 
-func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz []byte, err error) {
+func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract, readOnly bool) ([]byte, error) {
 	method, args, err := cmn.SetupABI(p.ABI, contract, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 
 	stateDB := evm.StateDB
+	var bz []byte
+
 	switch method.Name {
 	// Staking transactions
 	case CreateValidatorMethod:
@@ -126,9 +129,11 @@ func (p Precompile) Execute(ctx sdk.Context, evm *vm.EVM, contract *vm.Contract,
 		bz, err = p.Redelegation(ctx, method, contract, args)
 	case RedelegationsMethod:
 		bz, err = p.Redelegations(ctx, method, contract, args)
+	default:
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
 	}
 
-	return
+	return bz, err
 }
 
 // IsTransaction checks if the given method name corresponds to a transaction or query.
