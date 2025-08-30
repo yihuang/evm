@@ -131,7 +131,7 @@ func (p Precompile) Decimals(ctx sdk.Context, input []byte) ([]byte, error) {
 		return nil, vm.ErrExecutionReverted
 	}
 
-	return []byte{uint8(exponent)}, nil //nolint:gosec // G115: range is checked above
+	return []byte{uint8(exponent)}, nil
 }
 
 // TotalSupply
@@ -197,6 +197,18 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 	}
 
 	ctx, err := stateDB.GetCacheContext()
+	if err != nil {
+		return nil, vm.ErrExecutionReverted
+	}
+
+	// take a snapshot of the current state before any changes
+	// to be able to revert the changes
+	snapshot := stateDB.MultiStoreSnapshot()
+	events := ctx.EventManager().Events()
+
+	// add precompileCall entry on the stateDB journal
+	// this allows to revert the changes within an evm tx
+	err = stateDB.AddPrecompileFn(p.Address(), snapshot, events)
 	if err != nil {
 		return nil, vm.ErrExecutionReverted
 	}
