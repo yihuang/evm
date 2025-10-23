@@ -90,7 +90,7 @@ func (p Precompile) UnbondingDelegation(
 
 	out := new(UnbondingDelegationOutput).FromResponse(res)
 
-	return method.Outputs.Pack(out.UnbondingDelegation)
+	return method.Outputs.Pack(out)
 }
 
 // Validator returns the validator information for a given validator address.
@@ -158,7 +158,7 @@ func (p Precompile) Redelegation(
 
 	out := new(RedelegationOutput).FromResponse(res)
 
-	return method.Outputs.Pack(out.Redelegation)
+	return method.Outputs.Pack(out)
 }
 
 // Redelegations returns the redelegations according to

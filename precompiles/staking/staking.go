@@ -21,6 +21,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output staking.abi.go -external-tuples Coin=cmn.Coin,Dec=cmn.Dec,DecCoin=cmn.DecCoin -imports cmn=github.com/cosmos/evm/precompiles/common
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 var (

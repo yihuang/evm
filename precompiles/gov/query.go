@@ -186,11 +186,12 @@ func (p *Precompile) GetProposals(
 		return nil, err
 	}
 
-	output, err := new(ProposalsOutput).FromResponse(res)
-	if err != nil {
+	var output GetProposalsReturn
+	if _, err := output.FromResponse(res); err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(output.Proposals, output.PageResponse)
+
+	return output.Encode()
 }
 
 // GetParams implements the query logic for getting governance parameters

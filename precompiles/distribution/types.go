@@ -393,14 +393,6 @@ func NewCommunityPoolRequest(args []interface{}) (*distributiontypes.QueryCommun
 	return &distributiontypes.QueryCommunityPoolRequest{}, nil
 }
 
-// ValidatorDistributionInfo is a struct to represent the key information from
-// a ValidatorDistributionInfoResponse.
-type ValidatorDistributionInfo struct {
-	OperatorAddress string        `abi:"operatorAddress"`
-	SelfBondRewards []cmn.DecCoin `abi:"selfBondRewards"`
-	Commission      []cmn.DecCoin `abi:"commission"`
-}
-
 // ValidatorDistributionInfoOutput is a wrapper for ValidatorDistributionInfo to return in the response.
 type ValidatorDistributionInfoOutput struct {
 	DistributionInfo ValidatorDistributionInfo `abi:"distributionInfo"`
@@ -415,13 +407,6 @@ func (o *ValidatorDistributionInfoOutput) FromResponse(res *distributiontypes.Qu
 			Commission:      cmn.NewDecCoinsResponse(res.Commission),
 		},
 	}
-}
-
-// ValidatorSlashEvent is a struct to represent the key information from
-// a ValidatorSlashEvent response.
-type ValidatorSlashEvent struct {
-	ValidatorPeriod uint64  `abi:"validatorPeriod"`
-	Fraction        cmn.Dec `abi:"fraction"`
 }
 
 // ValidatorSlashesInput is a struct to represent the key information
@@ -464,13 +449,6 @@ func (vs *ValidatorSlashesOutput) FromResponse(res *distributiontypes.QueryValid
 // Pack packs a given slice of abi arguments into a byte array.
 func (vs *ValidatorSlashesOutput) Pack(args abi.Arguments) ([]byte, error) {
 	return args.Pack(vs.Slashes, vs.PageResponse)
-}
-
-// DelegationDelegatorReward is a struct to represent the key information from
-// a query for the rewards of a delegation to a given validator.
-type DelegationDelegatorReward struct {
-	ValidatorAddress string
-	Reward           []cmn.DecCoin
 }
 
 // DelegationTotalRewardsOutput is a struct to represent the key information from

@@ -12,6 +12,15 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -var=CommonABI -output common.abi.go
+
+var CommonABI = []string{
+	"struct Coin {string denom; uint256 amount;}",
+	"struct DecCoin {string denom; uint256 amount; uint8 precision;}",
+	"struct Dec {uint256 value; uint8 precision;}",
+	"function dummy(Coin a,DecCoin b,Dec c)",
+}
+
 // MakeTopic converts a filter query argument into a filter topic.
 // NOTE: This was copied from accounts/abi/topics.go
 func MakeTopic(rule interface{}) (common.Hash, error) {

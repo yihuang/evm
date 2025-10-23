@@ -13,6 +13,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output bech32.abi.go
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 var (

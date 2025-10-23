@@ -23,28 +23,6 @@ type ICS20Allocation struct {
 	AllowedPacketData []string
 }
 
-// Coin defines a struct that stores all needed information about a coin
-// in types native to the EVM.
-type Coin struct {
-	Denom  string
-	Amount *big.Int
-}
-
-// DecCoin defines a struct that stores all needed information about a decimal coin
-// in types native to the EVM.
-type DecCoin struct {
-	Denom     string
-	Amount    *big.Int
-	Precision uint8
-}
-
-// Dec defines a struct that represents a decimal number of a given precision
-// in types native to the EVM.
-type Dec struct {
-	Value     *big.Int
-	Precision uint8
-}
-
 // ToSDKType converts the Coin to the Cosmos SDK representation.
 func (c Coin) ToSDKType() sdk.Coin {
 	return sdk.NewCoin(c.Denom, math.NewIntFromBigInt(c.Amount))

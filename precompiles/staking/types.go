@@ -76,15 +76,6 @@ type EventCancelUnbonding struct {
 	CreationHeight   *big.Int
 }
 
-// Description defines a validator description.
-type Description = struct {
-	Moniker         string `json:"moniker"`
-	Identity        string `json:"identity"`
-	Website         string `json:"website"`
-	SecurityContact string `json:"securityContact"`
-	Details         string `json:"details"`
-}
-
 func NewDescriptionFromResponse(d stakingtypes.Description) Description {
 	return Description{
 		Moniker:         d.Moniker,
@@ -538,16 +529,6 @@ type RedelegationsRequest struct {
 	MaxRetrieve      int64
 }
 
-// UnbondingDelegationEntry is a struct that contains the information about an unbonding delegation entry.
-type UnbondingDelegationEntry struct {
-	CreationHeight          int64
-	CompletionTime          int64
-	InitialBalance          *big.Int
-	Balance                 *big.Int
-	UnbondingId             uint64 //nolint
-	UnbondingOnHoldRefCount int64
-}
-
 // UnbondingDelegationResponse is a struct that contains the information about an unbonding delegation.
 type UnbondingDelegationResponse struct {
 	DelegatorAddress string
@@ -555,18 +536,13 @@ type UnbondingDelegationResponse struct {
 	Entries          []UnbondingDelegationEntry
 }
 
-// UnbondingDelegationOutput is the output response returned by the query method.
-type UnbondingDelegationOutput struct {
-	UnbondingDelegation UnbondingDelegationResponse
-}
-
 // FromResponse populates the DelegationOutput from a QueryDelegationResponse.
 func (do *UnbondingDelegationOutput) FromResponse(res *stakingtypes.QueryUnbondingDelegationResponse) *UnbondingDelegationOutput {
-	do.UnbondingDelegation.Entries = make([]UnbondingDelegationEntry, len(res.Unbond.Entries))
-	do.UnbondingDelegation.ValidatorAddress = res.Unbond.ValidatorAddress
-	do.UnbondingDelegation.DelegatorAddress = res.Unbond.DelegatorAddress
+	do.Entries = make([]UnbondingDelegationEntry, len(res.Unbond.Entries))
+	do.ValidatorAddress = res.Unbond.ValidatorAddress
+	do.DelegatorAddress = res.Unbond.DelegatorAddress
 	for i, entry := range res.Unbond.Entries {
-		do.UnbondingDelegation.Entries[i] = UnbondingDelegationEntry{
+		do.Entries[i] = UnbondingDelegationEntry{
 			UnbondingId:             entry.UnbondingId,
 			UnbondingOnHoldRefCount: entry.UnbondingOnHoldRefCount,
 			CreationHeight:          entry.CreationHeight,
@@ -684,15 +660,6 @@ func (vo *ValidatorsOutput) Pack(args abi.Arguments) ([]byte, error) {
 	return args.Pack(vo.Validators, vo.PageResponse)
 }
 
-// RedelegationEntry is a struct to represent the key information from
-// a redelegation entry response.
-type RedelegationEntry struct {
-	CreationHeight int64
-	CompletionTime int64
-	InitialBalance *big.Int
-	SharesDst      *big.Int
-}
-
 // RedelegationValues is a struct to represent the key information from
 // a redelegation response.
 type RedelegationValues struct {
@@ -702,19 +669,14 @@ type RedelegationValues struct {
 	Entries             []RedelegationEntry
 }
 
-// RedelegationOutput returns the output for a redelegation query.
-type RedelegationOutput struct {
-	Redelegation RedelegationValues
-}
-
 // FromResponse populates the RedelegationOutput from a QueryRedelegationsResponse.
 func (ro *RedelegationOutput) FromResponse(res stakingtypes.Redelegation) *RedelegationOutput {
-	ro.Redelegation.Entries = make([]RedelegationEntry, len(res.Entries))
-	ro.Redelegation.DelegatorAddress = res.DelegatorAddress
-	ro.Redelegation.ValidatorSrcAddress = res.ValidatorSrcAddress
-	ro.Redelegation.ValidatorDstAddress = res.ValidatorDstAddress
+	ro.Entries = make([]RedelegationEntry, len(res.Entries))
+	ro.DelegatorAddress = res.DelegatorAddress
+	ro.ValidatorSrcAddress = res.ValidatorSrcAddress
+	ro.ValidatorDstAddress = res.ValidatorDstAddress
 	for i, entry := range res.Entries {
-		ro.Redelegation.Entries[i] = RedelegationEntry{
+		ro.Entries[i] = RedelegationEntry{
 			CreationHeight: entry.CreationHeight,
 			CompletionTime: entry.CompletionTime.UTC().Unix(),
 			InitialBalance: entry.InitialBalance.BigInt(),
@@ -722,31 +684,6 @@ func (ro *RedelegationOutput) FromResponse(res stakingtypes.Redelegation) *Redel
 		}
 	}
 	return ro
-}
-
-// RedelegationEntryResponse is equivalent to a RedelegationEntry except that it
-// contains a balance in addition to shares which is more suitable for client
-// responses.
-type RedelegationEntryResponse struct {
-	RedelegationEntry RedelegationEntry
-	Balance           *big.Int
-}
-
-// Redelegation contains the list of a particular delegator's redelegating bonds
-// from a particular source validator to a particular destination validator.
-type Redelegation struct {
-	DelegatorAddress    string
-	ValidatorSrcAddress string
-	ValidatorDstAddress string
-	Entries             []RedelegationEntry
-}
-
-// RedelegationResponse is equivalent to a Redelegation except that its entries
-// contain a balance in addition to shares which is more suitable for client
-// responses.
-type RedelegationResponse struct {
-	Redelegation Redelegation
-	Entries      []RedelegationEntryResponse
 }
 
 // RedelegationsInput is a struct to represent the input information for

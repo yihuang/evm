@@ -1,14 +1,16 @@
 package common
 
 import (
+	"encoding/binary"
 	"errors"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	ethabi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	"github.com/cosmos/evm/x/vm/statedb"
+	"github.com/yihuang/go-abi"
 
 	storetypes "cosmossdk.io/store/types"
 
@@ -125,14 +127,66 @@ func (p Precompile) runNativeAction(evm *vm.EVM, contract *vm.Contract, action N
 	return bz, nil
 }
 
+// ParseMethod parse method id, and check if it's allowed in readOnly mode.
+func ParseMethod(input []byte, readOnly bool, isTransaction func(uint32) bool) (uint32, []byte, error) {
+	if len(input) < 4 {
+		return 0, nil, errors.New("invalid input length")
+	}
+
+	methodID := binary.BigEndian.Uint32(input)
+	if readOnly && isTransaction(methodID) {
+		return 0, nil, vm.ErrWriteProtection
+	}
+
+	return methodID, input[4:], nil
+}
+
+func Run[I abi.Decode, O abi.Encode](
+	ctx sdk.Context,
+	fn func(sdk.Context, I) (O, error),
+	input []byte,
+) ([]byte, error) {
+	var in I
+	if err := in.Decode(input); err != nil {
+		return nil, err
+	}
+
+	out, err := fn(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Encode()
+}
+
+func RunWithStateDB[I abi.Decode, O abi.Encode](
+	ctx sdk.Context,
+	fn func(sdk.Context, I, vm.StateDB, *vm.Contract) (O, error),
+	input []byte,
+	stateDB vm.StateDB,
+	contract *vm.Contract,
+) ([]byte, error) {
+	var in I
+	if err := in.Decode(input); err != nil {
+		return nil, err
+	}
+
+	out, err := fn(ctx, in, stateDB, contract)
+	if err != nil {
+		return nil, err
+	}
+
+	return out.Encode()
+}
+
 // SetupABI runs the initial setup required to run a transaction or a query.
 // It returns the ABI method, initial gas and calling arguments.
 func SetupABI(
-	api abi.ABI,
+	api ethabi.ABI,
 	contract *vm.Contract,
 	readOnly bool,
-	isTransaction func(name *abi.Method) bool,
-) (method *abi.Method, args []interface{}, err error) {
+	isTransaction func(name *ethabi.Method) bool,
+) (method *ethabi.Method, args []interface{}, err error) {
 	// NOTE: This is a special case where the calling transaction does not specify a function name.
 	// In this case we default to a `fallback` or `receive` function on the contract.
 
@@ -165,7 +219,7 @@ func SetupABI(
 	}
 
 	// if the method type is `function` continue looking for arguments
-	if method.Type == abi.Function {
+	if method.Type == ethabi.Function {
 		argsBz := contract.Input[4:]
 		args, err = method.Inputs.Unpack(argsBz)
 		if err != nil {
@@ -207,7 +261,7 @@ func (p *Precompile) SetAddress(addr common.Address) {
 }
 
 // emptyCallData is a helper function that returns the method to be called when the calldata is empty.
-func emptyCallData(api abi.ABI, contract *vm.Contract) (method *abi.Method, err error) {
+func emptyCallData(api ethabi.ABI, contract *vm.Contract) (method *ethabi.Method, err error) {
 	switch {
 	// Case 1.1: Send call or transfer tx - 'receive' is called if present and value is transferred
 	case contract.Value().Sign() > 0 && api.HasReceive():
@@ -222,7 +276,7 @@ func emptyCallData(api abi.ABI, contract *vm.Contract) (method *abi.Method, err 
 }
 
 // methodIDCallData is a helper function that returns the method to be called when the calldata is less than 4 bytes.
-func methodIDCallData(api abi.ABI) (method *abi.Method, err error) {
+func methodIDCallData(api ethabi.ABI) (method *ethabi.Method, err error) {
 	// Case 2.2: calldata contains less than 4 bytes needed for a method and 'fallback' is not present - return error
 	if !api.HasFallback() {
 		return nil, vm.ErrExecutionReverted
@@ -232,7 +286,7 @@ func methodIDCallData(api abi.ABI) (method *abi.Method, err error) {
 }
 
 // standardCallData is a helper function that returns the method to be called when the calldata is 4 bytes or more.
-func standardCallData(api abi.ABI, contract *vm.Contract) (method *abi.Method, err error) {
+func standardCallData(api ethabi.ABI, contract *vm.Contract) (method *ethabi.Method, err error) {
 	methodID := contract.Input[:4]
 	// NOTE: this function iterates over the method map and returns
 	// the method with the given ID

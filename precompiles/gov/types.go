@@ -51,20 +51,6 @@ type VoteOutput struct {
 	Vote WeightedVote
 }
 
-// WeightedVote defines a struct of vote for vote split.
-type WeightedVote struct {
-	ProposalId uint64 //nolint:revive
-	Voter      common.Address
-	Options    []WeightedVoteOption
-	Metadata   string
-}
-
-// WeightedVoteOption defines a unit of vote for vote split.
-type WeightedVoteOption struct {
-	Option uint8
-	Weight string
-}
-
 // WeightedVoteOptions defines a slice of WeightedVoteOption.
 type WeightedVoteOptions []WeightedVoteOption
 
@@ -94,21 +80,6 @@ type DepositsOutput struct {
 // TallyResultOutput defines the output for the TallyResult query.
 type TallyResultOutput struct {
 	TallyResult TallyResultData
-}
-
-// DepositData represents information about a deposit on a proposal
-type DepositData struct {
-	ProposalId uint64         `abi:"proposalId"` //nolint:revive
-	Depositor  common.Address `abi:"depositor"`
-	Amount     []cmn.Coin     `abi:"amount"`
-}
-
-// TallyResultData represents the tally result of a proposal
-type TallyResultData struct {
-	Yes        string
-	Abstain    string
-	No         string
-	NoWithVeto string
 }
 
 // NewMsgSubmitProposal constructs a MsgSubmitProposal.
@@ -586,23 +557,6 @@ type ProposalsOutput struct {
 	PageResponse query.PageResponse
 }
 
-// ProposalData represents a governance proposal
-type ProposalData struct {
-	Id               uint64          `abi:"id"` //nolint
-	Messages         []string        `abi:"messages"`
-	Status           uint32          `abi:"status"`
-	FinalTallyResult TallyResultData `abi:"finalTallyResult"`
-	SubmitTime       uint64          `abi:"submitTime"`
-	DepositEndTime   uint64          `abi:"depositEndTime"`
-	TotalDeposit     []cmn.Coin      `abi:"totalDeposit"`
-	VotingStartTime  uint64          `abi:"votingStartTime"`
-	VotingEndTime    uint64          `abi:"votingEndTime"`
-	Metadata         string          `abi:"metadata"`
-	Title            string          `abi:"title"`
-	Summary          string          `abi:"summary"`
-	Proposer         common.Address  `abi:"proposer"`
-}
-
 // ParseProposalArgs parses the arguments for the Proposal query
 func ParseProposalArgs(args []interface{}) (*govv1.QueryProposalRequest, error) {
 	if len(args) != 1 {
@@ -703,7 +657,7 @@ func (po *ProposalOutput) FromResponse(res *govv1.QueryProposalResponse) (*Propo
 	return po, nil
 }
 
-func (po *ProposalsOutput) FromResponse(res *govv1.QueryProposalsResponse) (*ProposalsOutput, error) {
+func (po *GetProposalsReturn) FromResponse(res *govv1.QueryProposalsResponse) (*GetProposalsReturn, error) {
 	po.Proposals = make([]ProposalData, len(res.Proposals))
 	for i, p := range res.Proposals {
 		msgs := make([]string, len(p.Messages))
@@ -755,7 +709,7 @@ func (po *ProposalsOutput) FromResponse(res *govv1.QueryProposalsResponse) (*Pro
 	}
 
 	if res.Pagination != nil {
-		po.PageResponse = query.PageResponse{
+		po.PageResponse = PageResponse{
 			NextKey: res.Pagination.NextKey,
 			Total:   res.Pagination.Total,
 		}
