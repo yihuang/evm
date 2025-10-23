@@ -17,6 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module werc20
+
 var (
 	// Embed abi json file to the executable binary. Needed when importing as dependency.
 	//

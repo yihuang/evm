@@ -13,6 +13,8 @@ import (
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module bech32
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 var (

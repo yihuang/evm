@@ -64,7 +64,7 @@ interface DistributionI {
     /// @param validatorAddress is the address of the validator
     /// @param commission is the total commission earned by the validator
     event WithdrawValidatorCommission(
-        string indexed validatorAddress,
+        address indexed validatorAddress,
         uint256 commission
     );
 
