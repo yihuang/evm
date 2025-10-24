@@ -3,7 +3,6 @@ package distribution
 import (
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
@@ -169,12 +168,11 @@ func (p *Precompile) WithdrawValidatorCommission(
 // FundCommunityPool directly fund the community pool
 func (p *Precompile) FundCommunityPool(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *FundCommunityPoolCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	msg, depositorHexAddr, err := NewMsgFundCommunityPool(args, p.addrCdc)
+	contract *vm.Contract,
+) (*FundCommunityPoolReturn, error) {
+	msg, depositorHexAddr, err := NewMsgFundCommunityPool(*args, p.addrCdc)
 	if err != nil {
 		return nil, err
 	}
@@ -193,19 +191,18 @@ func (p *Precompile) FundCommunityPool(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true)
+	return &FundCommunityPoolReturn{true}, nil
 }
 
 // DepositValidatorRewardsPool deposits rewards into the validator rewards pool
 // for a specific validator.
 func (p *Precompile) DepositValidatorRewardsPool(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *DepositValidatorRewardsPoolCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	msg, depositorHexAddr, err := NewMsgDepositValidatorRewardsPool(args, p.addrCdc)
+	contract *vm.Contract,
+) (*DepositValidatorRewardsPoolReturn, error) {
+	msg, depositorHexAddr, err := NewMsgDepositValidatorRewardsPool(*args, p.addrCdc)
 	if err != nil {
 		return nil, err
 	}
@@ -224,5 +221,5 @@ func (p *Precompile) DepositValidatorRewardsPool(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true)
+	return &DepositValidatorRewardsPoolReturn{true}, nil
 }

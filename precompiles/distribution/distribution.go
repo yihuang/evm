@@ -19,7 +19,7 @@ import (
 	_ "embed"
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output distribution.abi.go -external-tuples Coin=cmn.Coin,Dec=cmn.Dec,DecCoin=cmn.DecCoin -imports cmn=github.com/cosmos/evm/precompiles/common
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output distribution.abi.go -external-tuples Coin=cmn.Coin,Dec=cmn.Dec,DecCoin=cmn.DecCoin,PageRequest=cmn.PageRequest -imports cmn=github.com/cosmos/evm/precompiles/common
 
 var _ vm.PrecompiledContract = &Precompile{}
 
@@ -81,8 +81,6 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 		return nil, err
 	}
 
-	var bz []byte
-
 	switch methodID {
 	// Custom transactions
 	case ClaimRewardsID:
@@ -95,33 +93,31 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 	case WithdrawValidatorCommissionID:
 		return cmn.RunWithStateDB(ctx, p.WithdrawValidatorCommission, input, stateDB, contract)
 	case FundCommunityPoolID:
-		bz, err = p.FundCommunityPool(ctx, contract, stateDB, method, args)
+		return cmn.RunWithStateDB(ctx, p.FundCommunityPool, input, stateDB, contract)
 	case DepositValidatorRewardsPoolID:
-		bz, err = p.DepositValidatorRewardsPool(ctx, contract, stateDB, method, args)
+		return cmn.RunWithStateDB(ctx, p.DepositValidatorRewardsPool, input, stateDB, contract)
 	// Distribution queries
 	case ValidatorDistributionInfoID:
-		bz, err = p.ValidatorDistributionInfo(ctx, contract, method, args)
+		return cmn.Run(ctx, p.ValidatorDistributionInfo, input)
 	case ValidatorOutstandingRewardsID:
-		bz, err = p.ValidatorOutstandingRewards(ctx, contract, method, args)
+		return cmn.Run(ctx, p.ValidatorOutstandingRewards, input)
 	case ValidatorCommissionID:
-		bz, err = p.ValidatorCommission(ctx, contract, method, args)
+		return cmn.Run(ctx, p.ValidatorCommission, input)
 	case ValidatorSlashesID:
-		bz, err = p.ValidatorSlashes(ctx, contract, method, args)
+		return cmn.Run(ctx, p.ValidatorSlashes, input)
 	case DelegationRewardsID:
-		bz, err = p.DelegationRewards(ctx, contract, method, args)
+		return cmn.Run(ctx, p.DelegationRewards, input)
 	case DelegationTotalRewardsID:
-		bz, err = p.DelegationTotalRewards(ctx, contract, method, args)
+		return cmn.Run(ctx, p.DelegationTotalRewards, input)
 	case DelegatorValidatorsID:
-		bz, err = p.DelegatorValidators(ctx, contract, method, args)
+		return cmn.Run(ctx, p.DelegatorValidators, input)
 	case DelegatorWithdrawAddressID:
-		bz, err = p.DelegatorWithdrawAddress(ctx, contract, method, args)
+		return cmn.Run(ctx, p.DelegatorWithdrawAddress, input)
 	case CommunityPoolID:
-		bz, err = p.CommunityPool(ctx, contract, method, args)
+		return cmn.Run(ctx, p.CommunityPool, input)
 	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownID, method.Name)
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, methodID)
 	}
-
-	return bz, err
 }
 
 // IsTransaction checks if the given method name corresponds to a transaction or query.
