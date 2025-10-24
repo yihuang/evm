@@ -12,13 +12,13 @@ import (
 
 // Function selectors
 var (
-	// dummy((string,uint256),(string,uint256,uint8),(uint256,uint8))
-	DummySelector = [4]byte{0x83, 0x6f, 0xaf, 0x55}
+	// dummy((string,uint256),(string,uint256,uint8),(uint256,uint8),(uint64,uint64),(bytes,uint64,uint64,bool,bool),(bytes,uint64),(string,string,(string,uint256)[],string[],string[]))
+	DummySelector = [4]byte{0x59, 0xd4, 0xfe, 0x1a}
 )
 
 // Big endian integer versions of function selectors
 const (
-	DummyID = 2205134677
+	DummyID = 1507130906
 )
 
 const CoinStaticSize = 64
@@ -236,13 +236,563 @@ func (t *DecCoin) Decode(data0 []byte) error {
 	return nil
 }
 
-const DummyCallStaticSize = 128
+const HeightStaticSize = 64
+
+// Height represents an ABI tuple
+type Height struct {
+	RevisionNumber uint64
+	RevisionHeight uint64
+}
+
+// EncodedSize returns the total encoded size of Height
+func (t Height) EncodedSize() int {
+	dynamicSize := 0
+
+	return HeightStaticSize + dynamicSize
+}
+
+// EncodeTo encodes Height to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t Height) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := HeightStaticSize // Start dynamic data after static section
+
+	// RevisionNumber (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.RevisionNumber))
+	// RevisionHeight (static)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(t.RevisionHeight))
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes Height to ABI bytes
+func (t Height) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes Height from ABI bytes in the provided buffer
+func (t *Height) Decode(data0 []byte) error {
+	if len(data0) < HeightStaticSize {
+		return fmt.Errorf("insufficient data for Height")
+	}
+
+	// t.RevisionNumber (static)
+	t.RevisionNumber = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+	// t.RevisionHeight (static)
+	t.RevisionHeight = uint64(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+
+	return nil
+}
+
+const ICS20AllocationStaticSize = 160
+
+// ICS20Allocation represents an ABI tuple
+type ICS20Allocation struct {
+	SourcePort        string
+	SourceChannel     string
+	SpendLimit        []Coin
+	AllowList         []string
+	AllowedPacketData []string
+}
+
+// EncodedSize returns the total encoded size of ICS20Allocation
+func (t ICS20Allocation) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.SourcePort))    // length + padded string data
+	dynamicSize += 32 + abi.Pad32(len(t.SourceChannel)) // length + padded string data
+	dynamicSize += 32 + 32*len(t.SpendLimit)            // length + offset pointers for dynamic elements
+	for _, elem := range t.SpendLimit {
+		dynamicSize += elem.EncodedSize() // dynamic tuple
+	}
+	dynamicSize += 32 + 32*len(t.AllowList) // length + offset pointers for dynamic elements
+	for _, elem := range t.AllowList {
+		dynamicSize += 32 + abi.Pad32(len(elem)) // length + padded string data
+	}
+	dynamicSize += 32 + 32*len(t.AllowedPacketData) // length + offset pointers for dynamic elements
+	for _, elem := range t.AllowedPacketData {
+		dynamicSize += 32 + abi.Pad32(len(elem)) // length + padded string data
+	}
+
+	return ICS20AllocationStaticSize + dynamicSize
+}
+
+// EncodeTo encodes ICS20Allocation to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t ICS20Allocation) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := ICS20AllocationStaticSize // Start dynamic data after static section
+
+	// SourcePort (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// SourcePort (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.SourcePort)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], []byte(t.SourcePort))
+	dynamicOffset += abi.Pad32(len(t.SourcePort))
+
+	// SourceChannel (offset)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
+
+	// SourceChannel (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.SourceChannel)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], []byte(t.SourceChannel))
+	dynamicOffset += abi.Pad32(len(t.SourceChannel))
+
+	// SpendLimit (offset)
+	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
+
+	// SpendLimit (dynamic)
+	{
+		// length
+		binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.SpendLimit)))
+		dynamicOffset += 32
+
+		var written int
+
+		// data with dynamic region
+		{
+			buf := buf[dynamicOffset:]
+			dynamicOffset := len(t.SpendLimit) * 32 // start after static region
+
+			var offset int
+			for _, item := range t.SpendLimit {
+				// write offsets
+				binary.BigEndian.PutUint64(buf[offset+24:offset+32], uint64(dynamicOffset))
+				offset += 32
+
+				// write data (dynamic)
+
+				{
+					n, err := item.EncodeTo(buf[dynamicOffset:])
+					if err != nil {
+						return 0, err
+					}
+					dynamicOffset += n
+				}
+
+			}
+			written = dynamicOffset
+		}
+		dynamicOffset += written
+
+	}
+
+	// AllowList (offset)
+	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
+
+	// AllowList (dynamic)
+	{
+		// length
+		binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.AllowList)))
+		dynamicOffset += 32
+
+		var written int
+
+		// data with dynamic region
+		{
+			buf := buf[dynamicOffset:]
+			dynamicOffset := len(t.AllowList) * 32 // start after static region
+
+			var offset int
+			for _, item := range t.AllowList {
+				// write offsets
+				binary.BigEndian.PutUint64(buf[offset+24:offset+32], uint64(dynamicOffset))
+				offset += 32
+
+				// write data (dynamic)
+
+				// length
+				binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(item)))
+				dynamicOffset += 32
+
+				// data
+				copy(buf[dynamicOffset:], []byte(item))
+				dynamicOffset += abi.Pad32(len(item))
+
+			}
+			written = dynamicOffset
+		}
+		dynamicOffset += written
+
+	}
+
+	// AllowedPacketData (offset)
+	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
+
+	// AllowedPacketData (dynamic)
+	{
+		// length
+		binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.AllowedPacketData)))
+		dynamicOffset += 32
+
+		var written int
+
+		// data with dynamic region
+		{
+			buf := buf[dynamicOffset:]
+			dynamicOffset := len(t.AllowedPacketData) * 32 // start after static region
+
+			var offset int
+			for _, item := range t.AllowedPacketData {
+				// write offsets
+				binary.BigEndian.PutUint64(buf[offset+24:offset+32], uint64(dynamicOffset))
+				offset += 32
+
+				// write data (dynamic)
+
+				// length
+				binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(item)))
+				dynamicOffset += 32
+
+				// data
+				copy(buf[dynamicOffset:], []byte(item))
+				dynamicOffset += abi.Pad32(len(item))
+
+			}
+			written = dynamicOffset
+		}
+		dynamicOffset += written
+
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes ICS20Allocation to ABI bytes
+func (t ICS20Allocation) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes ICS20Allocation from ABI bytes in the provided buffer
+func (t *ICS20Allocation) Decode(data0 []byte) error {
+	if len(data0) < ICS20AllocationStaticSize {
+		return fmt.Errorf("insufficient data for ICS20Allocation")
+	}
+
+	// SourcePort
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.SourcePort (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// string data
+		t.SourcePort = string(data0[offset : offset+length])
+	}
+	// SourceChannel
+	{
+		offset := int(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+
+		// t.SourceChannel (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// string data
+		t.SourceChannel = string(data0[offset : offset+length])
+	}
+	// SpendLimit
+	{
+		offset := int(binary.BigEndian.Uint64(data0[64+24 : 64+32]))
+
+		// t.SpendLimit (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// slice data
+		t.SpendLimit = make([]Coin, length)
+		data1 := data0[offset:]
+
+		// Dynamic elements with offsets (dynamic array)
+		for i0 := 0; i0 < length; i0++ {
+			// Read element offset
+			tmp := i0 * 32
+			if tmp+32 > len(data1) {
+				return fmt.Errorf("insufficient data for element offset")
+			}
+			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
+			// Decode dynamic element at offset
+			// t.SpendLimit[i0] (dynamic)
+			if offset >= len(data1) {
+				return fmt.Errorf("insufficient data for dynamic data, t.SpendLimit[i0]")
+			}
+			if err := t.SpendLimit[i0].Decode(data1[offset:]); err != nil {
+				return err
+			}
+		}
+	}
+	// AllowList
+	{
+		offset := int(binary.BigEndian.Uint64(data0[96+24 : 96+32]))
+
+		// t.AllowList (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// slice data
+		t.AllowList = make([]string, length)
+		data1 := data0[offset:]
+
+		// Dynamic elements with offsets (dynamic array)
+		for i0 := 0; i0 < length; i0++ {
+			// Read element offset
+			tmp := i0 * 32
+			if tmp+32 > len(data1) {
+				return fmt.Errorf("insufficient data for element offset")
+			}
+			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
+			// Decode dynamic element at offset
+			// t.AllowList[i0] (dynamic)
+			if offset+32 > len(data1) {
+				return fmt.Errorf("insufficient data for length prefix")
+			}
+			length := int(binary.BigEndian.Uint64(data1[offset+24 : offset+32]))
+			offset += 32
+			// string data
+			t.AllowList[i0] = string(data1[offset : offset+length])
+		}
+	}
+	// AllowedPacketData
+	{
+		offset := int(binary.BigEndian.Uint64(data0[128+24 : 128+32]))
+
+		// t.AllowedPacketData (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// slice data
+		t.AllowedPacketData = make([]string, length)
+		data1 := data0[offset:]
+
+		// Dynamic elements with offsets (dynamic array)
+		for i0 := 0; i0 < length; i0++ {
+			// Read element offset
+			tmp := i0 * 32
+			if tmp+32 > len(data1) {
+				return fmt.Errorf("insufficient data for element offset")
+			}
+			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
+			// Decode dynamic element at offset
+			// t.AllowedPacketData[i0] (dynamic)
+			if offset+32 > len(data1) {
+				return fmt.Errorf("insufficient data for length prefix")
+			}
+			length := int(binary.BigEndian.Uint64(data1[offset+24 : offset+32]))
+			offset += 32
+			// string data
+			t.AllowedPacketData[i0] = string(data1[offset : offset+length])
+		}
+	}
+
+	return nil
+}
+
+const PageRequestStaticSize = 160
+
+// PageRequest represents an ABI tuple
+type PageRequest struct {
+	Key        []byte
+	Offset     uint64
+	Limit      uint64
+	CountTotal bool
+	Reverse    bool
+}
+
+// EncodedSize returns the total encoded size of PageRequest
+func (t PageRequest) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.Key)) // length + padded bytes data
+
+	return PageRequestStaticSize + dynamicSize
+}
+
+// EncodeTo encodes PageRequest to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t PageRequest) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := PageRequestStaticSize // Start dynamic data after static section
+
+	// Key (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// Key (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Key)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], t.Key)
+	dynamicOffset += abi.Pad32(len(t.Key))
+
+	// Offset (static)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(t.Offset))
+	// Limit (static)
+	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(t.Limit))
+	// CountTotal (static)
+
+	if t.CountTotal {
+		buf[96+31] = 1
+	}
+
+	// Reverse (static)
+
+	if t.Reverse {
+		buf[128+31] = 1
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes PageRequest to ABI bytes
+func (t PageRequest) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes PageRequest from ABI bytes in the provided buffer
+func (t *PageRequest) Decode(data0 []byte) error {
+	if len(data0) < PageRequestStaticSize {
+		return fmt.Errorf("insufficient data for PageRequest")
+	}
+
+	// Key
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.Key (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// bytes data
+		t.Key = data0[offset : offset+length]
+	}
+	// t.Offset (static)
+	t.Offset = uint64(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+	// t.Limit (static)
+	t.Limit = uint64(binary.BigEndian.Uint64(data0[64+24 : 64+32]))
+	// t.CountTotal (static)
+	t.CountTotal = data0[96+31] == 1
+	// t.Reverse (static)
+	t.Reverse = data0[128+31] == 1
+
+	return nil
+}
+
+const PageResponseStaticSize = 64
+
+// PageResponse represents an ABI tuple
+type PageResponse struct {
+	NextKey []byte
+	Total   uint64
+}
+
+// EncodedSize returns the total encoded size of PageResponse
+func (t PageResponse) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.NextKey)) // length + padded bytes data
+
+	return PageResponseStaticSize + dynamicSize
+}
+
+// EncodeTo encodes PageResponse to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t PageResponse) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := PageResponseStaticSize // Start dynamic data after static section
+
+	// NextKey (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// NextKey (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.NextKey)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], t.NextKey)
+	dynamicOffset += abi.Pad32(len(t.NextKey))
+
+	// Total (static)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(t.Total))
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes PageResponse to ABI bytes
+func (t PageResponse) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes PageResponse from ABI bytes in the provided buffer
+func (t *PageResponse) Decode(data0 []byte) error {
+	if len(data0) < PageResponseStaticSize {
+		return fmt.Errorf("insufficient data for PageResponse")
+	}
+
+	// NextKey
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.NextKey (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// bytes data
+		t.NextKey = data0[offset : offset+length]
+	}
+	// t.Total (static)
+	t.Total = uint64(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+
+	return nil
+}
+
+const DummyCallStaticSize = 288
 
 // DummyCall represents an ABI tuple
 type DummyCall struct {
 	A Coin
 	B DecCoin
 	C Dec
+	D Height
+	E PageRequest
+	F PageResponse
+	G ICS20Allocation
 }
 
 // EncodedSize returns the total encoded size of DummyCall
@@ -251,6 +801,9 @@ func (t DummyCall) EncodedSize() int {
 
 	dynamicSize += t.A.EncodedSize() // dynamic tuple
 	dynamicSize += t.B.EncodedSize() // dynamic tuple
+	dynamicSize += t.E.EncodedSize() // dynamic tuple
+	dynamicSize += t.F.EncodedSize() // dynamic tuple
+	dynamicSize += t.G.EncodedSize() // dynamic tuple
 
 	return DummyCallStaticSize + dynamicSize
 }
@@ -288,6 +841,49 @@ func (t DummyCall) EncodeTo(buf []byte) (int, error) {
 	// Encode nested tuple t.C
 	if _, err := t.C.EncodeTo(buf[64:]); err != nil {
 		return 0, err
+	}
+
+	// D (static)
+
+	// Encode nested tuple t.D
+	if _, err := t.D.EncodeTo(buf[128:]); err != nil {
+		return 0, err
+	}
+
+	// E (offset)
+	binary.BigEndian.PutUint64(buf[192+24:192+32], uint64(dynamicOffset))
+
+	// E (dynamic)
+	{
+		n, err := t.E.EncodeTo(buf[dynamicOffset:])
+		if err != nil {
+			return 0, err
+		}
+		dynamicOffset += n
+	}
+
+	// F (offset)
+	binary.BigEndian.PutUint64(buf[224+24:224+32], uint64(dynamicOffset))
+
+	// F (dynamic)
+	{
+		n, err := t.F.EncodeTo(buf[dynamicOffset:])
+		if err != nil {
+			return 0, err
+		}
+		dynamicOffset += n
+	}
+
+	// G (offset)
+	binary.BigEndian.PutUint64(buf[256+24:256+32], uint64(dynamicOffset))
+
+	// G (dynamic)
+	{
+		n, err := t.G.EncodeTo(buf[dynamicOffset:])
+		if err != nil {
+			return 0, err
+		}
+		dynamicOffset += n
 	}
 
 	return dynamicOffset, nil
@@ -335,6 +931,46 @@ func (t *DummyCall) Decode(data0 []byte) error {
 	// t.C (static)
 	if err := t.C.Decode(data0[64:128]); err != nil {
 		return err
+	}
+	// t.D (static)
+	if err := t.D.Decode(data0[128:192]); err != nil {
+		return err
+	}
+	// E
+	{
+		offset := int(binary.BigEndian.Uint64(data0[192+24 : 192+32]))
+
+		// t.E (dynamic)
+		if offset >= len(data0) {
+			return fmt.Errorf("insufficient data for dynamic data, t.E")
+		}
+		if err := t.E.Decode(data0[offset:]); err != nil {
+			return err
+		}
+	}
+	// F
+	{
+		offset := int(binary.BigEndian.Uint64(data0[224+24 : 224+32]))
+
+		// t.F (dynamic)
+		if offset >= len(data0) {
+			return fmt.Errorf("insufficient data for dynamic data, t.F")
+		}
+		if err := t.F.Decode(data0[offset:]); err != nil {
+			return err
+		}
+	}
+	// G
+	{
+		offset := int(binary.BigEndian.Uint64(data0[256+24 : 256+32]))
+
+		// t.G (dynamic)
+		if offset >= len(data0) {
+			return fmt.Errorf("insufficient data for dynamic data, t.G")
+		}
+		if err := t.G.Decode(data0[offset:]); err != nil {
+			return err
+		}
 	}
 
 	return nil

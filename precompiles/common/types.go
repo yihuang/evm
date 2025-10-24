@@ -8,20 +8,11 @@ import (
 	"cosmossdk.io/math"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/query"
 )
 
 // TrueValue is the byte array representing a true value in solidity.
 var TrueValue = []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}
-
-// ICS20Allocation defines the spend limit for a particular port and channel.
-// We need this to be able to unpack to big.Int instead of math.Int.
-type ICS20Allocation struct {
-	SourcePort        string
-	SourceChannel     string
-	SpendLimit        []Coin
-	AllowList         []string
-	AllowedPacketData []string
-}
 
 // ToSDKType converts the Coin to the Cosmos SDK representation.
 func (c Coin) ToSDKType() sdk.Coin {
@@ -112,4 +103,14 @@ func NewSdkCoinsFromCoins(coins []Coin) (sdk.Coins, error) {
 		sdkCoins[i] = sdkCoin
 	}
 	return sdkCoins.Sort(), nil
+}
+
+func (p PageRequest) ToPageRequest() *query.PageRequest {
+	return &query.PageRequest{
+		Key:        p.Key,
+		Offset:     p.Offset,
+		Limit:      p.Limit,
+		CountTotal: p.CountTotal,
+		Reverse:    p.Reverse,
+	}
 }

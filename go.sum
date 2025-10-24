@@ -1718,6 +1718,8 @@ github.com/yihuang/go-abi v0.0.0-20251024060601-bcea3157a2d2 h1:ZX6/M4FZkYMZISI9
 github.com/yihuang/go-abi v0.0.0-20251024060601-bcea3157a2d2/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
 github.com/yihuang/go-abi v0.0.0-20251024104039-666fa95c09fd h1:MRg9r3gxnwH/YjIicZt52zQZL020vBysY5CMheimlak=
 github.com/yihuang/go-abi v0.0.0-20251024104039-666fa95c09fd/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
+github.com/yihuang/go-abi v0.0.0-20251024165707-1d910cbe3705 h1:+oygZERQMje0HVhqoHfjuA8Ky582hIDi20OaWMwCK5c=
+github.com/yihuang/go-abi v0.0.0-20251024165707-1d910cbe3705/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
