@@ -1,10 +1,9 @@
 package distribution
 
 import (
-	"bytes"
+	"encoding/binary"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 
@@ -24,27 +23,10 @@ import (
 
 var _ vm.PrecompiledContract = &Precompile{}
 
-var (
-	// Embed abi json file to the executable binary. Needed when importing as dependency.
-	//
-	//go:embed abi.json
-	f   []byte
-	ABI abi.ABI
-)
-
-func init() {
-	var err error
-	ABI, err = abi.JSON(bytes.NewReader(f))
-	if err != nil {
-		panic(err)
-	}
-}
-
 // Precompile defines the precompiled contract for distribution.
 type Precompile struct {
 	cmn.Precompile
 
-	abi.ABI
 	distributionKeeper    cmn.DistributionKeeper
 	distributionMsgServer distributiontypes.MsgServer
 	distributionQuerier   distributiontypes.QueryServer
@@ -69,7 +51,6 @@ func NewPrecompile(
 			ContractAddress:       common.HexToAddress(evmtypes.DistributionPrecompileAddress),
 			BalanceHandlerFactory: cmn.NewBalanceHandlerFactory(bankKeeper),
 		},
-		ABI:                   ABI,
 		stakingKeeper:         stakingKeeper,
 		distributionKeeper:    distributionKeeper,
 		distributionMsgServer: distributionMsgServer,
@@ -80,22 +61,12 @@ func NewPrecompile(
 
 // RequiredGas calculates the precompiled contract's base gas rate.
 func (p Precompile) RequiredGas(input []byte) uint64 {
-	// TODO: refactor this to be used in the common precompile method on a separate PR
-
-	// NOTE: This check avoid panicking when trying to decode the method ID
 	if len(input) < 4 {
 		return 0
 	}
 
-	methodID := input[:4]
-
-	method, err := p.MethodById(methodID)
-	if err != nil {
-		// This should never happen since this method is going to fail during Run
-		return 0
-	}
-
-	return p.Precompile.RequiredGas(input, p.IsTransaction(method))
+	methodID := binary.BigEndian.Uint32(input[:4])
+	return p.Precompile.RequiredGas(input, p.IsTransaction(methodID))
 }
 
 func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]byte, error) {
@@ -105,49 +76,49 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 }
 
 func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Contract, readOnly bool) ([]byte, error) {
-	method, args, err := cmn.SetupABI(p.ABI, contract, readOnly, p.IsTransaction)
+	methodID, input, err := cmn.ParseMethod(contract.Input, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 
 	var bz []byte
 
-	switch method.Name {
+	switch methodID {
 	// Custom transactions
-	case ClaimRewardsMethod:
-		bz, err = p.ClaimRewards(ctx, contract, stateDB, method, args)
+	case ClaimRewardsID:
+		return cmn.RunWithStateDB(ctx, p.ClaimRewards, input, stateDB, contract)
 	// Distribution transactions
-	case SetWithdrawAddressMethod:
-		bz, err = p.SetWithdrawAddress(ctx, contract, stateDB, method, args)
-	case WithdrawDelegatorRewardMethod:
-		bz, err = p.WithdrawDelegatorReward(ctx, contract, stateDB, method, args)
-	case WithdrawValidatorCommissionMethod:
-		bz, err = p.WithdrawValidatorCommission(ctx, contract, stateDB, method, args)
-	case FundCommunityPoolMethod:
+	case SetWithdrawAddressID:
+		return cmn.RunWithStateDB(ctx, p.SetWithdrawAddress, input, stateDB, contract)
+	case WithdrawDelegatorRewardsID:
+		return cmn.RunWithStateDB(ctx, p.WithdrawDelegatorReward, input, stateDB, contract)
+	case WithdrawValidatorCommissionID:
+		return cmn.RunWithStateDB(ctx, p.WithdrawValidatorCommission, input, stateDB, contract)
+	case FundCommunityPoolID:
 		bz, err = p.FundCommunityPool(ctx, contract, stateDB, method, args)
-	case DepositValidatorRewardsPoolMethod:
+	case DepositValidatorRewardsPoolID:
 		bz, err = p.DepositValidatorRewardsPool(ctx, contract, stateDB, method, args)
 	// Distribution queries
-	case ValidatorDistributionInfoMethod:
+	case ValidatorDistributionInfoID:
 		bz, err = p.ValidatorDistributionInfo(ctx, contract, method, args)
-	case ValidatorOutstandingRewardsMethod:
+	case ValidatorOutstandingRewardsID:
 		bz, err = p.ValidatorOutstandingRewards(ctx, contract, method, args)
-	case ValidatorCommissionMethod:
+	case ValidatorCommissionID:
 		bz, err = p.ValidatorCommission(ctx, contract, method, args)
-	case ValidatorSlashesMethod:
+	case ValidatorSlashesID:
 		bz, err = p.ValidatorSlashes(ctx, contract, method, args)
-	case DelegationRewardsMethod:
+	case DelegationRewardsID:
 		bz, err = p.DelegationRewards(ctx, contract, method, args)
-	case DelegationTotalRewardsMethod:
+	case DelegationTotalRewardsID:
 		bz, err = p.DelegationTotalRewards(ctx, contract, method, args)
-	case DelegatorValidatorsMethod:
+	case DelegatorValidatorsID:
 		bz, err = p.DelegatorValidators(ctx, contract, method, args)
-	case DelegatorWithdrawAddressMethod:
+	case DelegatorWithdrawAddressID:
 		bz, err = p.DelegatorWithdrawAddress(ctx, contract, method, args)
-	case CommunityPoolMethod:
+	case CommunityPoolID:
 		bz, err = p.CommunityPool(ctx, contract, method, args)
 	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
+		return nil, fmt.Errorf(cmn.ErrUnknownID, method.Name)
 	}
 
 	return bz, err
@@ -162,14 +133,14 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 //   - WithdrawValidatorCommission
 //   - FundCommunityPool
 //   - DepositValidatorRewardsPool
-func (Precompile) IsTransaction(method *abi.Method) bool {
-	switch method.Name {
-	case ClaimRewardsMethod,
-		SetWithdrawAddressMethod,
-		WithdrawDelegatorRewardMethod,
-		WithdrawValidatorCommissionMethod,
-		FundCommunityPoolMethod,
-		DepositValidatorRewardsPoolMethod:
+func (Precompile) IsTransaction(method uint32) bool {
+	switch method {
+	case ClaimRewardsID,
+		SetWithdrawAddressID,
+		WithdrawDelegatorRewardsID,
+		WithdrawValidatorCommissionID,
+		FundCommunityPoolID,
+		DepositValidatorRewardsPoolID:
 		return true
 	default:
 		return false

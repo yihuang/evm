@@ -78,17 +78,9 @@ func parseClaimRewardsArgs(args []interface{}) (common.Address, uint32, error) {
 }
 
 // NewMsgSetWithdrawAddress creates a new MsgSetWithdrawAddress instance.
-func NewMsgSetWithdrawAddress(args []interface{}, addrCdc address.Codec) (*distributiontypes.MsgSetWithdrawAddress, common.Address, error) {
-	if len(args) != 2 {
-		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
-	}
-
-	delegatorAddress, ok := args[0].(common.Address)
-	if !ok || delegatorAddress == (common.Address{}) {
-		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidDelegator, args[0])
-	}
-
-	withdrawerAddress, _ := args[1].(string)
+func NewMsgSetWithdrawAddress(args SetWithdrawAddressCall, addrCdc address.Codec) (*distributiontypes.MsgSetWithdrawAddress, common.Address, error) {
+	delegatorAddress := args.DelegatorAddress
+	withdrawerAddress := args.WithdrawerAddress
 
 	// If the withdrawer address is a hex address, convert it to a bech32 address.
 	if common.IsHexAddress(withdrawerAddress) {
@@ -112,17 +104,13 @@ func NewMsgSetWithdrawAddress(args []interface{}, addrCdc address.Codec) (*distr
 }
 
 // NewMsgWithdrawDelegatorReward creates a new MsgWithdrawDelegatorReward instance.
-func NewMsgWithdrawDelegatorReward(args []interface{}, addrCdc address.Codec) (*distributiontypes.MsgWithdrawDelegatorReward, common.Address, error) {
-	if len(args) != 2 {
-		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 2, len(args))
+func NewMsgWithdrawDelegatorReward(args WithdrawDelegatorRewardsCall, addrCdc address.Codec) (*distributiontypes.MsgWithdrawDelegatorReward, common.Address, error) {
+	delegatorAddress := args.DelegatorAddress
+	if delegatorAddress == (common.Address{}) {
+		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidDelegator, args.DelegatorAddress)
 	}
 
-	delegatorAddress, ok := args[0].(common.Address)
-	if !ok || delegatorAddress == (common.Address{}) {
-		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidDelegator, args[0])
-	}
-
-	validatorAddress, _ := args[1].(string)
+	validatorAddress := args.ValidatorAddress
 
 	delAddr, err := addrCdc.BytesToString(delegatorAddress.Bytes())
 	if err != nil {
@@ -137,12 +125,8 @@ func NewMsgWithdrawDelegatorReward(args []interface{}, addrCdc address.Codec) (*
 }
 
 // NewMsgWithdrawValidatorCommission creates a new MsgWithdrawValidatorCommission message.
-func NewMsgWithdrawValidatorCommission(args []interface{}) (*distributiontypes.MsgWithdrawValidatorCommission, common.Address, error) {
-	if len(args) != 1 {
-		return nil, common.Address{}, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
-	}
-
-	validatorAddress, _ := args[0].(string)
+func NewMsgWithdrawValidatorCommission(args WithdrawValidatorCommissionCall) (*distributiontypes.MsgWithdrawValidatorCommission, common.Address, error) {
+	validatorAddress := args.ValidatorAddress
 
 	msg := &distributiontypes.MsgWithdrawValidatorCommission{
 		ValidatorAddress: validatorAddress,

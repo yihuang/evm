@@ -33,15 +33,11 @@ const (
 // ClaimRewards claims the rewards accumulated by a delegator from multiple or all validators.
 func (p *Precompile) ClaimRewards(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *ClaimRewardsCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	delegatorAddr, maxRetrieve, err := parseClaimRewardsArgs(args)
-	if err != nil {
-		return nil, err
-	}
+	contract *vm.Contract,
+) (*ClaimRewardsReturn, error) {
+	delegatorAddr, maxRetrieve := args.DelegatorAddress, args.MaxRetrieve
 
 	maxVals, err := p.stakingKeeper.MaxValidators(ctx)
 	if err != nil {
@@ -81,18 +77,17 @@ func (p *Precompile) ClaimRewards(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true)
+	return &ClaimRewardsReturn{true}, nil
 }
 
 // SetWithdrawAddress sets the withdrawal address for a delegator (or validator self-delegation).
 func (p Precompile) SetWithdrawAddress(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *SetWithdrawAddressCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	msg, delegatorHexAddr, err := NewMsgSetWithdrawAddress(args, p.addrCdc)
+	contract *vm.Contract,
+) (*SetWithdrawAddressReturn, error) {
+	msg, delegatorHexAddr, err := NewMsgSetWithdrawAddress(*args, p.addrCdc)
 	if err != nil {
 		return nil, err
 	}
@@ -110,18 +105,17 @@ func (p Precompile) SetWithdrawAddress(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(true)
+	return &SetWithdrawAddressReturn{true}, nil
 }
 
 // WithdrawDelegatorReward withdraws the rewards of a delegator from a single validator.
 func (p *Precompile) WithdrawDelegatorReward(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *WithdrawDelegatorRewardsCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	msg, delegatorHexAddr, err := NewMsgWithdrawDelegatorReward(args, p.addrCdc)
+	contract *vm.Contract,
+) (*WithdrawDelegatorRewardsReturn, error) {
+	msg, delegatorHexAddr, err := NewMsgWithdrawDelegatorReward(*args, p.addrCdc)
 	if err != nil {
 		return nil, err
 	}
@@ -140,18 +134,17 @@ func (p *Precompile) WithdrawDelegatorReward(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(cmn.NewCoinsResponse(res.Amount))
+	return &WithdrawDelegatorRewardsReturn{cmn.NewCoinsResponse(res.Amount)}, nil
 }
 
 // WithdrawValidatorCommission withdraws the rewards of a validator.
 func (p *Precompile) WithdrawValidatorCommission(
 	ctx sdk.Context,
-	contract *vm.Contract,
+	args *WithdrawValidatorCommissionCall,
 	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
-	msg, validatorHexAddr, err := NewMsgWithdrawValidatorCommission(args)
+	contract *vm.Contract,
+) (*WithdrawValidatorCommissionReturn, error) {
+	msg, validatorHexAddr, err := NewMsgWithdrawValidatorCommission(*args)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +163,7 @@ func (p *Precompile) WithdrawValidatorCommission(
 		return nil, err
 	}
 
-	return method.Outputs.Pack(cmn.NewCoinsResponse(res.Amount))
+	return &WithdrawValidatorCommissionReturn{cmn.NewCoinsResponse(res.Amount)}, nil
 }
 
 // FundCommunityPool directly fund the community pool
