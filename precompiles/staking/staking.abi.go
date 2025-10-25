@@ -299,102 +299,6 @@ func (t *Description) Decode(data0 []byte) error {
 	return nil
 }
 
-const PageRequestStaticSize = 160
-
-// PageRequest represents an ABI tuple
-type PageRequest struct {
-	Key        []byte
-	Offset     uint64
-	Limit      uint64
-	CountTotal bool
-	Reverse    bool
-}
-
-// EncodedSize returns the total encoded size of PageRequest
-func (t PageRequest) EncodedSize() int {
-	dynamicSize := 0
-
-	dynamicSize += 32 + abi.Pad32(len(t.Key)) // length + padded bytes data
-
-	return PageRequestStaticSize + dynamicSize
-}
-
-// EncodeTo encodes PageRequest to ABI bytes in the provided buffer
-// it panics if the buffer is not large enough
-func (t PageRequest) EncodeTo(buf []byte) (int, error) {
-	dynamicOffset := PageRequestStaticSize // Start dynamic data after static section
-
-	// Key (offset)
-	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
-
-	// Key (dynamic)
-	// length
-	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Key)))
-	dynamicOffset += 32
-
-	// data
-	copy(buf[dynamicOffset:], t.Key)
-	dynamicOffset += abi.Pad32(len(t.Key))
-
-	// Offset (static)
-	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(t.Offset))
-	// Limit (static)
-	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(t.Limit))
-	// CountTotal (static)
-
-	if t.CountTotal {
-		buf[96+31] = 1
-	}
-
-	// Reverse (static)
-
-	if t.Reverse {
-		buf[128+31] = 1
-	}
-
-	return dynamicOffset, nil
-}
-
-// Encode encodes PageRequest to ABI bytes
-func (t PageRequest) Encode() ([]byte, error) {
-	buf := make([]byte, t.EncodedSize())
-	if _, err := t.EncodeTo(buf); err != nil {
-		return nil, err
-	}
-	return buf, nil
-}
-
-// Decode decodes PageRequest from ABI bytes in the provided buffer
-func (t *PageRequest) Decode(data0 []byte) error {
-	if len(data0) < PageRequestStaticSize {
-		return fmt.Errorf("insufficient data for PageRequest")
-	}
-
-	// Key
-	{
-		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
-
-		// t.Key (dynamic)
-		if offset+32 > len(data0) {
-			return fmt.Errorf("insufficient data for length prefix")
-		}
-		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
-		offset += 32
-		// bytes data
-		t.Key = data0[offset : offset+length]
-	}
-	// t.Offset (static)
-	t.Offset = uint64(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
-	// t.Limit (static)
-	t.Limit = uint64(binary.BigEndian.Uint64(data0[64+24 : 64+32]))
-	// t.CountTotal (static)
-	t.CountTotal = data0[96+31] == 1
-	// t.Reverse (static)
-	t.Reverse = data0[128+31] == 1
-
-	return nil
-}
-
 const PageResponseStaticSize = 64
 
 // PageResponse represents an ABI tuple
@@ -2657,7 +2561,7 @@ type RedelegationsCall struct {
 	DelegatorAddress    common.Address
 	SrcValidatorAddress string
 	DstValidatorAddress string
-	PageRequest         PageRequest
+	PageRequest         cmn.PageRequest
 }
 
 // EncodedSize returns the total encoded size of RedelegationsCall
@@ -3354,7 +3258,7 @@ const ValidatorsCallStaticSize = 64
 // ValidatorsCall represents an ABI tuple
 type ValidatorsCall struct {
 	Status      string
-	PageRequest PageRequest
+	PageRequest cmn.PageRequest
 }
 
 // EncodedSize returns the total encoded size of ValidatorsCall
