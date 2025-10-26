@@ -56,6 +56,22 @@ const (
 	ValidatorsID                = 409674087
 )
 
+// Event signatures
+var (
+	// CancelUnbondingDelegation(address,address,uint256,uint256)
+	CancelUnbondingDelegationEventTopic = common.Hash{0x6d, 0xbe, 0x2f, 0xb6, 0xb2, 0x61, 0x3b, 0xdd, 0x8e, 0x3d, 0x28, 0x4a, 0x61, 0x11, 0x59, 0x2e, 0x06, 0xc3, 0xab, 0x0a, 0xf8, 0x46, 0xff, 0x89, 0xb6, 0x68, 0x8d, 0x48, 0xf4, 0x08, 0xdb, 0xb5}
+	// CreateValidator(address,uint256)
+	CreateValidatorEventTopic = common.Hash{0x9b, 0xdb, 0x56, 0x0f, 0x81, 0x35, 0xcb, 0x46, 0x03, 0x3a, 0x55, 0x41, 0x0c, 0x14, 0xe1, 0x4b, 0x1a, 0x7b, 0xc2, 0xd3, 0xf3, 0xe9, 0x97, 0x3f, 0x4b, 0x49, 0x53, 0x3e, 0x17, 0x64, 0x68, 0xb0}
+	// Delegate(address,address,uint256,uint256)
+	DelegateEventTopic = common.Hash{0x50, 0x05, 0x99, 0x80, 0x21, 0x64, 0xa0, 0x80, 0x23, 0xe8, 0x7f, 0xfc, 0x3e, 0xed, 0x0b, 0xa3, 0xae, 0x60, 0x69, 0x7b, 0x30, 0x83, 0xba, 0x81, 0xd0, 0x46, 0x68, 0x36, 0x79, 0xd8, 0x1c, 0x6b}
+	// EditValidator(address,int256,int256)
+	EditValidatorEventTopic = common.Hash{0xdc, 0xe2, 0x7c, 0xf2, 0x79, 0x2b, 0xd8, 0xd8, 0xf2, 0x8d, 0xf5, 0xd2, 0xcd, 0xf3, 0x79, 0xcd, 0x59, 0x34, 0x14, 0xf2, 0x13, 0x32, 0x37, 0x0c, 0xa8, 0x08, 0xc1, 0xe7, 0x03, 0xeb, 0x4e, 0x1f}
+	// Redelegate(address,address,address,uint256,uint256)
+	RedelegateEventTopic = common.Hash{0x82, 0xb0, 0x7f, 0x24, 0x21, 0x47, 0x4f, 0x1e, 0x3f, 0x1e, 0x0b, 0x34, 0x73, 0x8c, 0xb5, 0xff, 0xb9, 0x25, 0x27, 0x3f, 0x40, 0x8e, 0x75, 0x91, 0xd9, 0xc8, 0x03, 0xdc, 0xae, 0x8d, 0xa6, 0x57}
+	// Unbond(address,address,uint256,uint256)
+	UnbondEventTopic = common.Hash{0x4b, 0xf8, 0x08, 0x7b, 0xe3, 0xb8, 0xa5, 0x9c, 0x26, 0x62, 0x51, 0x4d, 0xf2, 0xed, 0x4a, 0x3d, 0xca, 0xf9, 0xca, 0x22, 0xf4, 0x42, 0x34, 0x0c, 0xfc, 0x05, 0xa4, 0xe5, 0x23, 0x43, 0xd1, 0x8e}
+)
+
 const CommissionRatesStaticSize = 96
 
 // CommissionRates represents an ABI tuple
@@ -449,9 +465,10 @@ func (t Redelegation) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Entries {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -648,7 +665,6 @@ func (t RedelegationEntryResponse) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := RedelegationEntryResponseStaticSize // Start dynamic data after static section
 
 	// RedelegationEntry (static)
-
 	// Encode nested tuple t.RedelegationEntry
 	if _, err := t.RedelegationEntry.EncodeTo(buf[0:]); err != nil {
 		return 0, err
@@ -764,9 +780,10 @@ func (t RedelegationOutput) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Entries {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -908,9 +925,10 @@ func (t RedelegationResponse) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Entries {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -1138,9 +1156,10 @@ func (t UnbondingDelegationOutput) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Entries {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -1279,11 +1298,9 @@ func (t Validator) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset += abi.Pad32(len(t.ConsensusPubkey))
 
 	// Jailed (static)
-
 	if t.Jailed {
 		buf[64+31] = 1
 	}
-
 	// Status (static)
 	buf[96+31] = byte(t.Status)
 	// Tokens (static)
@@ -1537,7 +1554,6 @@ func (t CancelUnbondingDelegationReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := CancelUnbondingDelegationReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -1605,7 +1621,6 @@ func (t CreateValidatorCall) EncodeTo(buf []byte) (int, error) {
 		dynamicOffset += n
 	}
 	// CommissionRates (static)
-
 	// Encode nested tuple t.CommissionRates
 	if _, err := t.CommissionRates.EncodeTo(buf[32:]); err != nil {
 		return 0, err
@@ -1725,7 +1740,6 @@ func (t CreateValidatorReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := CreateValidatorReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -1867,7 +1881,6 @@ func (t DelegateReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := DelegateReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -2175,7 +2188,6 @@ func (t EditValidatorReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := EditValidatorReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -2809,6 +2821,7 @@ func (t *RedelegationsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Response[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Response[i0]")
@@ -3475,6 +3488,7 @@ func (t *ValidatorsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Validators[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Validators[i0]")
@@ -3496,6 +3510,878 @@ func (t *ValidatorsReturn) Decode(data0 []byte) error {
 			return err
 		}
 	}
+
+	return nil
+}
+
+// CancelUnbondingDelegationEvent represents an ABI event
+type CancelUnbondingDelegationEvent struct {
+	CancelUnbondingDelegationEventIndexed
+	CancelUnbondingDelegationEventData
+}
+
+// NewCancelUnbondingDelegationEvent constructs a new CancelUnbondingDelegation event
+func NewCancelUnbondingDelegationEvent(
+	delegatorAddress common.Address,
+	validatorAddress common.Address,
+	amount *big.Int,
+	creationHeight *big.Int,
+) CancelUnbondingDelegationEvent {
+	return CancelUnbondingDelegationEvent{
+		CancelUnbondingDelegationEventIndexed: CancelUnbondingDelegationEventIndexed{
+			DelegatorAddress: delegatorAddress,
+			ValidatorAddress: validatorAddress,
+		},
+		CancelUnbondingDelegationEventData: CancelUnbondingDelegationEventData{
+			Amount:         amount,
+			CreationHeight: creationHeight,
+		},
+	}
+}
+
+// CancelUnbondingDelegation represents an ABI event
+type CancelUnbondingDelegationEventIndexed struct {
+	DelegatorAddress common.Address
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of CancelUnbondingDelegation event to topics
+func (e CancelUnbondingDelegationEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 3)
+	topics = append(topics, CancelUnbondingDelegationEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of CancelUnbondingDelegation event from topics
+func (e *CancelUnbondingDelegationEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 3 {
+		return fmt.Errorf("insufficient topics for CancelUnbondingDelegation event")
+	}
+
+	// Check event signature
+	if topics[0] != CancelUnbondingDelegationEventTopic {
+		return fmt.Errorf("invalid event signature for CancelUnbondingDelegation event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const CancelUnbondingDelegationEventDataStaticSize = 64
+
+// CancelUnbondingDelegationEventData represents an ABI tuple
+type CancelUnbondingDelegationEventData struct {
+	Amount         *big.Int
+	CreationHeight *big.Int
+}
+
+// EncodedSize returns the total encoded size of CancelUnbondingDelegationEventData
+func (t CancelUnbondingDelegationEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return CancelUnbondingDelegationEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes CancelUnbondingDelegationEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t CancelUnbondingDelegationEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := CancelUnbondingDelegationEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	// CreationHeight (static)
+
+	if err := abi.EncodeBigInt(t.CreationHeight, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes CancelUnbondingDelegationEventData to ABI bytes
+func (t CancelUnbondingDelegationEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes CancelUnbondingDelegationEventData from ABI bytes in the provided buffer
+func (t *CancelUnbondingDelegationEventData) Decode(data0 []byte) error {
+	if len(data0) < CancelUnbondingDelegationEventDataStaticSize {
+		return fmt.Errorf("insufficient data for CancelUnbondingDelegationEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+	// t.CreationHeight (static)
+	t.CreationHeight = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// CreateValidatorEvent represents an ABI event
+type CreateValidatorEvent struct {
+	CreateValidatorEventIndexed
+	CreateValidatorEventData
+}
+
+// NewCreateValidatorEvent constructs a new CreateValidator event
+func NewCreateValidatorEvent(
+	validatorAddress common.Address,
+	value *big.Int,
+) CreateValidatorEvent {
+	return CreateValidatorEvent{
+		CreateValidatorEventIndexed: CreateValidatorEventIndexed{
+			ValidatorAddress: validatorAddress,
+		},
+		CreateValidatorEventData: CreateValidatorEventData{
+			Value: value,
+		},
+	}
+}
+
+// CreateValidator represents an ABI event
+type CreateValidatorEventIndexed struct {
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of CreateValidator event to topics
+func (e CreateValidatorEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, CreateValidatorEventTopic)
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of CreateValidator event from topics
+func (e *CreateValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for CreateValidator event")
+	}
+
+	// Check event signature
+	if topics[0] != CreateValidatorEventTopic {
+		return fmt.Errorf("invalid event signature for CreateValidator event")
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const CreateValidatorEventDataStaticSize = 32
+
+// CreateValidatorEventData represents an ABI tuple
+type CreateValidatorEventData struct {
+	Value *big.Int
+}
+
+// EncodedSize returns the total encoded size of CreateValidatorEventData
+func (t CreateValidatorEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return CreateValidatorEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes CreateValidatorEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t CreateValidatorEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := CreateValidatorEventDataStaticSize // Start dynamic data after static section
+
+	// Value (static)
+
+	if err := abi.EncodeBigInt(t.Value, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes CreateValidatorEventData to ABI bytes
+func (t CreateValidatorEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes CreateValidatorEventData from ABI bytes in the provided buffer
+func (t *CreateValidatorEventData) Decode(data0 []byte) error {
+	if len(data0) < CreateValidatorEventDataStaticSize {
+		return fmt.Errorf("insufficient data for CreateValidatorEventData")
+	}
+
+	// t.Value (static)
+	t.Value = new(big.Int).SetBytes(data0[0:32])
+
+	return nil
+}
+
+// DelegateEvent represents an ABI event
+type DelegateEvent struct {
+	DelegateEventIndexed
+	DelegateEventData
+}
+
+// NewDelegateEvent constructs a new Delegate event
+func NewDelegateEvent(
+	delegatorAddress common.Address,
+	validatorAddress common.Address,
+	amount *big.Int,
+	newShares *big.Int,
+) DelegateEvent {
+	return DelegateEvent{
+		DelegateEventIndexed: DelegateEventIndexed{
+			DelegatorAddress: delegatorAddress,
+			ValidatorAddress: validatorAddress,
+		},
+		DelegateEventData: DelegateEventData{
+			Amount:    amount,
+			NewShares: newShares,
+		},
+	}
+}
+
+// Delegate represents an ABI event
+type DelegateEventIndexed struct {
+	DelegatorAddress common.Address
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of Delegate event to topics
+func (e DelegateEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 3)
+	topics = append(topics, DelegateEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of Delegate event from topics
+func (e *DelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 3 {
+		return fmt.Errorf("insufficient topics for Delegate event")
+	}
+
+	// Check event signature
+	if topics[0] != DelegateEventTopic {
+		return fmt.Errorf("invalid event signature for Delegate event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const DelegateEventDataStaticSize = 64
+
+// DelegateEventData represents an ABI tuple
+type DelegateEventData struct {
+	Amount    *big.Int
+	NewShares *big.Int
+}
+
+// EncodedSize returns the total encoded size of DelegateEventData
+func (t DelegateEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return DelegateEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes DelegateEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t DelegateEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := DelegateEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	// NewShares (static)
+
+	if err := abi.EncodeBigInt(t.NewShares, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes DelegateEventData to ABI bytes
+func (t DelegateEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes DelegateEventData from ABI bytes in the provided buffer
+func (t *DelegateEventData) Decode(data0 []byte) error {
+	if len(data0) < DelegateEventDataStaticSize {
+		return fmt.Errorf("insufficient data for DelegateEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+	// t.NewShares (static)
+	t.NewShares = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// EditValidatorEvent represents an ABI event
+type EditValidatorEvent struct {
+	EditValidatorEventIndexed
+	EditValidatorEventData
+}
+
+// NewEditValidatorEvent constructs a new EditValidator event
+func NewEditValidatorEvent(
+	validatorAddress common.Address,
+	commissionRate *big.Int,
+	minSelfDelegation *big.Int,
+) EditValidatorEvent {
+	return EditValidatorEvent{
+		EditValidatorEventIndexed: EditValidatorEventIndexed{
+			ValidatorAddress: validatorAddress,
+		},
+		EditValidatorEventData: EditValidatorEventData{
+			CommissionRate:    commissionRate,
+			MinSelfDelegation: minSelfDelegation,
+		},
+	}
+}
+
+// EditValidator represents an ABI event
+type EditValidatorEventIndexed struct {
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of EditValidator event to topics
+func (e EditValidatorEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, EditValidatorEventTopic)
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of EditValidator event from topics
+func (e *EditValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for EditValidator event")
+	}
+
+	// Check event signature
+	if topics[0] != EditValidatorEventTopic {
+		return fmt.Errorf("invalid event signature for EditValidator event")
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const EditValidatorEventDataStaticSize = 64
+
+// EditValidatorEventData represents an ABI tuple
+type EditValidatorEventData struct {
+	CommissionRate    *big.Int
+	MinSelfDelegation *big.Int
+}
+
+// EncodedSize returns the total encoded size of EditValidatorEventData
+func (t EditValidatorEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return EditValidatorEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes EditValidatorEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t EditValidatorEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := EditValidatorEventDataStaticSize // Start dynamic data after static section
+
+	// CommissionRate (static)
+
+	if err := abi.EncodeBigInt(t.CommissionRate, buf[0:32], true); err != nil {
+		return 0, err
+	}
+
+	// MinSelfDelegation (static)
+
+	if err := abi.EncodeBigInt(t.MinSelfDelegation, buf[32:64], true); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes EditValidatorEventData to ABI bytes
+func (t EditValidatorEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes EditValidatorEventData from ABI bytes in the provided buffer
+func (t *EditValidatorEventData) Decode(data0 []byte) error {
+	if len(data0) < EditValidatorEventDataStaticSize {
+		return fmt.Errorf("insufficient data for EditValidatorEventData")
+	}
+
+	// t.CommissionRate (static)
+	t.CommissionRate = new(big.Int).SetBytes(data0[0:32])
+	// t.MinSelfDelegation (static)
+	t.MinSelfDelegation = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// RedelegateEvent represents an ABI event
+type RedelegateEvent struct {
+	RedelegateEventIndexed
+	RedelegateEventData
+}
+
+// NewRedelegateEvent constructs a new Redelegate event
+func NewRedelegateEvent(
+	delegatorAddress common.Address,
+	validatorSrcAddress common.Address,
+	validatorDstAddress common.Address,
+	amount *big.Int,
+	completionTime *big.Int,
+) RedelegateEvent {
+	return RedelegateEvent{
+		RedelegateEventIndexed: RedelegateEventIndexed{
+			DelegatorAddress:    delegatorAddress,
+			ValidatorSrcAddress: validatorSrcAddress,
+			ValidatorDstAddress: validatorDstAddress,
+		},
+		RedelegateEventData: RedelegateEventData{
+			Amount:         amount,
+			CompletionTime: completionTime,
+		},
+	}
+}
+
+// Redelegate represents an ABI event
+type RedelegateEventIndexed struct {
+	DelegatorAddress    common.Address
+	ValidatorSrcAddress common.Address
+	ValidatorDstAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of Redelegate event to topics
+func (e RedelegateEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 4)
+	topics = append(topics, RedelegateEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorSrcAddress
+	{
+		var buf common.Hash
+
+		// ValidatorSrcAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorSrcAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorDstAddress
+	{
+		var buf common.Hash
+
+		// ValidatorDstAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorDstAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of Redelegate event from topics
+func (e *RedelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 4 {
+		return fmt.Errorf("insufficient topics for Redelegate event")
+	}
+
+	// Check event signature
+	if topics[0] != RedelegateEventTopic {
+		return fmt.Errorf("invalid event signature for Redelegate event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorSrcAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorSrcAddress (static)
+		copy(e.ValidatorSrcAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorDstAddress (static)
+	{
+		data := topics[3][:]
+		offset := 0
+
+		// e.ValidatorDstAddress (static)
+		copy(e.ValidatorDstAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const RedelegateEventDataStaticSize = 64
+
+// RedelegateEventData represents an ABI tuple
+type RedelegateEventData struct {
+	Amount         *big.Int
+	CompletionTime *big.Int
+}
+
+// EncodedSize returns the total encoded size of RedelegateEventData
+func (t RedelegateEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return RedelegateEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes RedelegateEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t RedelegateEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := RedelegateEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	// CompletionTime (static)
+
+	if err := abi.EncodeBigInt(t.CompletionTime, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes RedelegateEventData to ABI bytes
+func (t RedelegateEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes RedelegateEventData from ABI bytes in the provided buffer
+func (t *RedelegateEventData) Decode(data0 []byte) error {
+	if len(data0) < RedelegateEventDataStaticSize {
+		return fmt.Errorf("insufficient data for RedelegateEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+	// t.CompletionTime (static)
+	t.CompletionTime = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// UnbondEvent represents an ABI event
+type UnbondEvent struct {
+	UnbondEventIndexed
+	UnbondEventData
+}
+
+// NewUnbondEvent constructs a new Unbond event
+func NewUnbondEvent(
+	delegatorAddress common.Address,
+	validatorAddress common.Address,
+	amount *big.Int,
+	completionTime *big.Int,
+) UnbondEvent {
+	return UnbondEvent{
+		UnbondEventIndexed: UnbondEventIndexed{
+			DelegatorAddress: delegatorAddress,
+			ValidatorAddress: validatorAddress,
+		},
+		UnbondEventData: UnbondEventData{
+			Amount:         amount,
+			CompletionTime: completionTime,
+		},
+	}
+}
+
+// Unbond represents an ABI event
+type UnbondEventIndexed struct {
+	DelegatorAddress common.Address
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of Unbond event to topics
+func (e UnbondEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 3)
+	topics = append(topics, UnbondEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of Unbond event from topics
+func (e *UnbondEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 3 {
+		return fmt.Errorf("insufficient topics for Unbond event")
+	}
+
+	// Check event signature
+	if topics[0] != UnbondEventTopic {
+		return fmt.Errorf("invalid event signature for Unbond event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const UnbondEventDataStaticSize = 64
+
+// UnbondEventData represents an ABI tuple
+type UnbondEventData struct {
+	Amount         *big.Int
+	CompletionTime *big.Int
+}
+
+// EncodedSize returns the total encoded size of UnbondEventData
+func (t UnbondEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return UnbondEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes UnbondEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t UnbondEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := UnbondEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	// CompletionTime (static)
+
+	if err := abi.EncodeBigInt(t.CompletionTime, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes UnbondEventData to ABI bytes
+func (t UnbondEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes UnbondEventData from ABI bytes in the provided buffer
+func (t *UnbondEventData) Decode(data0 []byte) error {
+	if len(data0) < UnbondEventDataStaticSize {
+		return fmt.Errorf("insufficient data for UnbondEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+	// t.CompletionTime (static)
+	t.CompletionTime = new(big.Int).SetBytes(data0[32:64])
 
 	return nil
 }

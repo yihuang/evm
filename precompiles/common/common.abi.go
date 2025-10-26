@@ -533,6 +533,7 @@ func (t *ICS20Allocation) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.SpendLimit[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.SpendLimit[i0]")
@@ -565,6 +566,7 @@ func (t *ICS20Allocation) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.AllowList[i0] (dynamic)
 			if offset+32 > len(data1) {
 				return fmt.Errorf("insufficient data for length prefix")
@@ -598,6 +600,7 @@ func (t *ICS20Allocation) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.AllowedPacketData[i0] (dynamic)
 			if offset+32 > len(data1) {
 				return fmt.Errorf("insufficient data for length prefix")
@@ -654,13 +657,10 @@ func (t PageRequest) EncodeTo(buf []byte) (int, error) {
 	// Limit (static)
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(t.Limit))
 	// CountTotal (static)
-
 	if t.CountTotal {
 		buf[96+31] = 1
 	}
-
 	// Reverse (static)
-
 	if t.Reverse {
 		buf[128+31] = 1
 	}
@@ -837,14 +837,12 @@ func (t DummyCall) EncodeTo(buf []byte) (int, error) {
 		dynamicOffset += n
 	}
 	// C (static)
-
 	// Encode nested tuple t.C
 	if _, err := t.C.EncodeTo(buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// D (static)
-
 	// Encode nested tuple t.D
 	if _, err := t.D.EncodeTo(buf[128:]); err != nil {
 		return 0, err

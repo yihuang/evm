@@ -1720,6 +1720,14 @@ github.com/yihuang/go-abi v0.0.0-20251024104039-666fa95c09fd h1:MRg9r3gxnwH/YjIi
 github.com/yihuang/go-abi v0.0.0-20251024104039-666fa95c09fd/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
 github.com/yihuang/go-abi v0.0.0-20251024165707-1d910cbe3705 h1:+oygZERQMje0HVhqoHfjuA8Ky582hIDi20OaWMwCK5c=
 github.com/yihuang/go-abi v0.0.0-20251024165707-1d910cbe3705/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
+github.com/yihuang/go-abi v0.0.0-20251026013317-2993ec61e6ac h1:FYBbUxaLWCOtQL/RLzLaC+ih2Vv+pr4yUKkidHxInag=
+github.com/yihuang/go-abi v0.0.0-20251026013317-2993ec61e6ac/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
+github.com/yihuang/go-abi v0.0.0-20251026025903-3cbdd15d61ca h1:zE5PlslHXqrjm7SbNvdv4OdCF5dqLC50DtWnV5PiLZc=
+github.com/yihuang/go-abi v0.0.0-20251026025903-3cbdd15d61ca/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
+github.com/yihuang/go-abi v0.0.0-20251026031333-9deda869278b h1:85e6haU8VfmVAHUEURn3dEa+Ai1UzVHDFPDsyln9eZA=
+github.com/yihuang/go-abi v0.0.0-20251026031333-9deda869278b/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
+github.com/yihuang/go-abi v0.0.0-20251026151546-f64c26a1037f h1:pFGdcZWbvjVpS9NYo4P0metBzXFjQeGPfLNu2SNRGjc=
+github.com/yihuang/go-abi v0.0.0-20251026151546-f64c26a1037f/go.mod h1:btymTlqoiLCR8Gj5bppalyNPSzQYUfK6YROYsihjGS4=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

@@ -61,6 +61,20 @@ const (
 	VoteWeightedID    = 2401066860
 )
 
+// Event signatures
+var (
+	// CancelProposal(address,uint64)
+	CancelProposalEventTopic = common.Hash{0xce, 0x91, 0x5f, 0xda, 0x53, 0xe9, 0xb1, 0xb6, 0x85, 0x8d, 0x5e, 0xf9, 0x7e, 0x63, 0xa5, 0xb7, 0x1d, 0x3a, 0xc8, 0x16, 0xcb, 0x20, 0x11, 0x69, 0x4f, 0xcf, 0x6d, 0xaa, 0xa9, 0xce, 0xf4, 0x77}
+	// Deposit(address,uint64,(string,uint256)[])
+	DepositEventTopic = common.Hash{0xeb, 0x37, 0xd1, 0x06, 0x26, 0xd0, 0x27, 0xab, 0x59, 0xc3, 0xa1, 0x32, 0x5e, 0xf9, 0xb0, 0x7a, 0x04, 0xdf, 0x7f, 0x4e, 0xd4, 0x7a, 0xfb, 0x35, 0x6e, 0xa4, 0x2e, 0x57, 0x2b, 0x89, 0xc7, 0x12}
+	// SubmitProposal(address,uint64)
+	SubmitProposalEventTopic = common.Hash{0xf4, 0x9a, 0x3a, 0x82, 0x32, 0xaf, 0xf8, 0x55, 0x33, 0x33, 0xcf, 0xd7, 0x34, 0xe3, 0xa7, 0xef, 0x1a, 0xb4, 0x76, 0x4c, 0xd0, 0x49, 0x4e, 0xb1, 0x45, 0x21, 0x67, 0x73, 0xb6, 0x4b, 0xf3, 0x49}
+	// Vote(address,uint64,uint8)
+	VoteEventTopic = common.Hash{0x71, 0xc0, 0x96, 0xcf, 0xbb, 0xce, 0x3e, 0x73, 0xfe, 0x1d, 0x1e, 0x59, 0x43, 0xda, 0x8f, 0xcb, 0xdc, 0xd2, 0xba, 0x95, 0x51, 0x9b, 0xfa, 0x45, 0x6d, 0x51, 0xc2, 0x82, 0xc5, 0x75, 0xc6, 0x4a}
+	// VoteWeighted(address,uint64,(uint8,string)[])
+	VoteWeightedEventTopic = common.Hash{0xf0, 0x2e, 0x1e, 0xd4, 0x29, 0xf5, 0xf8, 0x39, 0x81, 0x2e, 0x0c, 0xc8, 0x57, 0xe1, 0x5b, 0x6e, 0x15, 0x39, 0xf1, 0xa4, 0x37, 0x0f, 0x25, 0x39, 0x95, 0x7e, 0x07, 0xe2, 0xca, 0x33, 0x70, 0xe4}
+)
+
 const DepositDataStaticSize = 96
 
 // DepositData represents an ABI tuple
@@ -176,6 +190,7 @@ func (t *DepositData) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -231,13 +246,10 @@ func (t PageRequest) EncodeTo(buf []byte) (int, error) {
 	// Limit (static)
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(t.Limit))
 	// CountTotal (static)
-
 	if t.CountTotal {
 		buf[96+31] = 1
 	}
-
 	// Reverse (static)
-
 	if t.Reverse {
 		buf[128+31] = 1
 	}
@@ -598,19 +610,14 @@ func (t Params) EncodeTo(buf []byte) (int, error) {
 
 	}
 	// BurnVoteQuorum (static)
-
 	if t.BurnVoteQuorum {
 		buf[384+31] = 1
 	}
-
 	// BurnProposalDepositPrevote (static)
-
 	if t.BurnProposalDepositPrevote {
 		buf[416+31] = 1
 	}
-
 	// BurnVoteVeto (static)
-
 	if t.BurnVoteVeto {
 		buf[448+31] = 1
 	}
@@ -670,6 +677,7 @@ func (t *Params) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.MinDeposit[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.MinDeposit[i0]")
@@ -797,6 +805,7 @@ func (t *Params) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.ExpeditedMinDeposit[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.ExpeditedMinDeposit[i0]")
@@ -1058,6 +1067,7 @@ func (t *ProposalData) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Messages[i0] (dynamic)
 			if offset+32 > len(data1) {
 				return fmt.Errorf("insufficient data for length prefix")
@@ -1109,6 +1119,7 @@ func (t *ProposalData) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.TotalDeposit[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.TotalDeposit[i0]")
@@ -1445,6 +1456,7 @@ func (t *WeightedVote) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Options[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Options[i0]")
@@ -1626,7 +1638,6 @@ func (t CancelProposalReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := CancelProposalReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -1770,6 +1781,7 @@ func (t *DepositCall) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -1813,7 +1825,6 @@ func (t DepositReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := DepositReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -2239,6 +2250,7 @@ func (t *GetDepositsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Deposits[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Deposits[i0]")
@@ -2665,6 +2677,7 @@ func (t *GetProposalsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Proposals[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Proposals[i0]")
@@ -3142,6 +3155,7 @@ func (t *GetVotesReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Votes[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Votes[i0]")
@@ -3304,6 +3318,7 @@ func (t *SubmitProposalCall) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Deposit[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Deposit[i0]")
@@ -3487,7 +3502,6 @@ func (t VoteReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := VoteReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -3645,6 +3659,7 @@ func (t *VoteWeightedCall) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Options[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Options[i0]")
@@ -3701,7 +3716,6 @@ func (t VoteWeightedReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := VoteWeightedReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -3726,6 +3740,743 @@ func (t *VoteWeightedReturn) Decode(data0 []byte) error {
 
 	// t.Success (static)
 	t.Success = data0[0+31] == 1
+
+	return nil
+}
+
+// CancelProposalEvent represents an ABI event
+type CancelProposalEvent struct {
+	CancelProposalEventIndexed
+	CancelProposalEventData
+}
+
+// NewCancelProposalEvent constructs a new CancelProposal event
+func NewCancelProposalEvent(
+	proposer common.Address,
+	proposalId uint64,
+) CancelProposalEvent {
+	return CancelProposalEvent{
+		CancelProposalEventIndexed: CancelProposalEventIndexed{
+			Proposer: proposer,
+		},
+		CancelProposalEventData: CancelProposalEventData{
+			ProposalId: proposalId,
+		},
+	}
+}
+
+// CancelProposal represents an ABI event
+type CancelProposalEventIndexed struct {
+	Proposer common.Address
+}
+
+// EncodeTopics encodes indexed fields of CancelProposal event to topics
+func (e CancelProposalEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, CancelProposalEventTopic)
+
+	// Encode indexed field Proposer
+	{
+		var buf common.Hash
+
+		// Proposer (static)
+		copy(buf[0+12:0+32], e.Proposer[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of CancelProposal event from topics
+func (e *CancelProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for CancelProposal event")
+	}
+
+	// Check event signature
+	if topics[0] != CancelProposalEventTopic {
+		return fmt.Errorf("invalid event signature for CancelProposal event")
+	}
+
+	// Proposer (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Proposer (static)
+		copy(e.Proposer[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const CancelProposalEventDataStaticSize = 32
+
+// CancelProposalEventData represents an ABI tuple
+type CancelProposalEventData struct {
+	ProposalId uint64
+}
+
+// EncodedSize returns the total encoded size of CancelProposalEventData
+func (t CancelProposalEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return CancelProposalEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes CancelProposalEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t CancelProposalEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := CancelProposalEventDataStaticSize // Start dynamic data after static section
+
+	// ProposalId (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ProposalId))
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes CancelProposalEventData to ABI bytes
+func (t CancelProposalEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes CancelProposalEventData from ABI bytes in the provided buffer
+func (t *CancelProposalEventData) Decode(data0 []byte) error {
+	if len(data0) < CancelProposalEventDataStaticSize {
+		return fmt.Errorf("insufficient data for CancelProposalEventData")
+	}
+
+	// t.ProposalId (static)
+	t.ProposalId = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+	return nil
+}
+
+// DepositEvent represents an ABI event
+type DepositEvent struct {
+	DepositEventIndexed
+	DepositEventData
+}
+
+// NewDepositEvent constructs a new Deposit event
+func NewDepositEvent(
+	depositor common.Address,
+	proposalId uint64,
+	amount []cmn.Coin,
+) DepositEvent {
+	return DepositEvent{
+		DepositEventIndexed: DepositEventIndexed{
+			Depositor: depositor,
+		},
+		DepositEventData: DepositEventData{
+			ProposalId: proposalId,
+			Amount:     amount,
+		},
+	}
+}
+
+// Deposit represents an ABI event
+type DepositEventIndexed struct {
+	Depositor common.Address
+}
+
+// EncodeTopics encodes indexed fields of Deposit event to topics
+func (e DepositEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, DepositEventTopic)
+
+	// Encode indexed field Depositor
+	{
+		var buf common.Hash
+
+		// Depositor (static)
+		copy(buf[0+12:0+32], e.Depositor[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of Deposit event from topics
+func (e *DepositEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for Deposit event")
+	}
+
+	// Check event signature
+	if topics[0] != DepositEventTopic {
+		return fmt.Errorf("invalid event signature for Deposit event")
+	}
+
+	// Depositor (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Depositor (static)
+		copy(e.Depositor[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const DepositEventDataStaticSize = 64
+
+// DepositEventData represents an ABI tuple
+type DepositEventData struct {
+	ProposalId uint64
+	Amount     []cmn.Coin
+}
+
+// EncodedSize returns the total encoded size of DepositEventData
+func (t DepositEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + 32*len(t.Amount) // length + offset pointers for dynamic elements
+	for _, elem := range t.Amount {
+		dynamicSize += elem.EncodedSize() // dynamic tuple
+	}
+
+	return DepositEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes DepositEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t DepositEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := DepositEventDataStaticSize // Start dynamic data after static section
+
+	// ProposalId (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ProposalId))
+
+	// Amount (offset)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
+
+	// Amount (dynamic)
+	{
+		// length
+		binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Amount)))
+		dynamicOffset += 32
+
+		var written int
+
+		// data with dynamic region
+		{
+			buf := buf[dynamicOffset:]
+			dynamicOffset := len(t.Amount) * 32 // start after static region
+
+			var offset int
+			for _, item := range t.Amount {
+				// write offsets
+				binary.BigEndian.PutUint64(buf[offset+24:offset+32], uint64(dynamicOffset))
+				offset += 32
+
+				// write data (dynamic)
+
+				{
+					n, err := item.EncodeTo(buf[dynamicOffset:])
+					if err != nil {
+						return 0, err
+					}
+					dynamicOffset += n
+				}
+
+			}
+			written = dynamicOffset
+		}
+		dynamicOffset += written
+
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes DepositEventData to ABI bytes
+func (t DepositEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes DepositEventData from ABI bytes in the provided buffer
+func (t *DepositEventData) Decode(data0 []byte) error {
+	if len(data0) < DepositEventDataStaticSize {
+		return fmt.Errorf("insufficient data for DepositEventData")
+	}
+
+	// t.ProposalId (static)
+	t.ProposalId = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+	// Amount
+	{
+		offset := int(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+
+		// t.Amount (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// slice data
+		t.Amount = make([]cmn.Coin, length)
+		data1 := data0[offset:]
+
+		// Dynamic elements with offsets (dynamic array)
+		for i0 := 0; i0 < length; i0++ {
+			// Read element offset
+			tmp := i0 * 32
+			if tmp+32 > len(data1) {
+				return fmt.Errorf("insufficient data for element offset")
+			}
+			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
+			// Decode dynamic element at offset
+
+			// t.Amount[i0] (dynamic)
+			if offset >= len(data1) {
+				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
+			}
+			if err := t.Amount[i0].Decode(data1[offset:]); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// SubmitProposalEvent represents an ABI event
+type SubmitProposalEvent struct {
+	SubmitProposalEventIndexed
+	SubmitProposalEventData
+}
+
+// NewSubmitProposalEvent constructs a new SubmitProposal event
+func NewSubmitProposalEvent(
+	proposer common.Address,
+	proposalId uint64,
+) SubmitProposalEvent {
+	return SubmitProposalEvent{
+		SubmitProposalEventIndexed: SubmitProposalEventIndexed{
+			Proposer: proposer,
+		},
+		SubmitProposalEventData: SubmitProposalEventData{
+			ProposalId: proposalId,
+		},
+	}
+}
+
+// SubmitProposal represents an ABI event
+type SubmitProposalEventIndexed struct {
+	Proposer common.Address
+}
+
+// EncodeTopics encodes indexed fields of SubmitProposal event to topics
+func (e SubmitProposalEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, SubmitProposalEventTopic)
+
+	// Encode indexed field Proposer
+	{
+		var buf common.Hash
+
+		// Proposer (static)
+		copy(buf[0+12:0+32], e.Proposer[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of SubmitProposal event from topics
+func (e *SubmitProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for SubmitProposal event")
+	}
+
+	// Check event signature
+	if topics[0] != SubmitProposalEventTopic {
+		return fmt.Errorf("invalid event signature for SubmitProposal event")
+	}
+
+	// Proposer (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Proposer (static)
+		copy(e.Proposer[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const SubmitProposalEventDataStaticSize = 32
+
+// SubmitProposalEventData represents an ABI tuple
+type SubmitProposalEventData struct {
+	ProposalId uint64
+}
+
+// EncodedSize returns the total encoded size of SubmitProposalEventData
+func (t SubmitProposalEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return SubmitProposalEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes SubmitProposalEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t SubmitProposalEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := SubmitProposalEventDataStaticSize // Start dynamic data after static section
+
+	// ProposalId (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ProposalId))
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes SubmitProposalEventData to ABI bytes
+func (t SubmitProposalEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes SubmitProposalEventData from ABI bytes in the provided buffer
+func (t *SubmitProposalEventData) Decode(data0 []byte) error {
+	if len(data0) < SubmitProposalEventDataStaticSize {
+		return fmt.Errorf("insufficient data for SubmitProposalEventData")
+	}
+
+	// t.ProposalId (static)
+	t.ProposalId = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+	return nil
+}
+
+// VoteEvent represents an ABI event
+type VoteEvent struct {
+	VoteEventIndexed
+	VoteEventData
+}
+
+// NewVoteEvent constructs a new Vote event
+func NewVoteEvent(
+	voter common.Address,
+	proposalId uint64,
+	option uint8,
+) VoteEvent {
+	return VoteEvent{
+		VoteEventIndexed: VoteEventIndexed{
+			Voter: voter,
+		},
+		VoteEventData: VoteEventData{
+			ProposalId: proposalId,
+			Option:     option,
+		},
+	}
+}
+
+// Vote represents an ABI event
+type VoteEventIndexed struct {
+	Voter common.Address
+}
+
+// EncodeTopics encodes indexed fields of Vote event to topics
+func (e VoteEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, VoteEventTopic)
+
+	// Encode indexed field Voter
+	{
+		var buf common.Hash
+
+		// Voter (static)
+		copy(buf[0+12:0+32], e.Voter[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of Vote event from topics
+func (e *VoteEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for Vote event")
+	}
+
+	// Check event signature
+	if topics[0] != VoteEventTopic {
+		return fmt.Errorf("invalid event signature for Vote event")
+	}
+
+	// Voter (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Voter (static)
+		copy(e.Voter[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const VoteEventDataStaticSize = 64
+
+// VoteEventData represents an ABI tuple
+type VoteEventData struct {
+	ProposalId uint64
+	Option     uint8
+}
+
+// EncodedSize returns the total encoded size of VoteEventData
+func (t VoteEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return VoteEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes VoteEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t VoteEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := VoteEventDataStaticSize // Start dynamic data after static section
+
+	// ProposalId (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ProposalId))
+	// Option (static)
+	buf[32+31] = byte(t.Option)
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes VoteEventData to ABI bytes
+func (t VoteEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes VoteEventData from ABI bytes in the provided buffer
+func (t *VoteEventData) Decode(data0 []byte) error {
+	if len(data0) < VoteEventDataStaticSize {
+		return fmt.Errorf("insufficient data for VoteEventData")
+	}
+
+	// t.ProposalId (static)
+	t.ProposalId = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+	// t.Option (static)
+	t.Option = uint8(data0[32+31])
+
+	return nil
+}
+
+// VoteWeightedEvent represents an ABI event
+type VoteWeightedEvent struct {
+	VoteWeightedEventIndexed
+	VoteWeightedEventData
+}
+
+// NewVoteWeightedEvent constructs a new VoteWeighted event
+func NewVoteWeightedEvent(
+	voter common.Address,
+	proposalId uint64,
+	options []WeightedVoteOption,
+) VoteWeightedEvent {
+	return VoteWeightedEvent{
+		VoteWeightedEventIndexed: VoteWeightedEventIndexed{
+			Voter: voter,
+		},
+		VoteWeightedEventData: VoteWeightedEventData{
+			ProposalId: proposalId,
+			Options:    options,
+		},
+	}
+}
+
+// VoteWeighted represents an ABI event
+type VoteWeightedEventIndexed struct {
+	Voter common.Address
+}
+
+// EncodeTopics encodes indexed fields of VoteWeighted event to topics
+func (e VoteWeightedEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, VoteWeightedEventTopic)
+
+	// Encode indexed field Voter
+	{
+		var buf common.Hash
+
+		// Voter (static)
+		copy(buf[0+12:0+32], e.Voter[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of VoteWeighted event from topics
+func (e *VoteWeightedEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for VoteWeighted event")
+	}
+
+	// Check event signature
+	if topics[0] != VoteWeightedEventTopic {
+		return fmt.Errorf("invalid event signature for VoteWeighted event")
+	}
+
+	// Voter (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Voter (static)
+		copy(e.Voter[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const VoteWeightedEventDataStaticSize = 64
+
+// VoteWeightedEventData represents an ABI tuple
+type VoteWeightedEventData struct {
+	ProposalId uint64
+	Options    []WeightedVoteOption
+}
+
+// EncodedSize returns the total encoded size of VoteWeightedEventData
+func (t VoteWeightedEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + 32*len(t.Options) // length + offset pointers for dynamic elements
+	for _, elem := range t.Options {
+		dynamicSize += elem.EncodedSize() // dynamic tuple
+	}
+
+	return VoteWeightedEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes VoteWeightedEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t VoteWeightedEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := VoteWeightedEventDataStaticSize // Start dynamic data after static section
+
+	// ProposalId (static)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ProposalId))
+
+	// Options (offset)
+	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
+
+	// Options (dynamic)
+	{
+		// length
+		binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Options)))
+		dynamicOffset += 32
+
+		var written int
+
+		// data with dynamic region
+		{
+			buf := buf[dynamicOffset:]
+			dynamicOffset := len(t.Options) * 32 // start after static region
+
+			var offset int
+			for _, item := range t.Options {
+				// write offsets
+				binary.BigEndian.PutUint64(buf[offset+24:offset+32], uint64(dynamicOffset))
+				offset += 32
+
+				// write data (dynamic)
+
+				{
+					n, err := item.EncodeTo(buf[dynamicOffset:])
+					if err != nil {
+						return 0, err
+					}
+					dynamicOffset += n
+				}
+
+			}
+			written = dynamicOffset
+		}
+		dynamicOffset += written
+
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes VoteWeightedEventData to ABI bytes
+func (t VoteWeightedEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes VoteWeightedEventData from ABI bytes in the provided buffer
+func (t *VoteWeightedEventData) Decode(data0 []byte) error {
+	if len(data0) < VoteWeightedEventDataStaticSize {
+		return fmt.Errorf("insufficient data for VoteWeightedEventData")
+	}
+
+	// t.ProposalId (static)
+	t.ProposalId = uint64(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+	// Options
+	{
+		offset := int(binary.BigEndian.Uint64(data0[32+24 : 32+32]))
+
+		// t.Options (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// slice data
+		t.Options = make([]WeightedVoteOption, length)
+		data1 := data0[offset:]
+
+		// Dynamic elements with offsets (dynamic array)
+		for i0 := 0; i0 < length; i0++ {
+			// Read element offset
+			tmp := i0 * 32
+			if tmp+32 > len(data1) {
+				return fmt.Errorf("insufficient data for element offset")
+			}
+			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
+			// Decode dynamic element at offset
+
+			// t.Options[i0] (dynamic)
+			if offset >= len(data1) {
+				return fmt.Errorf("insufficient data for dynamic data, t.Options[i0]")
+			}
+			if err := t.Options[i0].Decode(data1[offset:]); err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }

@@ -172,9 +172,10 @@ func (t BalancesReturn) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Balances {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -368,9 +369,10 @@ func (t TotalSupplyReturn) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.TotalSupply {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 

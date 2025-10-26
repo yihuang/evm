@@ -5,6 +5,7 @@ package distribution
 import (
 	"encoding/binary"
 	"fmt"
+	"math/big"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/ethereum/go-ethereum/common"
@@ -62,6 +63,22 @@ const (
 	ValidatorSlashesID            = 2401530830
 	WithdrawDelegatorRewardsID    = 3026881889
 	WithdrawValidatorCommissionID = 1021633470
+)
+
+// Event signatures
+var (
+	// ClaimRewards(address,uint256)
+	ClaimRewardsEventTopic = common.Hash{0x1f, 0x89, 0xf9, 0x63, 0x33, 0xd3, 0x13, 0x30, 0x00, 0xee, 0x44, 0x74, 0x73, 0x15, 0x1f, 0xa9, 0x60, 0x65, 0x43, 0x36, 0x8f, 0x02, 0x27, 0x1c, 0x9d, 0x95, 0xae, 0x14, 0xf1, 0x3b, 0xcc, 0x67}
+	// DepositValidatorRewardsPool(address,address,string,uint256)
+	DepositValidatorRewardsPoolEventTopic = common.Hash{0xcc, 0x9d, 0x91, 0x43, 0x47, 0xa4, 0xaf, 0xdb, 0x20, 0xb4, 0x38, 0xdc, 0xe7, 0x63, 0xe1, 0xc9, 0x5a, 0xf2, 0xba, 0xef, 0x68, 0xcc, 0xa4, 0x01, 0xdc, 0xeb, 0x00, 0x1e, 0xfd, 0x11, 0x8e, 0x94}
+	// FundCommunityPool(address,string,uint256)
+	FundCommunityPoolEventTopic = common.Hash{0xb5, 0xa9, 0xb7, 0x25, 0x6a, 0x6f, 0xa6, 0x94, 0xd8, 0x52, 0x86, 0xd7, 0x7a, 0xfa, 0x40, 0x35, 0x71, 0x7c, 0x1b, 0xa5, 0x33, 0x25, 0x97, 0xd2, 0xcf, 0x1e, 0x98, 0x70, 0x93, 0x2f, 0x93, 0x66}
+	// SetWithdrawerAddress(address,string)
+	SetWithdrawerAddressEventTopic = common.Hash{0xb5, 0x5d, 0x29, 0x54, 0x2a, 0x84, 0x4f, 0xa6, 0x4e, 0x70, 0xcb, 0xc0, 0x65, 0x56, 0x20, 0x19, 0x57, 0xfa, 0x02, 0x53, 0xfe, 0x7b, 0x54, 0x67, 0x78, 0x30, 0xb5, 0x86, 0xe2, 0x28, 0x8e, 0x1e}
+	// WithdrawDelegatorReward(address,address,uint256)
+	WithdrawDelegatorRewardEventTopic = common.Hash{0xcf, 0x87, 0x1d, 0x31, 0x49, 0xad, 0x67, 0x7b, 0x26, 0x8b, 0x02, 0x38, 0xa4, 0xff, 0xc6, 0xd4, 0x00, 0x8f, 0x48, 0xa1, 0x1e, 0x73, 0x46, 0x8d, 0x05, 0xff, 0x00, 0xe7, 0x5f, 0x20, 0x40, 0x35}
+	// WithdrawValidatorCommission(address,uint256)
+	WithdrawValidatorCommissionEventTopic = common.Hash{0x44, 0x1c, 0x6a, 0xf7, 0xe6, 0xde, 0x8d, 0x3b, 0xd6, 0x27, 0x44, 0xb5, 0x8b, 0x17, 0xe4, 0x33, 0x8a, 0xdc, 0x25, 0x9e, 0xf6, 0x7e, 0x1c, 0xe1, 0x6c, 0x3b, 0x12, 0xc9, 0xcd, 0xd6, 0xf1, 0x28}
 )
 
 const DelegationDelegatorRewardStaticSize = 64
@@ -195,6 +212,7 @@ func (t *DelegationDelegatorReward) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Reward[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Reward[i0]")
@@ -457,6 +475,7 @@ func (t *ValidatorDistributionInfo) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.SelfBondRewards[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.SelfBondRewards[i0]")
@@ -489,6 +508,7 @@ func (t *ValidatorDistributionInfo) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Commission[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Commission[i0]")
@@ -525,7 +545,6 @@ func (t ValidatorSlashEvent) EncodeTo(buf []byte) (int, error) {
 	// ValidatorPeriod (static)
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(t.ValidatorPeriod))
 	// Fraction (static)
-
 	// Encode nested tuple t.Fraction
 	if _, err := t.Fraction.EncodeTo(buf[32:]); err != nil {
 		return 0, err
@@ -640,7 +659,6 @@ func (t ClaimRewardsReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := ClaimRewardsReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -773,6 +791,7 @@ func (t *CommunityPoolReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Coins[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Coins[i0]")
@@ -974,6 +993,7 @@ func (t *DelegationRewardsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Rewards[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Rewards[i0]")
@@ -1191,6 +1211,7 @@ func (t *DelegationTotalRewardsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Rewards[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Rewards[i0]")
@@ -1223,6 +1244,7 @@ func (t *DelegationTotalRewardsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Total[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Total[i0]")
@@ -1396,6 +1418,7 @@ func (t *DelegatorValidatorsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Validators[i0] (dynamic)
 			if offset+32 > len(data1) {
 				return fmt.Errorf("insufficient data for length prefix")
@@ -1671,6 +1694,7 @@ func (t *DepositValidatorRewardsPoolCall) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -1714,7 +1738,6 @@ func (t DepositValidatorRewardsPoolReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := DepositValidatorRewardsPoolReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -1853,6 +1876,7 @@ func (t *FundCommunityPoolCall) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -1896,7 +1920,6 @@ func (t FundCommunityPoolReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := FundCommunityPoolReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -2029,7 +2052,6 @@ func (t SetWithdrawAddressReturn) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset := SetWithdrawAddressReturnStaticSize // Start dynamic data after static section
 
 	// Success (static)
-
 	if t.Success {
 		buf[0+31] = 1
 	}
@@ -2240,6 +2262,7 @@ func (t *ValidatorCommissionReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Commission[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Commission[i0]")
@@ -2580,6 +2603,7 @@ func (t *ValidatorOutstandingRewardsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Rewards[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Rewards[i0]")
@@ -2744,9 +2768,10 @@ func (t ValidatorSlashesReturn) EncodeTo(buf []byte) (int, error) {
 		buf := buf[dynamicOffset:]
 		var offset int
 		for _, item := range t.Slashes {
+			tmpBuf := buf[offset:]
 
 			// Encode nested tuple item
-			if _, err := item.EncodeTo(buf[offset:]); err != nil {
+			if _, err := item.EncodeTo(tmpBuf[0:]); err != nil {
 				return 0, err
 			}
 
@@ -3013,6 +3038,7 @@ func (t *WithdrawDelegatorRewardsReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -3208,6 +3234,7 @@ func (t *WithdrawValidatorCommissionReturn) Decode(data0 []byte) error {
 			}
 			offset := int(binary.BigEndian.Uint64(data1[tmp+24 : tmp+32]))
 			// Decode dynamic element at offset
+
 			// t.Amount[i0] (dynamic)
 			if offset >= len(data1) {
 				return fmt.Errorf("insufficient data for dynamic data, t.Amount[i0]")
@@ -3217,6 +3244,833 @@ func (t *WithdrawValidatorCommissionReturn) Decode(data0 []byte) error {
 			}
 		}
 	}
+
+	return nil
+}
+
+// ClaimRewardsEvent represents an ABI event
+type ClaimRewardsEvent struct {
+	ClaimRewardsEventIndexed
+	ClaimRewardsEventData
+}
+
+// NewClaimRewardsEvent constructs a new ClaimRewards event
+func NewClaimRewardsEvent(
+	delegatorAddress common.Address,
+	amount *big.Int,
+) ClaimRewardsEvent {
+	return ClaimRewardsEvent{
+		ClaimRewardsEventIndexed: ClaimRewardsEventIndexed{
+			DelegatorAddress: delegatorAddress,
+		},
+		ClaimRewardsEventData: ClaimRewardsEventData{
+			Amount: amount,
+		},
+	}
+}
+
+// ClaimRewards represents an ABI event
+type ClaimRewardsEventIndexed struct {
+	DelegatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of ClaimRewards event to topics
+func (e ClaimRewardsEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, ClaimRewardsEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of ClaimRewards event from topics
+func (e *ClaimRewardsEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for ClaimRewards event")
+	}
+
+	// Check event signature
+	if topics[0] != ClaimRewardsEventTopic {
+		return fmt.Errorf("invalid event signature for ClaimRewards event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const ClaimRewardsEventDataStaticSize = 32
+
+// ClaimRewardsEventData represents an ABI tuple
+type ClaimRewardsEventData struct {
+	Amount *big.Int
+}
+
+// EncodedSize returns the total encoded size of ClaimRewardsEventData
+func (t ClaimRewardsEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return ClaimRewardsEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes ClaimRewardsEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t ClaimRewardsEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := ClaimRewardsEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes ClaimRewardsEventData to ABI bytes
+func (t ClaimRewardsEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes ClaimRewardsEventData from ABI bytes in the provided buffer
+func (t *ClaimRewardsEventData) Decode(data0 []byte) error {
+	if len(data0) < ClaimRewardsEventDataStaticSize {
+		return fmt.Errorf("insufficient data for ClaimRewardsEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+
+	return nil
+}
+
+// DepositValidatorRewardsPoolEvent represents an ABI event
+type DepositValidatorRewardsPoolEvent struct {
+	DepositValidatorRewardsPoolEventIndexed
+	DepositValidatorRewardsPoolEventData
+}
+
+// NewDepositValidatorRewardsPoolEvent constructs a new DepositValidatorRewardsPool event
+func NewDepositValidatorRewardsPoolEvent(
+	depositor common.Address,
+	validatorAddress common.Address,
+	denom string,
+	amount *big.Int,
+) DepositValidatorRewardsPoolEvent {
+	return DepositValidatorRewardsPoolEvent{
+		DepositValidatorRewardsPoolEventIndexed: DepositValidatorRewardsPoolEventIndexed{
+			Depositor:        depositor,
+			ValidatorAddress: validatorAddress,
+		},
+		DepositValidatorRewardsPoolEventData: DepositValidatorRewardsPoolEventData{
+			Denom:  denom,
+			Amount: amount,
+		},
+	}
+}
+
+// DepositValidatorRewardsPool represents an ABI event
+type DepositValidatorRewardsPoolEventIndexed struct {
+	Depositor        common.Address
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of DepositValidatorRewardsPool event to topics
+func (e DepositValidatorRewardsPoolEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 3)
+	topics = append(topics, DepositValidatorRewardsPoolEventTopic)
+
+	// Encode indexed field Depositor
+	{
+		var buf common.Hash
+
+		// Depositor (static)
+		copy(buf[0+12:0+32], e.Depositor[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of DepositValidatorRewardsPool event from topics
+func (e *DepositValidatorRewardsPoolEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 3 {
+		return fmt.Errorf("insufficient topics for DepositValidatorRewardsPool event")
+	}
+
+	// Check event signature
+	if topics[0] != DepositValidatorRewardsPoolEventTopic {
+		return fmt.Errorf("invalid event signature for DepositValidatorRewardsPool event")
+	}
+
+	// Depositor (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Depositor (static)
+		copy(e.Depositor[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const DepositValidatorRewardsPoolEventDataStaticSize = 64
+
+// DepositValidatorRewardsPoolEventData represents an ABI tuple
+type DepositValidatorRewardsPoolEventData struct {
+	Denom  string
+	Amount *big.Int
+}
+
+// EncodedSize returns the total encoded size of DepositValidatorRewardsPoolEventData
+func (t DepositValidatorRewardsPoolEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.Denom)) // length + padded string data
+
+	return DepositValidatorRewardsPoolEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes DepositValidatorRewardsPoolEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t DepositValidatorRewardsPoolEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := DepositValidatorRewardsPoolEventDataStaticSize // Start dynamic data after static section
+
+	// Denom (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// Denom (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Denom)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], []byte(t.Denom))
+	dynamicOffset += abi.Pad32(len(t.Denom))
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes DepositValidatorRewardsPoolEventData to ABI bytes
+func (t DepositValidatorRewardsPoolEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes DepositValidatorRewardsPoolEventData from ABI bytes in the provided buffer
+func (t *DepositValidatorRewardsPoolEventData) Decode(data0 []byte) error {
+	if len(data0) < DepositValidatorRewardsPoolEventDataStaticSize {
+		return fmt.Errorf("insufficient data for DepositValidatorRewardsPoolEventData")
+	}
+
+	// Denom
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.Denom (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// string data
+		t.Denom = string(data0[offset : offset+length])
+	}
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// FundCommunityPoolEvent represents an ABI event
+type FundCommunityPoolEvent struct {
+	FundCommunityPoolEventIndexed
+	FundCommunityPoolEventData
+}
+
+// NewFundCommunityPoolEvent constructs a new FundCommunityPool event
+func NewFundCommunityPoolEvent(
+	depositor common.Address,
+	denom string,
+	amount *big.Int,
+) FundCommunityPoolEvent {
+	return FundCommunityPoolEvent{
+		FundCommunityPoolEventIndexed: FundCommunityPoolEventIndexed{
+			Depositor: depositor,
+		},
+		FundCommunityPoolEventData: FundCommunityPoolEventData{
+			Denom:  denom,
+			Amount: amount,
+		},
+	}
+}
+
+// FundCommunityPool represents an ABI event
+type FundCommunityPoolEventIndexed struct {
+	Depositor common.Address
+}
+
+// EncodeTopics encodes indexed fields of FundCommunityPool event to topics
+func (e FundCommunityPoolEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, FundCommunityPoolEventTopic)
+
+	// Encode indexed field Depositor
+	{
+		var buf common.Hash
+
+		// Depositor (static)
+		copy(buf[0+12:0+32], e.Depositor[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of FundCommunityPool event from topics
+func (e *FundCommunityPoolEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for FundCommunityPool event")
+	}
+
+	// Check event signature
+	if topics[0] != FundCommunityPoolEventTopic {
+		return fmt.Errorf("invalid event signature for FundCommunityPool event")
+	}
+
+	// Depositor (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Depositor (static)
+		copy(e.Depositor[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const FundCommunityPoolEventDataStaticSize = 64
+
+// FundCommunityPoolEventData represents an ABI tuple
+type FundCommunityPoolEventData struct {
+	Denom  string
+	Amount *big.Int
+}
+
+// EncodedSize returns the total encoded size of FundCommunityPoolEventData
+func (t FundCommunityPoolEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.Denom)) // length + padded string data
+
+	return FundCommunityPoolEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes FundCommunityPoolEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t FundCommunityPoolEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := FundCommunityPoolEventDataStaticSize // Start dynamic data after static section
+
+	// Denom (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// Denom (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.Denom)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], []byte(t.Denom))
+	dynamicOffset += abi.Pad32(len(t.Denom))
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[32:64], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes FundCommunityPoolEventData to ABI bytes
+func (t FundCommunityPoolEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes FundCommunityPoolEventData from ABI bytes in the provided buffer
+func (t *FundCommunityPoolEventData) Decode(data0 []byte) error {
+	if len(data0) < FundCommunityPoolEventDataStaticSize {
+		return fmt.Errorf("insufficient data for FundCommunityPoolEventData")
+	}
+
+	// Denom
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.Denom (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// string data
+		t.Denom = string(data0[offset : offset+length])
+	}
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[32:64])
+
+	return nil
+}
+
+// SetWithdrawerAddressEvent represents an ABI event
+type SetWithdrawerAddressEvent struct {
+	SetWithdrawerAddressEventIndexed
+	SetWithdrawerAddressEventData
+}
+
+// NewSetWithdrawerAddressEvent constructs a new SetWithdrawerAddress event
+func NewSetWithdrawerAddressEvent(
+	caller common.Address,
+	withdrawerAddress string,
+) SetWithdrawerAddressEvent {
+	return SetWithdrawerAddressEvent{
+		SetWithdrawerAddressEventIndexed: SetWithdrawerAddressEventIndexed{
+			Caller: caller,
+		},
+		SetWithdrawerAddressEventData: SetWithdrawerAddressEventData{
+			WithdrawerAddress: withdrawerAddress,
+		},
+	}
+}
+
+// SetWithdrawerAddress represents an ABI event
+type SetWithdrawerAddressEventIndexed struct {
+	Caller common.Address
+}
+
+// EncodeTopics encodes indexed fields of SetWithdrawerAddress event to topics
+func (e SetWithdrawerAddressEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, SetWithdrawerAddressEventTopic)
+
+	// Encode indexed field Caller
+	{
+		var buf common.Hash
+
+		// Caller (static)
+		copy(buf[0+12:0+32], e.Caller[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of SetWithdrawerAddress event from topics
+func (e *SetWithdrawerAddressEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for SetWithdrawerAddress event")
+	}
+
+	// Check event signature
+	if topics[0] != SetWithdrawerAddressEventTopic {
+		return fmt.Errorf("invalid event signature for SetWithdrawerAddress event")
+	}
+
+	// Caller (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.Caller (static)
+		copy(e.Caller[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const SetWithdrawerAddressEventDataStaticSize = 32
+
+// SetWithdrawerAddressEventData represents an ABI tuple
+type SetWithdrawerAddressEventData struct {
+	WithdrawerAddress string
+}
+
+// EncodedSize returns the total encoded size of SetWithdrawerAddressEventData
+func (t SetWithdrawerAddressEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	dynamicSize += 32 + abi.Pad32(len(t.WithdrawerAddress)) // length + padded string data
+
+	return SetWithdrawerAddressEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes SetWithdrawerAddressEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t SetWithdrawerAddressEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := SetWithdrawerAddressEventDataStaticSize // Start dynamic data after static section
+
+	// WithdrawerAddress (offset)
+	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
+
+	// WithdrawerAddress (dynamic)
+	// length
+	binary.BigEndian.PutUint64(buf[dynamicOffset+24:dynamicOffset+32], uint64(len(t.WithdrawerAddress)))
+	dynamicOffset += 32
+
+	// data
+	copy(buf[dynamicOffset:], []byte(t.WithdrawerAddress))
+	dynamicOffset += abi.Pad32(len(t.WithdrawerAddress))
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes SetWithdrawerAddressEventData to ABI bytes
+func (t SetWithdrawerAddressEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes SetWithdrawerAddressEventData from ABI bytes in the provided buffer
+func (t *SetWithdrawerAddressEventData) Decode(data0 []byte) error {
+	if len(data0) < SetWithdrawerAddressEventDataStaticSize {
+		return fmt.Errorf("insufficient data for SetWithdrawerAddressEventData")
+	}
+
+	// WithdrawerAddress
+	{
+		offset := int(binary.BigEndian.Uint64(data0[0+24 : 0+32]))
+
+		// t.WithdrawerAddress (dynamic)
+		if offset+32 > len(data0) {
+			return fmt.Errorf("insufficient data for length prefix")
+		}
+		length := int(binary.BigEndian.Uint64(data0[offset+24 : offset+32]))
+		offset += 32
+		// string data
+		t.WithdrawerAddress = string(data0[offset : offset+length])
+	}
+
+	return nil
+}
+
+// WithdrawDelegatorRewardEvent represents an ABI event
+type WithdrawDelegatorRewardEvent struct {
+	WithdrawDelegatorRewardEventIndexed
+	WithdrawDelegatorRewardEventData
+}
+
+// NewWithdrawDelegatorRewardEvent constructs a new WithdrawDelegatorReward event
+func NewWithdrawDelegatorRewardEvent(
+	delegatorAddress common.Address,
+	validatorAddress common.Address,
+	amount *big.Int,
+) WithdrawDelegatorRewardEvent {
+	return WithdrawDelegatorRewardEvent{
+		WithdrawDelegatorRewardEventIndexed: WithdrawDelegatorRewardEventIndexed{
+			DelegatorAddress: delegatorAddress,
+			ValidatorAddress: validatorAddress,
+		},
+		WithdrawDelegatorRewardEventData: WithdrawDelegatorRewardEventData{
+			Amount: amount,
+		},
+	}
+}
+
+// WithdrawDelegatorReward represents an ABI event
+type WithdrawDelegatorRewardEventIndexed struct {
+	DelegatorAddress common.Address
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of WithdrawDelegatorReward event to topics
+func (e WithdrawDelegatorRewardEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 3)
+	topics = append(topics, WithdrawDelegatorRewardEventTopic)
+
+	// Encode indexed field DelegatorAddress
+	{
+		var buf common.Hash
+
+		// DelegatorAddress (static)
+		copy(buf[0+12:0+32], e.DelegatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of WithdrawDelegatorReward event from topics
+func (e *WithdrawDelegatorRewardEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 3 {
+		return fmt.Errorf("insufficient topics for WithdrawDelegatorReward event")
+	}
+
+	// Check event signature
+	if topics[0] != WithdrawDelegatorRewardEventTopic {
+		return fmt.Errorf("invalid event signature for WithdrawDelegatorReward event")
+	}
+
+	// DelegatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.DelegatorAddress (static)
+		copy(e.DelegatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[2][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const WithdrawDelegatorRewardEventDataStaticSize = 32
+
+// WithdrawDelegatorRewardEventData represents an ABI tuple
+type WithdrawDelegatorRewardEventData struct {
+	Amount *big.Int
+}
+
+// EncodedSize returns the total encoded size of WithdrawDelegatorRewardEventData
+func (t WithdrawDelegatorRewardEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return WithdrawDelegatorRewardEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes WithdrawDelegatorRewardEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t WithdrawDelegatorRewardEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := WithdrawDelegatorRewardEventDataStaticSize // Start dynamic data after static section
+
+	// Amount (static)
+
+	if err := abi.EncodeBigInt(t.Amount, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes WithdrawDelegatorRewardEventData to ABI bytes
+func (t WithdrawDelegatorRewardEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes WithdrawDelegatorRewardEventData from ABI bytes in the provided buffer
+func (t *WithdrawDelegatorRewardEventData) Decode(data0 []byte) error {
+	if len(data0) < WithdrawDelegatorRewardEventDataStaticSize {
+		return fmt.Errorf("insufficient data for WithdrawDelegatorRewardEventData")
+	}
+
+	// t.Amount (static)
+	t.Amount = new(big.Int).SetBytes(data0[0:32])
+
+	return nil
+}
+
+// WithdrawValidatorCommissionEvent represents an ABI event
+type WithdrawValidatorCommissionEvent struct {
+	WithdrawValidatorCommissionEventIndexed
+	WithdrawValidatorCommissionEventData
+}
+
+// NewWithdrawValidatorCommissionEvent constructs a new WithdrawValidatorCommission event
+func NewWithdrawValidatorCommissionEvent(
+	validatorAddress common.Address,
+	commission *big.Int,
+) WithdrawValidatorCommissionEvent {
+	return WithdrawValidatorCommissionEvent{
+		WithdrawValidatorCommissionEventIndexed: WithdrawValidatorCommissionEventIndexed{
+			ValidatorAddress: validatorAddress,
+		},
+		WithdrawValidatorCommissionEventData: WithdrawValidatorCommissionEventData{
+			Commission: commission,
+		},
+	}
+}
+
+// WithdrawValidatorCommission represents an ABI event
+type WithdrawValidatorCommissionEventIndexed struct {
+	ValidatorAddress common.Address
+}
+
+// EncodeTopics encodes indexed fields of WithdrawValidatorCommission event to topics
+func (e WithdrawValidatorCommissionEventIndexed) EncodeTopics() []common.Hash {
+	topics := make([]common.Hash, 0, 2)
+	topics = append(topics, WithdrawValidatorCommissionEventTopic)
+
+	// Encode indexed field ValidatorAddress
+	{
+		var buf common.Hash
+
+		// ValidatorAddress (static)
+		copy(buf[0+12:0+32], e.ValidatorAddress[:])
+
+		topics = append(topics, buf)
+	}
+
+	return topics
+}
+
+// DecodeTopics decodes indexed fields of WithdrawValidatorCommission event from topics
+func (e *WithdrawValidatorCommissionEventIndexed) DecodeTopics(topics []common.Hash) error {
+	if len(topics) < 2 {
+		return fmt.Errorf("insufficient topics for WithdrawValidatorCommission event")
+	}
+
+	// Check event signature
+	if topics[0] != WithdrawValidatorCommissionEventTopic {
+		return fmt.Errorf("invalid event signature for WithdrawValidatorCommission event")
+	}
+
+	// ValidatorAddress (static)
+	{
+		data := topics[1][:]
+		offset := 0
+
+		// e.ValidatorAddress (static)
+		copy(e.ValidatorAddress[:], data[offset+12:offset+32])
+
+	}
+
+	return nil
+}
+
+const WithdrawValidatorCommissionEventDataStaticSize = 32
+
+// WithdrawValidatorCommissionEventData represents an ABI tuple
+type WithdrawValidatorCommissionEventData struct {
+	Commission *big.Int
+}
+
+// EncodedSize returns the total encoded size of WithdrawValidatorCommissionEventData
+func (t WithdrawValidatorCommissionEventData) EncodedSize() int {
+	dynamicSize := 0
+
+	return WithdrawValidatorCommissionEventDataStaticSize + dynamicSize
+}
+
+// EncodeTo encodes WithdrawValidatorCommissionEventData to ABI bytes in the provided buffer
+// it panics if the buffer is not large enough
+func (t WithdrawValidatorCommissionEventData) EncodeTo(buf []byte) (int, error) {
+	dynamicOffset := WithdrawValidatorCommissionEventDataStaticSize // Start dynamic data after static section
+
+	// Commission (static)
+
+	if err := abi.EncodeBigInt(t.Commission, buf[0:32], false); err != nil {
+		return 0, err
+	}
+
+	return dynamicOffset, nil
+}
+
+// Encode encodes WithdrawValidatorCommissionEventData to ABI bytes
+func (t WithdrawValidatorCommissionEventData) Encode() ([]byte, error) {
+	buf := make([]byte, t.EncodedSize())
+	if _, err := t.EncodeTo(buf); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
+
+// Decode decodes WithdrawValidatorCommissionEventData from ABI bytes in the provided buffer
+func (t *WithdrawValidatorCommissionEventData) Decode(data0 []byte) error {
+	if len(data0) < WithdrawValidatorCommissionEventDataStaticSize {
+		return fmt.Errorf("insufficient data for WithdrawValidatorCommissionEventData")
+	}
+
+	// t.Commission (static)
+	t.Commission = new(big.Int).SetBytes(data0[0:32])
 
 	return nil
 }
