@@ -18,6 +18,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output ics20.abi.go -external-tuples PageRequest=cmn.PageRequest,PageResponse=cmn.PageResponse,Height=cmn.Height -imports cmn=github.com/cosmos/evm/precompiles/common
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 var (

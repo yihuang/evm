@@ -18,6 +18,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output erc20.abi.go
+
 const (
 	// abiPath defines the path to the ERC-20 precompile ABI JSON file.
 	abiPath = "abi.json"

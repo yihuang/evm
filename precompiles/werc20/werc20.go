@@ -17,6 +17,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output werc20.abi.go
+
 // abiPath defines the path to the WERC-20 precompile ABI JSON file.
 const abiPath = "abi.json"
 

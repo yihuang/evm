@@ -127,7 +127,6 @@ func (p *Precompile) Transfer(
 	if err = EmitIBCTransferEvent(
 		ctx,
 		stateDB,
-		p.Events[EventTypeIBCTransfer],
 		p.Address(),
 		sender,
 		msg.Receiver,
