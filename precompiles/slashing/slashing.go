@@ -22,6 +22,8 @@ import (
 	_ "embed"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output slashing.abi.go -external-tuples Dec=cmn.Dec -imports cmn=github.com/cosmos/evm/precompiles/common
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 var (
