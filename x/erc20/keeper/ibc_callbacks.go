@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -64,6 +65,7 @@ func (k Keeper) OnRecvPacket(
 
 	senderBz, err := k.addrCodec.StringToBytes(data.Sender)
 	if err != nil {
+		fmt.Println("[DEBUG] ibc invalid sender:", data.Sender)
 		return channeltypes.NewErrorAcknowledgement(errorsmod.Wrap(err, "invalid sender"))
 	}
 	sender := sdk.AccAddress(senderBz)
