@@ -12,35 +12,8 @@ import (
 	"cosmossdk.io/math"
 
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
-
-// SlashingSigningInfo represents the signing info for a validator
-type SlashingSigningInfo struct {
-	ValidatorAddress    common.Address `abi:"validatorAddress"`
-	StartHeight         int64          `abi:"startHeight"`
-	IndexOffset         int64          `abi:"indexOffset"`
-	JailedUntil         int64          `abi:"jailedUntil"`
-	Tombstoned          bool           `abi:"tombstoned"`
-	MissedBlocksCounter int64          `abi:"missedBlocksCounter"`
-}
-
-// SigningInfoOutput represents the output of the signing info query
-type SigningInfoOutput struct {
-	SigningInfo SlashingSigningInfo
-}
-
-// SigningInfosOutput represents the output of the signing infos query
-type SigningInfosOutput struct {
-	SigningInfos []SlashingSigningInfo `abi:"signingInfos"`
-	PageResponse query.PageResponse    `abi:"pageResponse"`
-}
-
-// SigningInfosInput represents the input for the signing infos query
-type SigningInfosInput struct {
-	Pagination query.PageRequest `abi:"pagination"`
-}
 
 // ParseSigningInfoArgs parses the arguments for the signing info query
 func ParseSigningInfoArgs(args GetSigningInfoCall, consCodec address.Codec) (*slashingtypes.QuerySigningInfoRequest, error) {
@@ -66,13 +39,14 @@ func ParseSigningInfosArgs(method *abi.Method, args GetSigningInfosCall) (*slash
 	}, nil
 }
 
-func (sio *SigningInfoOutput) FromResponse(res *slashingtypes.QuerySigningInfoResponse) (*SigningInfoOutput, error) {
+// FromResponse populates GetSigningInfoReturn from a QuerySigningInfoResponse
+func (ret *GetSigningInfoReturn) FromResponse(res *slashingtypes.QuerySigningInfoResponse) error {
 	consAddr, err := types.ConsAddressFromBech32(res.ValSigningInfo.Address)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing consensus address: %w", err)
+		return fmt.Errorf("error parsing consensus address: %w", err)
 	}
 
-	sio.SigningInfo = SlashingSigningInfo{
+	ret.SigningInfo = SigningInfo{
 		ValidatorAddress:    common.BytesToAddress(consAddr.Bytes()),
 		StartHeight:         res.ValSigningInfo.StartHeight,
 		IndexOffset:         res.ValSigningInfo.IndexOffset,
@@ -80,17 +54,18 @@ func (sio *SigningInfoOutput) FromResponse(res *slashingtypes.QuerySigningInfoRe
 		Tombstoned:          res.ValSigningInfo.Tombstoned,
 		MissedBlocksCounter: res.ValSigningInfo.MissedBlocksCounter,
 	}
-	return sio, nil
+	return nil
 }
 
-func (sio *SigningInfosOutput) FromResponse(res *slashingtypes.QuerySigningInfosResponse) (*SigningInfosOutput, error) {
-	sio.SigningInfos = make([]SlashingSigningInfo, len(res.Info))
+// FromResponse populates GetSigningInfosReturn from a QuerySigningInfosResponse
+func (ret *GetSigningInfosReturn) FromResponse(res *slashingtypes.QuerySigningInfosResponse) error {
+	ret.SigningInfos = make([]SigningInfo, len(res.Info))
 	for i, info := range res.Info {
 		consAddr, err := types.ConsAddressFromBech32(info.Address)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing consensus address: %w", err)
+			return fmt.Errorf("error parsing consensus address: %w", err)
 		}
-		sio.SigningInfos[i] = SlashingSigningInfo{
+		ret.SigningInfos[i] = SigningInfo{
 			ValidatorAddress:    common.BytesToAddress(consAddr.Bytes()),
 			StartHeight:         info.StartHeight,
 			IndexOffset:         info.IndexOffset,
@@ -100,35 +75,17 @@ func (sio *SigningInfosOutput) FromResponse(res *slashingtypes.QuerySigningInfos
 		}
 	}
 	if res.Pagination != nil {
-		sio.PageResponse = query.PageResponse{
+		ret.PageResponse = PageResponse{
 			NextKey: res.Pagination.NextKey,
 			Total:   res.Pagination.Total,
 		}
 	}
-	return sio, nil
+	return nil
 }
 
-// ValidatorUnjailed defines the data structure for the ValidatorUnjailed event.
-type ValidatorUnjailed struct {
-	Validator common.Address
-}
-
-// SlashingParams defines the parameters for the slashing module
-type SlashingParams struct {
-	SignedBlocksWindow      int64   `abi:"signedBlocksWindow"`
-	MinSignedPerWindow      cmn.Dec `abi:"minSignedPerWindow"`
-	DowntimeJailDuration    int64   `abi:"downtimeJailDuration"`
-	SlashFractionDoubleSign cmn.Dec `abi:"slashFractionDoubleSign"`
-	SlashFractionDowntime   cmn.Dec `abi:"slashFractionDowntime"`
-}
-
-// ParamsOutput represents the output of the params query
-type ParamsOutput struct {
-	Params SlashingParams
-}
-
-func (po *ParamsOutput) FromResponse(res *slashingtypes.QueryParamsResponse) *ParamsOutput {
-	po.Params = SlashingParams{
+// FromResponse populates GetParamsReturn from a QueryParamsResponse
+func (ret *GetParamsReturn) FromResponse(res *slashingtypes.QueryParamsResponse) error {
+	ret.Params = Params{
 		SignedBlocksWindow: res.Params.SignedBlocksWindow,
 		MinSignedPerWindow: cmn.Dec{
 			Value:     res.Params.MinSignedPerWindow.BigInt(),
@@ -144,5 +101,5 @@ func (po *ParamsOutput) FromResponse(res *slashingtypes.QueryParamsResponse) *Pa
 			Precision: math.LegacyPrecision,
 		},
 	}
-	return po
+	return nil
 }

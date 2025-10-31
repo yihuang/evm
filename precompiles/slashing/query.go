@@ -34,22 +34,12 @@ func (p *Precompile) GetSigningInfo(
 		return nil, err
 	}
 
-	out, err := new(SigningInfoOutput).FromResponse(res)
-	if err != nil {
+	ret := new(GetSigningInfoReturn)
+	if err := ret.FromResponse(res); err != nil {
 		return nil, err
 	}
 
-	// Convert to generated SigningInfo type
-	return &GetSigningInfoReturn{
-		SigningInfo: SigningInfo{
-			ValidatorAddress:    out.SigningInfo.ValidatorAddress,
-			StartHeight:         out.SigningInfo.StartHeight,
-			IndexOffset:         out.SigningInfo.IndexOffset,
-			JailedUntil:         out.SigningInfo.JailedUntil,
-			Tombstoned:          out.SigningInfo.Tombstoned,
-			MissedBlocksCounter: out.SigningInfo.MissedBlocksCounter,
-		},
-	}, nil
+	return ret, nil
 }
 
 // GetSigningInfos implements the query to get signing info for all validators.
@@ -68,31 +58,12 @@ func (p *Precompile) GetSigningInfos(
 		return nil, err
 	}
 
-	out, err := new(SigningInfosOutput).FromResponse(res)
-	if err != nil {
+	ret := new(GetSigningInfosReturn)
+	if err := ret.FromResponse(res); err != nil {
 		return nil, err
 	}
 
-	// Convert to generated types
-	signingInfos := make([]SigningInfo, len(out.SigningInfos))
-	for i, info := range out.SigningInfos {
-		signingInfos[i] = SigningInfo{
-			ValidatorAddress:    info.ValidatorAddress,
-			StartHeight:         info.StartHeight,
-			IndexOffset:         info.IndexOffset,
-			JailedUntil:         info.JailedUntil,
-			Tombstoned:          info.Tombstoned,
-			MissedBlocksCounter: info.MissedBlocksCounter,
-		}
-	}
-
-	return &GetSigningInfosReturn{
-		SigningInfos: signingInfos,
-		PageResponse: PageResponse{
-			NextKey: out.PageResponse.NextKey,
-			Total:   out.PageResponse.Total,
-		},
-	}, nil
+	return ret, nil
 }
 
 // GetParams implements the query to get the slashing parameters.
@@ -105,16 +76,10 @@ func (p *Precompile) GetParams(
 		return nil, err
 	}
 
-	out := new(ParamsOutput).FromResponse(res)
+	ret := new(GetParamsReturn)
+	if err := ret.FromResponse(res); err != nil {
+		return nil, err
+	}
 
-	// Convert to generated Params type
-	return &GetParamsReturn{
-		Params: Params{
-			SignedBlocksWindow:      out.Params.SignedBlocksWindow,
-			MinSignedPerWindow:      out.Params.MinSignedPerWindow,
-			DowntimeJailDuration:    out.Params.DowntimeJailDuration,
-			SlashFractionDoubleSign: out.Params.SlashFractionDoubleSign,
-			SlashFractionDowntime:   out.Params.SlashFractionDowntime,
-		},
-	}, nil
+	return ret, nil
 }
