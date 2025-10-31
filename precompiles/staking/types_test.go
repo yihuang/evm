@@ -1,6 +1,7 @@
 package staking
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	evmaddress "github.com/cosmos/evm/encoding/address"
+	cmn "github.com/cosmos/evm/precompiles/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
