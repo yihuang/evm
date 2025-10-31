@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/big"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/ethereum/go-ethereum/common"
@@ -48,7 +47,7 @@ type PageRequest struct {
 // EncodedSize returns the total encoded size of PageRequest
 func (t PageRequest) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _SlashingSizeBytes(t.Key)
+	dynamicSize += abi.SizeBytes(t.Key)
 
 	return PageRequestStaticSize + dynamicSize
 }
@@ -65,29 +64,29 @@ func (value PageRequest) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _SlashingEncodeBytes(value.Key, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.Key, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Offset: uint64
-	if _, err := _SlashingEncodeUint64(value.Offset, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Offset, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field Limit: uint64
-	if _, err := _SlashingEncodeUint64(value.Limit, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Limit, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field CountTotal: bool
-	if _, err := _SlashingEncodeBool(value.CountTotal, buf[96:]); err != nil {
+	if _, err := abi.EncodeBool(value.CountTotal, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field Reverse: bool
-	if _, err := _SlashingEncodeBool(value.Reverse, buf[128:]); err != nil {
+	if _, err := abi.EncodeBool(value.Reverse, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -119,29 +118,29 @@ func (t *PageRequest) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Key")
 		}
-		t.Key, n, err = _SlashingDecodeBytes(data[dynamicOffset:])
+		t.Key, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Offset: uint64
-	t.Offset, _, err = _SlashingDecodeUint64(data[32:])
+	t.Offset, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Limit: uint64
-	t.Limit, _, err = _SlashingDecodeUint64(data[64:])
+	t.Limit, _, err = abi.DecodeUint64(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CountTotal: bool
-	t.CountTotal, _, err = _SlashingDecodeBool(data[96:])
+	t.CountTotal, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Reverse: bool
-	t.Reverse, _, err = _SlashingDecodeBool(data[128:])
+	t.Reverse, _, err = abi.DecodeBool(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -159,7 +158,7 @@ type PageResponse struct {
 // EncodedSize returns the total encoded size of PageResponse
 func (t PageResponse) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _SlashingSizeBytes(t.NextKey)
+	dynamicSize += abi.SizeBytes(t.NextKey)
 
 	return PageResponseStaticSize + dynamicSize
 }
@@ -176,14 +175,14 @@ func (value PageResponse) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _SlashingEncodeBytes(value.NextKey, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.NextKey, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Total: uint64
-	if _, err := _SlashingEncodeUint64(value.Total, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Total, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -215,14 +214,14 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field NextKey")
 		}
-		t.NextKey, n, err = _SlashingDecodeBytes(data[dynamicOffset:])
+		t.NextKey, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Total: uint64
-	t.Total, _, err = _SlashingDecodeUint64(data[32:])
+	t.Total, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -252,7 +251,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := ParamsStaticSize // Start dynamic data after static section
 	// Field SignedBlocksWindow: int64
-	if _, err := _SlashingEncodeInt64(value.SignedBlocksWindow, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.SignedBlocksWindow, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -262,7 +261,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	}
 
 	// Field DowntimeJailDuration: int64
-	if _, err := _SlashingEncodeInt64(value.DowntimeJailDuration, buf[96:]); err != nil {
+	if _, err := abi.EncodeInt64(value.DowntimeJailDuration, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -298,7 +297,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 256
 	// Decode static field SignedBlocksWindow: int64
-	t.SignedBlocksWindow, _, err = _SlashingDecodeInt64(data[0:])
+	t.SignedBlocksWindow, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -308,7 +307,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		return 0, err
 	}
 	// Decode static field DowntimeJailDuration: int64
-	t.DowntimeJailDuration, _, err = _SlashingDecodeInt64(data[96:])
+	t.DowntimeJailDuration, _, err = abi.DecodeInt64(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -349,32 +348,32 @@ func (value SigningInfo) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := SigningInfoStaticSize // Start dynamic data after static section
 	// Field ValidatorAddress: address
-	if _, err := _SlashingEncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field StartHeight: int64
-	if _, err := _SlashingEncodeInt64(value.StartHeight, buf[32:]); err != nil {
+	if _, err := abi.EncodeInt64(value.StartHeight, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field IndexOffset: int64
-	if _, err := _SlashingEncodeInt64(value.IndexOffset, buf[64:]); err != nil {
+	if _, err := abi.EncodeInt64(value.IndexOffset, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field JailedUntil: int64
-	if _, err := _SlashingEncodeInt64(value.JailedUntil, buf[96:]); err != nil {
+	if _, err := abi.EncodeInt64(value.JailedUntil, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field Tombstoned: bool
-	if _, err := _SlashingEncodeBool(value.Tombstoned, buf[128:]); err != nil {
+	if _, err := abi.EncodeBool(value.Tombstoned, buf[128:]); err != nil {
 		return 0, err
 	}
 
 	// Field MissedBlocksCounter: int64
-	if _, err := _SlashingEncodeInt64(value.MissedBlocksCounter, buf[160:]); err != nil {
+	if _, err := abi.EncodeInt64(value.MissedBlocksCounter, buf[160:]); err != nil {
 		return 0, err
 	}
 
@@ -400,76 +399,40 @@ func (t *SigningInfo) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 192
 	// Decode static field ValidatorAddress: address
-	t.ValidatorAddress, _, err = _SlashingDecodeAddress(data[0:])
+	t.ValidatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field StartHeight: int64
-	t.StartHeight, _, err = _SlashingDecodeInt64(data[32:])
+	t.StartHeight, _, err = abi.DecodeInt64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field IndexOffset: int64
-	t.IndexOffset, _, err = _SlashingDecodeInt64(data[64:])
+	t.IndexOffset, _, err = abi.DecodeInt64(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field JailedUntil: int64
-	t.JailedUntil, _, err = _SlashingDecodeInt64(data[96:])
+	t.JailedUntil, _, err = abi.DecodeInt64(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Tombstoned: bool
-	t.Tombstoned, _, err = _SlashingDecodeBool(data[128:])
+	t.Tombstoned, _, err = abi.DecodeBool(data[128:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MissedBlocksCounter: int64
-	t.MissedBlocksCounter, _, err = _SlashingDecodeInt64(data[160:])
+	t.MissedBlocksCounter, _, err = abi.DecodeInt64(data[160:])
 	if err != nil {
 		return 0, err
 	}
 	return dynamicOffset, nil
 }
 
-// _SlashingEncodeAddress encodes address to ABI bytes
-func _SlashingEncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _SlashingEncodeBool encodes bool to ABI bytes
-func _SlashingEncodeBool(value bool, buf []byte) (int, error) {
-	if value {
-		buf[31] = 1
-	}
-	return 32, nil
-}
-
-// _SlashingEncodeBytes encodes bytes to ABI bytes
-func _SlashingEncodeBytes(value []byte, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], value)
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _SlashingEncodeInt64 encodes int64 to ABI bytes
-func _SlashingEncodeInt64(value int64, buf []byte) (int, error) {
-	if value < 0 {
-		for i := 0; i < 24; i++ {
-			buf[i] = 0xff
-		}
-	}
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _SlashingEncodeSigningInfoSlice encodes (address,int64,int64,int64,bool,int64)[] to ABI bytes
-func _SlashingEncodeSigningInfoSlice(value []SigningInfo, buf []byte) (int, error) {
+// EncodeSigningInfoSlice encodes (address,int64,int64,int64,bool,int64)[] to ABI bytes
+func EncodeSigningInfoSlice(value []SigningInfo, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -487,77 +450,14 @@ func _SlashingEncodeSigningInfoSlice(value []SigningInfo, buf []byte) (int, erro
 	return offset + 32, nil
 }
 
-// _SlashingEncodeUint256 encodes uint256 to ABI bytes
-func _SlashingEncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _SlashingEncodeUint64 encodes uint64 to ABI bytes
-func _SlashingEncodeUint64(value uint64, buf []byte) (int, error) {
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _SlashingEncodeUint8 encodes uint8 to ABI bytes
-func _SlashingEncodeUint8(value uint8, buf []byte) (int, error) {
-	buf[31] = byte(value)
-	return 32, nil
-}
-
-// _SlashingSizeBytes returns the encoded size of bytes
-func _SlashingSizeBytes(value []byte) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded bytes data
-	return size
-}
-
-// _SlashingSizeSigningInfoSlice returns the encoded size of (address,int64,int64,int64,bool,int64)[]
-func _SlashingSizeSigningInfoSlice(value []SigningInfo) int {
+// SizeSigningInfoSlice returns the encoded size of (address,int64,int64,int64,bool,int64)[]
+func SizeSigningInfoSlice(value []SigningInfo) int {
 	size := 32 + 192*len(value) // length + static elements
 	return size
 }
 
-// _SlashingDecodeAddress decodes address from ABI bytes
-func _SlashingDecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _SlashingDecodeBool decodes bool from ABI bytes
-func _SlashingDecodeBool(data []byte) (bool, int, error) {
-	result := data[31] != 0
-	return result, 32, nil
-}
-
-// _SlashingDecodeBytes decodes bytes from ABI bytes
-func _SlashingDecodeBytes(data []byte) ([]byte, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := make([]byte, length)
-	copy(result, data[32:32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _SlashingDecodeInt64 decodes int64 from ABI bytes
-func _SlashingDecodeInt64(data []byte) (int64, int, error) {
-	var result int64
-	result = int64(binary.BigEndian.Uint64(data[24:32]))
-	if data[0]&0x80 != 0 { // Check sign bit
-		result = result | ^0x7fffffffffffffff // Sign extend
-	}
-	return result, 32, nil
-}
-
-// _SlashingDecodeSigningInfoSlice decodes (address,int64,int64,int64,bool,int64)[] from ABI bytes
-func _SlashingDecodeSigningInfoSlice(data []byte) ([]SigningInfo, int, error) {
+// DecodeSigningInfoSlice decodes (address,int64,int64,int64,bool,int64)[] from ABI bytes
+func DecodeSigningInfoSlice(data []byte) ([]SigningInfo, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -582,27 +482,6 @@ func _SlashingDecodeSigningInfoSlice(data []byte) ([]SigningInfo, int, error) {
 		offset += n
 	}
 	return result, offset + 32, nil
-}
-
-// _SlashingDecodeUint256 decodes uint256 from ABI bytes
-func _SlashingDecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _SlashingDecodeUint64 decodes uint64 from ABI bytes
-func _SlashingDecodeUint64(data []byte) (uint64, int, error) {
-	result := binary.BigEndian.Uint64(data[24:32])
-	return result, 32, nil
-}
-
-// _SlashingDecodeUint8 decodes uint8 from ABI bytes
-func _SlashingDecodeUint8(data []byte) (uint8, int, error) {
-	result := uint8(data[31])
-	return result, 32, nil
 }
 
 // GetParamsCall represents the input arguments for getParams function
@@ -691,7 +570,7 @@ func (value GetSigningInfoCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetSigningInfoCallStaticSize // Start dynamic data after static section
 	// Field ConsAddress: address
-	if _, err := _SlashingEncodeAddress(value.ConsAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ConsAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -717,7 +596,7 @@ func (t *GetSigningInfoCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ConsAddress: address
-	t.ConsAddress, _, err = _SlashingDecodeAddress(data[0:])
+	t.ConsAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -877,7 +756,7 @@ type GetSigningInfosReturn struct {
 // EncodedSize returns the total encoded size of GetSigningInfosReturn
 func (t GetSigningInfosReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _SlashingSizeSigningInfoSlice(t.SigningInfos)
+	dynamicSize += SizeSigningInfoSlice(t.SigningInfos)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return GetSigningInfosReturnStaticSize + dynamicSize
@@ -895,7 +774,7 @@ func (value GetSigningInfosReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _SlashingEncodeSigningInfoSlice(value.SigningInfos, buf[dynamicOffset:])
+	n, err = EncodeSigningInfoSlice(value.SigningInfos, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -939,7 +818,7 @@ func (t *GetSigningInfosReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SigningInfos")
 		}
-		t.SigningInfos, n, err = _SlashingDecodeSigningInfoSlice(data[dynamicOffset:])
+		t.SigningInfos, n, err = DecodeSigningInfoSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -979,7 +858,7 @@ func (value UnjailCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := UnjailCallStaticSize // Start dynamic data after static section
 	// Field ValidatorAddress: address
-	if _, err := _SlashingEncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1005,7 +884,7 @@ func (t *UnjailCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ValidatorAddress: address
-	t.ValidatorAddress, _, err = _SlashingDecodeAddress(data[0:])
+	t.ValidatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1041,7 +920,7 @@ func (value UnjailReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := UnjailReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _SlashingEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1067,7 +946,7 @@ func (t *UnjailReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _SlashingDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1110,7 +989,7 @@ func (e ValidatorUnjailedEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Validator
 		var hash common.Hash
-		if _, err := _SlashingEncodeAddress(e.Validator, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Validator, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -1127,7 +1006,7 @@ func (e *ValidatorUnjailedEventIndexed) DecodeTopics(topics []common.Hash) error
 		return fmt.Errorf("invalid event topic for ValidatorUnjailed event")
 	}
 	var err error
-	e.Validator, _, err = _SlashingDecodeAddress(topics[1][:])
+	e.Validator, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}

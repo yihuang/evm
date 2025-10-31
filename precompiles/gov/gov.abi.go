@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/big"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/ethereum/go-ethereum/common"
@@ -76,7 +75,7 @@ type DepositData struct {
 // EncodedSize returns the total encoded size of DepositData
 func (t DepositData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeCoinSlice(t.Amount)
+	dynamicSize += SizeCoinSlice(t.Amount)
 
 	return DepositDataStaticSize + dynamicSize
 }
@@ -90,12 +89,12 @@ func (value DepositData) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Depositor: address
-	if _, err := _GovEncodeAddress(value.Depositor, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Depositor, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -103,7 +102,7 @@ func (value DepositData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.Amount, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Amount, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -132,12 +131,12 @@ func (t *DepositData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Depositor: address
-	t.Depositor, _, err = _GovDecodeAddress(data[32:])
+	t.Depositor, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -147,7 +146,7 @@ func (t *DepositData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Amount")
 		}
-		t.Amount, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.Amount, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -181,16 +180,16 @@ type Params struct {
 // EncodedSize returns the total encoded size of Params
 func (t Params) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeCoinSlice(t.MinDeposit)
-	dynamicSize += _GovSizeString(t.Quorum)
-	dynamicSize += _GovSizeString(t.Threshold)
-	dynamicSize += _GovSizeString(t.VetoThreshold)
-	dynamicSize += _GovSizeString(t.MinInitialDepositRatio)
-	dynamicSize += _GovSizeString(t.ProposalCancelRatio)
-	dynamicSize += _GovSizeString(t.ProposalCancelDest)
-	dynamicSize += _GovSizeString(t.ExpeditedThreshold)
-	dynamicSize += _GovSizeCoinSlice(t.ExpeditedMinDeposit)
-	dynamicSize += _GovSizeString(t.MinDepositRatio)
+	dynamicSize += SizeCoinSlice(t.MinDeposit)
+	dynamicSize += abi.SizeString(t.Quorum)
+	dynamicSize += abi.SizeString(t.Threshold)
+	dynamicSize += abi.SizeString(t.VetoThreshold)
+	dynamicSize += abi.SizeString(t.MinInitialDepositRatio)
+	dynamicSize += abi.SizeString(t.ProposalCancelRatio)
+	dynamicSize += abi.SizeString(t.ProposalCancelDest)
+	dynamicSize += abi.SizeString(t.ExpeditedThreshold)
+	dynamicSize += SizeCoinSlice(t.ExpeditedMinDeposit)
+	dynamicSize += abi.SizeString(t.MinDepositRatio)
 
 	return ParamsStaticSize + dynamicSize
 }
@@ -204,7 +203,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field VotingPeriod: int64
-	if _, err := _GovEncodeInt64(value.VotingPeriod, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.VotingPeriod, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -212,14 +211,14 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.MinDeposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.MinDeposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field MaxDepositPeriod: int64
-	if _, err := _GovEncodeInt64(value.MaxDepositPeriod, buf[64:]); err != nil {
+	if _, err := abi.EncodeInt64(value.MaxDepositPeriod, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -227,7 +226,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Quorum, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Quorum, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -237,7 +236,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Threshold, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Threshold, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -247,7 +246,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.VetoThreshold, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.VetoThreshold, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -257,7 +256,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[192+24:192+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.MinInitialDepositRatio, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.MinInitialDepositRatio, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -267,7 +266,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[224+24:224+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.ProposalCancelRatio, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ProposalCancelRatio, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -277,14 +276,14 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[256+24:256+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.ProposalCancelDest, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ProposalCancelDest, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field ExpeditedVotingPeriod: int64
-	if _, err := _GovEncodeInt64(value.ExpeditedVotingPeriod, buf[288:]); err != nil {
+	if _, err := abi.EncodeInt64(value.ExpeditedVotingPeriod, buf[288:]); err != nil {
 		return 0, err
 	}
 
@@ -292,7 +291,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[320+24:320+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.ExpeditedThreshold, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ExpeditedThreshold, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -302,24 +301,24 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[352+24:352+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.ExpeditedMinDeposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.ExpeditedMinDeposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field BurnVoteQuorum: bool
-	if _, err := _GovEncodeBool(value.BurnVoteQuorum, buf[384:]); err != nil {
+	if _, err := abi.EncodeBool(value.BurnVoteQuorum, buf[384:]); err != nil {
 		return 0, err
 	}
 
 	// Field BurnProposalDepositPrevote: bool
-	if _, err := _GovEncodeBool(value.BurnProposalDepositPrevote, buf[416:]); err != nil {
+	if _, err := abi.EncodeBool(value.BurnProposalDepositPrevote, buf[416:]); err != nil {
 		return 0, err
 	}
 
 	// Field BurnVoteVeto: bool
-	if _, err := _GovEncodeBool(value.BurnVoteVeto, buf[448:]); err != nil {
+	if _, err := abi.EncodeBool(value.BurnVoteVeto, buf[448:]); err != nil {
 		return 0, err
 	}
 
@@ -327,7 +326,7 @@ func (value Params) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[480+24:480+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.MinDepositRatio, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.MinDepositRatio, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -356,7 +355,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 512
 	// Decode static field VotingPeriod: int64
-	t.VotingPeriod, _, err = _GovDecodeInt64(data[0:])
+	t.VotingPeriod, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -366,14 +365,14 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field MinDeposit")
 		}
-		t.MinDeposit, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.MinDeposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field MaxDepositPeriod: int64
-	t.MaxDepositPeriod, _, err = _GovDecodeInt64(data[64:])
+	t.MaxDepositPeriod, _, err = abi.DecodeInt64(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -383,7 +382,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Quorum")
 		}
-		t.Quorum, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Quorum, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -395,7 +394,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Threshold")
 		}
-		t.Threshold, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Threshold, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -407,7 +406,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field VetoThreshold")
 		}
-		t.VetoThreshold, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.VetoThreshold, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -419,7 +418,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field MinInitialDepositRatio")
 		}
-		t.MinInitialDepositRatio, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.MinInitialDepositRatio, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -431,7 +430,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ProposalCancelRatio")
 		}
-		t.ProposalCancelRatio, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.ProposalCancelRatio, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -443,14 +442,14 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ProposalCancelDest")
 		}
-		t.ProposalCancelDest, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.ProposalCancelDest, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field ExpeditedVotingPeriod: int64
-	t.ExpeditedVotingPeriod, _, err = _GovDecodeInt64(data[288:])
+	t.ExpeditedVotingPeriod, _, err = abi.DecodeInt64(data[288:])
 	if err != nil {
 		return 0, err
 	}
@@ -460,7 +459,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ExpeditedThreshold")
 		}
-		t.ExpeditedThreshold, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.ExpeditedThreshold, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -472,24 +471,24 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ExpeditedMinDeposit")
 		}
-		t.ExpeditedMinDeposit, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.ExpeditedMinDeposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field BurnVoteQuorum: bool
-	t.BurnVoteQuorum, _, err = _GovDecodeBool(data[384:])
+	t.BurnVoteQuorum, _, err = abi.DecodeBool(data[384:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field BurnProposalDepositPrevote: bool
-	t.BurnProposalDepositPrevote, _, err = _GovDecodeBool(data[416:])
+	t.BurnProposalDepositPrevote, _, err = abi.DecodeBool(data[416:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field BurnVoteVeto: bool
-	t.BurnVoteVeto, _, err = _GovDecodeBool(data[448:])
+	t.BurnVoteVeto, _, err = abi.DecodeBool(data[448:])
 	if err != nil {
 		return 0, err
 	}
@@ -499,7 +498,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field MinDepositRatio")
 		}
-		t.MinDepositRatio, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.MinDepositRatio, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -530,12 +529,12 @@ type ProposalData struct {
 // EncodedSize returns the total encoded size of ProposalData
 func (t ProposalData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeStringSlice(t.Messages)
+	dynamicSize += abi.SizeStringSlice(t.Messages)
 	dynamicSize += t.FinalTallyResult.EncodedSize()
-	dynamicSize += _GovSizeCoinSlice(t.TotalDeposit)
-	dynamicSize += _GovSizeString(t.Metadata)
-	dynamicSize += _GovSizeString(t.Title)
-	dynamicSize += _GovSizeString(t.Summary)
+	dynamicSize += SizeCoinSlice(t.TotalDeposit)
+	dynamicSize += abi.SizeString(t.Metadata)
+	dynamicSize += abi.SizeString(t.Title)
+	dynamicSize += abi.SizeString(t.Summary)
 
 	return ProposalDataStaticSize + dynamicSize
 }
@@ -549,7 +548,7 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Id: uint64
-	if _, err := _GovEncodeUint64(value.Id, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Id, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -557,14 +556,14 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeStringSlice(value.Messages, buf[dynamicOffset:])
+	n, err = abi.EncodeStringSlice(value.Messages, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Status: uint32
-	if _, err := _GovEncodeUint32(value.Status, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint32(value.Status, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -579,12 +578,12 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset += n
 
 	// Field SubmitTime: uint64
-	if _, err := _GovEncodeUint64(value.SubmitTime, buf[128:]); err != nil {
+	if _, err := abi.EncodeUint64(value.SubmitTime, buf[128:]); err != nil {
 		return 0, err
 	}
 
 	// Field DepositEndTime: uint64
-	if _, err := _GovEncodeUint64(value.DepositEndTime, buf[160:]); err != nil {
+	if _, err := abi.EncodeUint64(value.DepositEndTime, buf[160:]); err != nil {
 		return 0, err
 	}
 
@@ -592,19 +591,19 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[192+24:192+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.TotalDeposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.TotalDeposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field VotingStartTime: uint64
-	if _, err := _GovEncodeUint64(value.VotingStartTime, buf[224:]); err != nil {
+	if _, err := abi.EncodeUint64(value.VotingStartTime, buf[224:]); err != nil {
 		return 0, err
 	}
 
 	// Field VotingEndTime: uint64
-	if _, err := _GovEncodeUint64(value.VotingEndTime, buf[256:]); err != nil {
+	if _, err := abi.EncodeUint64(value.VotingEndTime, buf[256:]); err != nil {
 		return 0, err
 	}
 
@@ -612,7 +611,7 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[288+24:288+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Metadata, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Metadata, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -622,7 +621,7 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[320+24:320+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Title, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Title, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -632,14 +631,14 @@ func (value ProposalData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[352+24:352+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Summary, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Summary, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Proposer: address
-	if _, err := _GovEncodeAddress(value.Proposer, buf[384:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Proposer, buf[384:]); err != nil {
 		return 0, err
 	}
 
@@ -666,7 +665,7 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 416
 	// Decode static field Id: uint64
-	t.Id, _, err = _GovDecodeUint64(data[0:])
+	t.Id, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -676,14 +675,14 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Messages")
 		}
-		t.Messages, n, err = _GovDecodeStringSlice(data[dynamicOffset:])
+		t.Messages, n, err = abi.DecodeStringSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Status: uint32
-	t.Status, _, err = _GovDecodeUint32(data[64:])
+	t.Status, _, err = abi.DecodeUint32(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -700,12 +699,12 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		dynamicOffset += n
 	}
 	// Decode static field SubmitTime: uint64
-	t.SubmitTime, _, err = _GovDecodeUint64(data[128:])
+	t.SubmitTime, _, err = abi.DecodeUint64(data[128:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field DepositEndTime: uint64
-	t.DepositEndTime, _, err = _GovDecodeUint64(data[160:])
+	t.DepositEndTime, _, err = abi.DecodeUint64(data[160:])
 	if err != nil {
 		return 0, err
 	}
@@ -715,19 +714,19 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field TotalDeposit")
 		}
-		t.TotalDeposit, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.TotalDeposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field VotingStartTime: uint64
-	t.VotingStartTime, _, err = _GovDecodeUint64(data[224:])
+	t.VotingStartTime, _, err = abi.DecodeUint64(data[224:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field VotingEndTime: uint64
-	t.VotingEndTime, _, err = _GovDecodeUint64(data[256:])
+	t.VotingEndTime, _, err = abi.DecodeUint64(data[256:])
 	if err != nil {
 		return 0, err
 	}
@@ -737,7 +736,7 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Metadata")
 		}
-		t.Metadata, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Metadata, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -749,7 +748,7 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Title")
 		}
-		t.Title, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Title, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -761,14 +760,14 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Summary")
 		}
-		t.Summary, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Summary, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Proposer: address
-	t.Proposer, _, err = _GovDecodeAddress(data[384:])
+	t.Proposer, _, err = abi.DecodeAddress(data[384:])
 	if err != nil {
 		return 0, err
 	}
@@ -788,10 +787,10 @@ type TallyResultData struct {
 // EncodedSize returns the total encoded size of TallyResultData
 func (t TallyResultData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeString(t.Yes)
-	dynamicSize += _GovSizeString(t.Abstain)
-	dynamicSize += _GovSizeString(t.No)
-	dynamicSize += _GovSizeString(t.NoWithVeto)
+	dynamicSize += abi.SizeString(t.Yes)
+	dynamicSize += abi.SizeString(t.Abstain)
+	dynamicSize += abi.SizeString(t.No)
+	dynamicSize += abi.SizeString(t.NoWithVeto)
 
 	return TallyResultDataStaticSize + dynamicSize
 }
@@ -808,7 +807,7 @@ func (value TallyResultData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Yes, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Yes, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -818,7 +817,7 @@ func (value TallyResultData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Abstain, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Abstain, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -828,7 +827,7 @@ func (value TallyResultData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.No, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.No, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -838,7 +837,7 @@ func (value TallyResultData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.NoWithVeto, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.NoWithVeto, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -872,7 +871,7 @@ func (t *TallyResultData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Yes")
 		}
-		t.Yes, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Yes, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -884,7 +883,7 @@ func (t *TallyResultData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Abstain")
 		}
-		t.Abstain, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Abstain, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -896,7 +895,7 @@ func (t *TallyResultData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field No")
 		}
-		t.No, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.No, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -908,7 +907,7 @@ func (t *TallyResultData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field NoWithVeto")
 		}
-		t.NoWithVeto, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.NoWithVeto, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -930,8 +929,8 @@ type WeightedVote struct {
 // EncodedSize returns the total encoded size of WeightedVote
 func (t WeightedVote) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeWeightedVoteOptionSlice(t.Options)
-	dynamicSize += _GovSizeString(t.Metadata)
+	dynamicSize += SizeWeightedVoteOptionSlice(t.Options)
+	dynamicSize += abi.SizeString(t.Metadata)
 
 	return WeightedVoteStaticSize + dynamicSize
 }
@@ -945,12 +944,12 @@ func (value WeightedVote) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Voter: address
-	if _, err := _GovEncodeAddress(value.Voter, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Voter, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -958,7 +957,7 @@ func (value WeightedVote) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
+	n, err = EncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -968,7 +967,7 @@ func (value WeightedVote) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Metadata, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Metadata, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -997,12 +996,12 @@ func (t *WeightedVote) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Voter: address
-	t.Voter, _, err = _GovDecodeAddress(data[32:])
+	t.Voter, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -1012,7 +1011,7 @@ func (t *WeightedVote) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Options")
 		}
-		t.Options, n, err = _GovDecodeWeightedVoteOptionSlice(data[dynamicOffset:])
+		t.Options, n, err = DecodeWeightedVoteOptionSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1024,7 +1023,7 @@ func (t *WeightedVote) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Metadata")
 		}
-		t.Metadata, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Metadata, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1044,7 +1043,7 @@ type WeightedVoteOption struct {
 // EncodedSize returns the total encoded size of WeightedVoteOption
 func (t WeightedVoteOption) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeString(t.Weight)
+	dynamicSize += abi.SizeString(t.Weight)
 
 	return WeightedVoteOptionStaticSize + dynamicSize
 }
@@ -1058,7 +1057,7 @@ func (value WeightedVoteOption) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Option: uint8
-	if _, err := _GovEncodeUint8(value.Option, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Option, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1066,7 +1065,7 @@ func (value WeightedVoteOption) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Weight, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Weight, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1095,7 +1094,7 @@ func (t *WeightedVoteOption) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Option: uint8
-	t.Option, _, err = _GovDecodeUint8(data[0:])
+	t.Option, _, err = abi.DecodeUint8(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1105,7 +1104,7 @@ func (t *WeightedVoteOption) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Weight")
 		}
-		t.Weight, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Weight, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1114,33 +1113,8 @@ func (t *WeightedVoteOption) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
-// _GovEncodeAddress encodes address to ABI bytes
-func _GovEncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _GovEncodeBool encodes bool to ABI bytes
-func _GovEncodeBool(value bool, buf []byte) (int, error) {
-	if value {
-		buf[31] = 1
-	}
-	return 32, nil
-}
-
-// _GovEncodeBytes encodes bytes to ABI bytes
-func _GovEncodeBytes(value []byte, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], value)
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _GovEncodeCoinSlice encodes (string,uint256)[] to ABI bytes
-func _GovEncodeCoinSlice(value []cmn.Coin, buf []byte) (int, error) {
+// EncodeCoinSlice encodes (string,uint256)[] to ABI bytes
+func EncodeCoinSlice(value []cmn.Coin, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1164,8 +1138,8 @@ func _GovEncodeCoinSlice(value []cmn.Coin, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _GovEncodeDepositDataSlice encodes (uint64,address,(string,uint256)[])[] to ABI bytes
-func _GovEncodeDepositDataSlice(value []DepositData, buf []byte) (int, error) {
+// EncodeDepositDataSlice encodes (uint64,address,(string,uint256)[])[] to ABI bytes
+func EncodeDepositDataSlice(value []DepositData, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1189,19 +1163,8 @@ func _GovEncodeDepositDataSlice(value []DepositData, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _GovEncodeInt64 encodes int64 to ABI bytes
-func _GovEncodeInt64(value int64, buf []byte) (int, error) {
-	if value < 0 {
-		for i := 0; i < 24; i++ {
-			buf[i] = 0xff
-		}
-	}
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _GovEncodeProposalDataSlice encodes (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[] to ABI bytes
-func _GovEncodeProposalDataSlice(value []ProposalData, buf []byte) (int, error) {
+// EncodeProposalDataSlice encodes (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[] to ABI bytes
+func EncodeProposalDataSlice(value []ProposalData, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1225,70 +1188,8 @@ func _GovEncodeProposalDataSlice(value []ProposalData, buf []byte) (int, error) 
 	return dynamicOffset + 32, nil
 }
 
-// _GovEncodeString encodes string to ABI bytes
-func _GovEncodeString(value string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], []byte(value))
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _GovEncodeStringSlice encodes string[] to ABI bytes
-func _GovEncodeStringSlice(value []string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-	buf = buf[32:]
-
-	// Encode elements with dynamic types
-	var offset int
-	dynamicOffset := len(value) * 32
-	for _, elem := range value {
-		// Write offset for element
-		offset += 32
-		binary.BigEndian.PutUint64(buf[offset-8:offset], uint64(dynamicOffset))
-
-		// Write element at dynamic region
-		n, err := _GovEncodeString(elem, buf[dynamicOffset:])
-		if err != nil {
-			return 0, err
-		}
-		dynamicOffset += n
-	}
-
-	return dynamicOffset + 32, nil
-}
-
-// _GovEncodeUint256 encodes uint256 to ABI bytes
-func _GovEncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _GovEncodeUint32 encodes uint32 to ABI bytes
-func _GovEncodeUint32(value uint32, buf []byte) (int, error) {
-	binary.BigEndian.PutUint32(buf[28:32], uint32(value))
-	return 32, nil
-}
-
-// _GovEncodeUint64 encodes uint64 to ABI bytes
-func _GovEncodeUint64(value uint64, buf []byte) (int, error) {
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _GovEncodeUint8 encodes uint8 to ABI bytes
-func _GovEncodeUint8(value uint8, buf []byte) (int, error) {
-	buf[31] = byte(value)
-	return 32, nil
-}
-
-// _GovEncodeWeightedVoteOptionSlice encodes (uint8,string)[] to ABI bytes
-func _GovEncodeWeightedVoteOptionSlice(value []WeightedVoteOption, buf []byte) (int, error) {
+// EncodeWeightedVoteOptionSlice encodes (uint8,string)[] to ABI bytes
+func EncodeWeightedVoteOptionSlice(value []WeightedVoteOption, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1312,8 +1213,8 @@ func _GovEncodeWeightedVoteOptionSlice(value []WeightedVoteOption, buf []byte) (
 	return dynamicOffset + 32, nil
 }
 
-// _GovEncodeWeightedVoteSlice encodes (uint64,address,(uint8,string)[],string)[] to ABI bytes
-func _GovEncodeWeightedVoteSlice(value []WeightedVote, buf []byte) (int, error) {
+// EncodeWeightedVoteSlice encodes (uint64,address,(uint8,string)[],string)[] to ABI bytes
+func EncodeWeightedVoteSlice(value []WeightedVote, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1337,14 +1238,8 @@ func _GovEncodeWeightedVoteSlice(value []WeightedVote, buf []byte) (int, error) 
 	return dynamicOffset + 32, nil
 }
 
-// _GovSizeBytes returns the encoded size of bytes
-func _GovSizeBytes(value []byte) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded bytes data
-	return size
-}
-
-// _GovSizeCoinSlice returns the encoded size of (string,uint256)[]
-func _GovSizeCoinSlice(value []cmn.Coin) int {
+// SizeCoinSlice returns the encoded size of (string,uint256)[]
+func SizeCoinSlice(value []cmn.Coin) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1352,8 +1247,8 @@ func _GovSizeCoinSlice(value []cmn.Coin) int {
 	return size
 }
 
-// _GovSizeDepositDataSlice returns the encoded size of (uint64,address,(string,uint256)[])[]
-func _GovSizeDepositDataSlice(value []DepositData) int {
+// SizeDepositDataSlice returns the encoded size of (uint64,address,(string,uint256)[])[]
+func SizeDepositDataSlice(value []DepositData) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1361,8 +1256,8 @@ func _GovSizeDepositDataSlice(value []DepositData) int {
 	return size
 }
 
-// _GovSizeProposalDataSlice returns the encoded size of (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[]
-func _GovSizeProposalDataSlice(value []ProposalData) int {
+// SizeProposalDataSlice returns the encoded size of (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[]
+func SizeProposalDataSlice(value []ProposalData) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1370,23 +1265,8 @@ func _GovSizeProposalDataSlice(value []ProposalData) int {
 	return size
 }
 
-// _GovSizeString returns the encoded size of string
-func _GovSizeString(value string) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded string data
-	return size
-}
-
-// _GovSizeStringSlice returns the encoded size of string[]
-func _GovSizeStringSlice(value []string) int {
-	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
-	for _, elem := range value {
-		size += _GovSizeString(elem)
-	}
-	return size
-}
-
-// _GovSizeWeightedVoteOptionSlice returns the encoded size of (uint8,string)[]
-func _GovSizeWeightedVoteOptionSlice(value []WeightedVoteOption) int {
+// SizeWeightedVoteOptionSlice returns the encoded size of (uint8,string)[]
+func SizeWeightedVoteOptionSlice(value []WeightedVoteOption) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1394,8 +1274,8 @@ func _GovSizeWeightedVoteOptionSlice(value []WeightedVoteOption) int {
 	return size
 }
 
-// _GovSizeWeightedVoteSlice returns the encoded size of (uint64,address,(uint8,string)[],string)[]
-func _GovSizeWeightedVoteSlice(value []WeightedVote) int {
+// SizeWeightedVoteSlice returns the encoded size of (uint64,address,(uint8,string)[],string)[]
+func SizeWeightedVoteSlice(value []WeightedVote) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1403,35 +1283,8 @@ func _GovSizeWeightedVoteSlice(value []WeightedVote) int {
 	return size
 }
 
-// _GovDecodeAddress decodes address from ABI bytes
-func _GovDecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _GovDecodeBool decodes bool from ABI bytes
-func _GovDecodeBool(data []byte) (bool, int, error) {
-	result := data[31] != 0
-	return result, 32, nil
-}
-
-// _GovDecodeBytes decodes bytes from ABI bytes
-func _GovDecodeBytes(data []byte) ([]byte, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := make([]byte, length)
-	copy(result, data[32:32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _GovDecodeCoinSlice decodes (string,uint256)[] from ABI bytes
-func _GovDecodeCoinSlice(data []byte) ([]cmn.Coin, int, error) {
+// DecodeCoinSlice decodes (string,uint256)[] from ABI bytes
+func DecodeCoinSlice(data []byte) ([]cmn.Coin, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1464,8 +1317,8 @@ func _GovDecodeCoinSlice(data []byte) ([]cmn.Coin, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
-// _GovDecodeDepositDataSlice decodes (uint64,address,(string,uint256)[])[] from ABI bytes
-func _GovDecodeDepositDataSlice(data []byte) ([]DepositData, int, error) {
+// DecodeDepositDataSlice decodes (uint64,address,(string,uint256)[])[] from ABI bytes
+func DecodeDepositDataSlice(data []byte) ([]DepositData, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1498,18 +1351,8 @@ func _GovDecodeDepositDataSlice(data []byte) ([]DepositData, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
-// _GovDecodeInt64 decodes int64 from ABI bytes
-func _GovDecodeInt64(data []byte) (int64, int, error) {
-	var result int64
-	result = int64(binary.BigEndian.Uint64(data[24:32]))
-	if data[0]&0x80 != 0 { // Check sign bit
-		result = result | ^0x7fffffffffffffff // Sign extend
-	}
-	return result, 32, nil
-}
-
-// _GovDecodeProposalDataSlice decodes (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[] from ABI bytes
-func _GovDecodeProposalDataSlice(data []byte) ([]ProposalData, int, error) {
+// DecodeProposalDataSlice decodes (uint64,string[],uint32,(string,string,string,string),uint64,uint64,(string,uint256)[],uint64,uint64,string,string,string,address)[] from ABI bytes
+func DecodeProposalDataSlice(data []byte) ([]ProposalData, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1542,82 +1385,8 @@ func _GovDecodeProposalDataSlice(data []byte) ([]ProposalData, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
-// _GovDecodeString decodes string from ABI bytes
-func _GovDecodeString(data []byte) (string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return "", 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := string(data[32 : 32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _GovDecodeStringSlice decodes string[] from ABI bytes
-func _GovDecodeStringSlice(data []byte) ([]string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32 {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-	data = data[32:]
-	if len(data) < 32*length {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-	var (
-		n      int
-		err    error
-		offset int
-	)
-	// Decode elements with dynamic types
-	result := make([]string, length)
-	dynamicOffset := length * 32
-	for i := 0; i < length; i++ {
-		offset += 32
-		tmp := int(binary.BigEndian.Uint64(data[offset-8 : offset]))
-		if dynamicOffset != tmp {
-			return nil, 0, fmt.Errorf("invalid offset for slice element %d: expected %d, got %d", i, dynamicOffset, tmp)
-		}
-		result[i], n, err = _GovDecodeString(data[dynamicOffset:])
-		if err != nil {
-			return nil, 0, err
-		}
-		dynamicOffset += n
-	}
-	return result, dynamicOffset + 32, nil
-}
-
-// _GovDecodeUint256 decodes uint256 from ABI bytes
-func _GovDecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _GovDecodeUint32 decodes uint32 from ABI bytes
-func _GovDecodeUint32(data []byte) (uint32, int, error) {
-	result := binary.BigEndian.Uint32(data[28:32])
-	return result, 32, nil
-}
-
-// _GovDecodeUint64 decodes uint64 from ABI bytes
-func _GovDecodeUint64(data []byte) (uint64, int, error) {
-	result := binary.BigEndian.Uint64(data[24:32])
-	return result, 32, nil
-}
-
-// _GovDecodeUint8 decodes uint8 from ABI bytes
-func _GovDecodeUint8(data []byte) (uint8, int, error) {
-	result := uint8(data[31])
-	return result, 32, nil
-}
-
-// _GovDecodeWeightedVoteOptionSlice decodes (uint8,string)[] from ABI bytes
-func _GovDecodeWeightedVoteOptionSlice(data []byte) ([]WeightedVoteOption, int, error) {
+// DecodeWeightedVoteOptionSlice decodes (uint8,string)[] from ABI bytes
+func DecodeWeightedVoteOptionSlice(data []byte) ([]WeightedVoteOption, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1650,8 +1419,8 @@ func _GovDecodeWeightedVoteOptionSlice(data []byte) ([]WeightedVoteOption, int, 
 	return result, dynamicOffset + 32, nil
 }
 
-// _GovDecodeWeightedVoteSlice decodes (uint64,address,(uint8,string)[],string)[] from ABI bytes
-func _GovDecodeWeightedVoteSlice(data []byte) ([]WeightedVote, int, error) {
+// DecodeWeightedVoteSlice decodes (uint64,address,(uint8,string)[],string)[] from ABI bytes
+func DecodeWeightedVoteSlice(data []byte) ([]WeightedVote, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1704,12 +1473,12 @@ func (value CancelProposalCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CancelProposalCallStaticSize // Start dynamic data after static section
 	// Field Proposer: address
-	if _, err := _GovEncodeAddress(value.Proposer, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Proposer, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -1735,12 +1504,12 @@ func (t *CancelProposalCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Proposer: address
-	t.Proposer, _, err = _GovDecodeAddress(data[0:])
+	t.Proposer, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[32:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -1776,7 +1545,7 @@ func (value CancelProposalReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CancelProposalReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _GovEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1802,7 +1571,7 @@ func (t *CancelProposalReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _GovDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1821,7 +1590,7 @@ type DepositCall struct {
 // EncodedSize returns the total encoded size of DepositCall
 func (t DepositCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeCoinSlice(t.Amount)
+	dynamicSize += SizeCoinSlice(t.Amount)
 
 	return DepositCallStaticSize + dynamicSize
 }
@@ -1835,12 +1604,12 @@ func (value DepositCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Depositor: address
-	if _, err := _GovEncodeAddress(value.Depositor, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Depositor, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -1848,7 +1617,7 @@ func (value DepositCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.Amount, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Amount, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1877,12 +1646,12 @@ func (t *DepositCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field Depositor: address
-	t.Depositor, _, err = _GovDecodeAddress(data[0:])
+	t.Depositor, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[32:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -1892,7 +1661,7 @@ func (t *DepositCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Amount")
 		}
-		t.Amount, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.Amount, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1930,7 +1699,7 @@ func (value DepositReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := DepositReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _GovEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1956,7 +1725,7 @@ func (t *DepositReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _GovDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1988,7 +1757,7 @@ type GetConstitutionReturn struct {
 // EncodedSize returns the total encoded size of GetConstitutionReturn
 func (t GetConstitutionReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeString(t.Constitution)
+	dynamicSize += abi.SizeString(t.Constitution)
 
 	return GetConstitutionReturnStaticSize + dynamicSize
 }
@@ -2005,7 +1774,7 @@ func (value GetConstitutionReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Constitution, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Constitution, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2039,7 +1808,7 @@ func (t *GetConstitutionReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Constitution")
 		}
-		t.Constitution, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Constitution, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2068,12 +1837,12 @@ func (value GetDepositCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetDepositCallStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Depositor: address
-	if _, err := _GovEncodeAddress(value.Depositor, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Depositor, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -2099,12 +1868,12 @@ func (t *GetDepositCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Depositor: address
-	t.Depositor, _, err = _GovDecodeAddress(data[32:])
+	t.Depositor, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -2216,7 +1985,7 @@ func (value GetDepositsCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2253,7 +2022,7 @@ func (t *GetDepositsCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2293,7 +2062,7 @@ type GetDepositsReturn struct {
 // EncodedSize returns the total encoded size of GetDepositsReturn
 func (t GetDepositsReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeDepositDataSlice(t.Deposits)
+	dynamicSize += SizeDepositDataSlice(t.Deposits)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return GetDepositsReturnStaticSize + dynamicSize
@@ -2311,7 +2080,7 @@ func (value GetDepositsReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeDepositDataSlice(value.Deposits, buf[dynamicOffset:])
+	n, err = EncodeDepositDataSlice(value.Deposits, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2355,7 +2124,7 @@ func (t *GetDepositsReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Deposits")
 		}
-		t.Deposits, n, err = _GovDecodeDepositDataSlice(data[dynamicOffset:])
+		t.Deposits, n, err = DecodeDepositDataSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2480,7 +2249,7 @@ func (value GetProposalCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetProposalCallStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2506,7 +2275,7 @@ func (t *GetProposalCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2620,17 +2389,17 @@ func (value GetProposalsCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalStatus: uint32
-	if _, err := _GovEncodeUint32(value.ProposalStatus, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint32(value.ProposalStatus, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Voter: address
-	if _, err := _GovEncodeAddress(value.Voter, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Voter, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field Depositor: address
-	if _, err := _GovEncodeAddress(value.Depositor, buf[64:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Depositor, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -2667,17 +2436,17 @@ func (t *GetProposalsCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field ProposalStatus: uint32
-	t.ProposalStatus, _, err = _GovDecodeUint32(data[0:])
+	t.ProposalStatus, _, err = abi.DecodeUint32(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Voter: address
-	t.Voter, _, err = _GovDecodeAddress(data[32:])
+	t.Voter, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Depositor: address
-	t.Depositor, _, err = _GovDecodeAddress(data[64:])
+	t.Depositor, _, err = abi.DecodeAddress(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -2717,7 +2486,7 @@ type GetProposalsReturn struct {
 // EncodedSize returns the total encoded size of GetProposalsReturn
 func (t GetProposalsReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeProposalDataSlice(t.Proposals)
+	dynamicSize += SizeProposalDataSlice(t.Proposals)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return GetProposalsReturnStaticSize + dynamicSize
@@ -2735,7 +2504,7 @@ func (value GetProposalsReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeProposalDataSlice(value.Proposals, buf[dynamicOffset:])
+	n, err = EncodeProposalDataSlice(value.Proposals, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2779,7 +2548,7 @@ func (t *GetProposalsReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Proposals")
 		}
-		t.Proposals, n, err = _GovDecodeProposalDataSlice(data[dynamicOffset:])
+		t.Proposals, n, err = DecodeProposalDataSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2819,7 +2588,7 @@ func (value GetTallyResultCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetTallyResultCallStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2845,7 +2614,7 @@ func (t *GetTallyResultCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2952,12 +2721,12 @@ func (value GetVoteCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetVoteCallStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Voter: address
-	if _, err := _GovEncodeAddress(value.Voter, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Voter, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -2983,12 +2752,12 @@ func (t *GetVoteCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Voter: address
-	t.Voter, _, err = _GovDecodeAddress(data[32:])
+	t.Voter, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -3100,7 +2869,7 @@ func (value GetVotesCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3137,7 +2906,7 @@ func (t *GetVotesCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3177,7 +2946,7 @@ type GetVotesReturn struct {
 // EncodedSize returns the total encoded size of GetVotesReturn
 func (t GetVotesReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeWeightedVoteSlice(t.Votes)
+	dynamicSize += SizeWeightedVoteSlice(t.Votes)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return GetVotesReturnStaticSize + dynamicSize
@@ -3195,7 +2964,7 @@ func (value GetVotesReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeWeightedVoteSlice(value.Votes, buf[dynamicOffset:])
+	n, err = EncodeWeightedVoteSlice(value.Votes, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3239,7 +3008,7 @@ func (t *GetVotesReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Votes")
 		}
-		t.Votes, n, err = _GovDecodeWeightedVoteSlice(data[dynamicOffset:])
+		t.Votes, n, err = DecodeWeightedVoteSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3272,8 +3041,8 @@ type SubmitProposalCall struct {
 // EncodedSize returns the total encoded size of SubmitProposalCall
 func (t SubmitProposalCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeBytes(t.JsonProposal)
-	dynamicSize += _GovSizeCoinSlice(t.Deposit)
+	dynamicSize += abi.SizeBytes(t.JsonProposal)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return SubmitProposalCallStaticSize + dynamicSize
 }
@@ -3287,7 +3056,7 @@ func (value SubmitProposalCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Proposer: address
-	if _, err := _GovEncodeAddress(value.Proposer, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Proposer, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3295,7 +3064,7 @@ func (value SubmitProposalCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeBytes(value.JsonProposal, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.JsonProposal, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3305,7 +3074,7 @@ func (value SubmitProposalCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3334,7 +3103,7 @@ func (t *SubmitProposalCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field Proposer: address
-	t.Proposer, _, err = _GovDecodeAddress(data[0:])
+	t.Proposer, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3344,7 +3113,7 @@ func (t *SubmitProposalCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field JsonProposal")
 		}
-		t.JsonProposal, n, err = _GovDecodeBytes(data[dynamicOffset:])
+		t.JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3356,7 +3125,7 @@ func (t *SubmitProposalCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t.Deposit, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3394,7 +3163,7 @@ func (value SubmitProposalReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := SubmitProposalReturnStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3420,7 +3189,7 @@ func (t *SubmitProposalReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3440,7 +3209,7 @@ type VoteCall struct {
 // EncodedSize returns the total encoded size of VoteCall
 func (t VoteCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeString(t.Metadata)
+	dynamicSize += abi.SizeString(t.Metadata)
 
 	return VoteCallStaticSize + dynamicSize
 }
@@ -3454,17 +3223,17 @@ func (value VoteCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Voter: address
-	if _, err := _GovEncodeAddress(value.Voter, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Voter, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field Option: uint8
-	if _, err := _GovEncodeUint8(value.Option, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Option, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -3472,7 +3241,7 @@ func (value VoteCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Metadata, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Metadata, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3501,17 +3270,17 @@ func (t *VoteCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field Voter: address
-	t.Voter, _, err = _GovDecodeAddress(data[0:])
+	t.Voter, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[32:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Option: uint8
-	t.Option, _, err = _GovDecodeUint8(data[64:])
+	t.Option, _, err = abi.DecodeUint8(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -3521,7 +3290,7 @@ func (t *VoteCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Metadata")
 		}
-		t.Metadata, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Metadata, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3559,7 +3328,7 @@ func (value VoteReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := VoteReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _GovEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3585,7 +3354,7 @@ func (t *VoteReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _GovDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3605,8 +3374,8 @@ type VoteWeightedCall struct {
 // EncodedSize returns the total encoded size of VoteWeightedCall
 func (t VoteWeightedCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeWeightedVoteOptionSlice(t.Options)
-	dynamicSize += _GovSizeString(t.Metadata)
+	dynamicSize += SizeWeightedVoteOptionSlice(t.Options)
+	dynamicSize += abi.SizeString(t.Metadata)
 
 	return VoteWeightedCallStaticSize + dynamicSize
 }
@@ -3620,12 +3389,12 @@ func (value VoteWeightedCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Voter: address
-	if _, err := _GovEncodeAddress(value.Voter, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Voter, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -3633,7 +3402,7 @@ func (value VoteWeightedCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
+	n, err = EncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3643,7 +3412,7 @@ func (value VoteWeightedCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeString(value.Metadata, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Metadata, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3672,12 +3441,12 @@ func (t *VoteWeightedCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field Voter: address
-	t.Voter, _, err = _GovDecodeAddress(data[0:])
+	t.Voter, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[32:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -3687,7 +3456,7 @@ func (t *VoteWeightedCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Options")
 		}
-		t.Options, n, err = _GovDecodeWeightedVoteOptionSlice(data[dynamicOffset:])
+		t.Options, n, err = DecodeWeightedVoteOptionSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3699,7 +3468,7 @@ func (t *VoteWeightedCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Metadata")
 		}
-		t.Metadata, n, err = _GovDecodeString(data[dynamicOffset:])
+		t.Metadata, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3737,7 +3506,7 @@ func (value VoteWeightedReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := VoteWeightedReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _GovEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3763,7 +3532,7 @@ func (t *VoteWeightedReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _GovDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3817,7 +3586,7 @@ func (e CancelProposalEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Proposer
 		var hash common.Hash
-		if _, err := _GovEncodeAddress(e.Proposer, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Proposer, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -3834,7 +3603,7 @@ func (e *CancelProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for CancelProposal event")
 	}
 	var err error
-	e.Proposer, _, err = _GovDecodeAddress(topics[1][:])
+	e.Proposer, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -3860,7 +3629,7 @@ func (value CancelProposalEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CancelProposalEventDataStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3886,7 +3655,7 @@ func (t *CancelProposalEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3928,7 +3697,7 @@ func (e DepositEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Depositor
 		var hash common.Hash
-		if _, err := _GovEncodeAddress(e.Depositor, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Depositor, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -3945,7 +3714,7 @@ func (e *DepositEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for Deposit event")
 	}
 	var err error
-	e.Depositor, _, err = _GovDecodeAddress(topics[1][:])
+	e.Depositor, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -3963,7 +3732,7 @@ type DepositEventData struct {
 // EncodedSize returns the total encoded size of DepositEventData
 func (t DepositEventData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeCoinSlice(t.Amount)
+	dynamicSize += SizeCoinSlice(t.Amount)
 
 	return DepositEventDataStaticSize + dynamicSize
 }
@@ -3977,7 +3746,7 @@ func (value DepositEventData) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3985,7 +3754,7 @@ func (value DepositEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeCoinSlice(value.Amount, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Amount, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -4014,7 +3783,7 @@ func (t *DepositEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -4024,7 +3793,7 @@ func (t *DepositEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Amount")
 		}
-		t.Amount, n, err = _GovDecodeCoinSlice(data[dynamicOffset:])
+		t.Amount, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -4066,7 +3835,7 @@ func (e SubmitProposalEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Proposer
 		var hash common.Hash
-		if _, err := _GovEncodeAddress(e.Proposer, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Proposer, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4083,7 +3852,7 @@ func (e *SubmitProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for SubmitProposal event")
 	}
 	var err error
-	e.Proposer, _, err = _GovDecodeAddress(topics[1][:])
+	e.Proposer, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -4109,7 +3878,7 @@ func (value SubmitProposalEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := SubmitProposalEventDataStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -4135,7 +3904,7 @@ func (t *SubmitProposalEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -4177,7 +3946,7 @@ func (e VoteEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Voter
 		var hash common.Hash
-		if _, err := _GovEncodeAddress(e.Voter, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Voter, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4194,7 +3963,7 @@ func (e *VoteEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for Vote event")
 	}
 	var err error
-	e.Voter, _, err = _GovDecodeAddress(topics[1][:])
+	e.Voter, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -4221,12 +3990,12 @@ func (value VoteEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := VoteEventDataStaticSize // Start dynamic data after static section
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Option: uint8
-	if _, err := _GovEncodeUint8(value.Option, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Option, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4252,12 +4021,12 @@ func (t *VoteEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Option: uint8
-	t.Option, _, err = _GovDecodeUint8(data[32:])
+	t.Option, _, err = abi.DecodeUint8(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -4299,7 +4068,7 @@ func (e VoteWeightedEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Voter
 		var hash common.Hash
-		if _, err := _GovEncodeAddress(e.Voter, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Voter, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4316,7 +4085,7 @@ func (e *VoteWeightedEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for VoteWeighted event")
 	}
 	var err error
-	e.Voter, _, err = _GovDecodeAddress(topics[1][:])
+	e.Voter, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -4334,7 +4103,7 @@ type VoteWeightedEventData struct {
 // EncodedSize returns the total encoded size of VoteWeightedEventData
 func (t VoteWeightedEventData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _GovSizeWeightedVoteOptionSlice(t.Options)
+	dynamicSize += SizeWeightedVoteOptionSlice(t.Options)
 
 	return VoteWeightedEventDataStaticSize + dynamicSize
 }
@@ -4348,7 +4117,7 @@ func (value VoteWeightedEventData) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field ProposalId: uint64
-	if _, err := _GovEncodeUint64(value.ProposalId, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -4356,7 +4125,7 @@ func (value VoteWeightedEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _GovEncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
+	n, err = EncodeWeightedVoteOptionSlice(value.Options, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -4385,7 +4154,7 @@ func (t *VoteWeightedEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ProposalId: uint64
-	t.ProposalId, _, err = _GovDecodeUint64(data[0:])
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -4395,7 +4164,7 @@ func (t *VoteWeightedEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Options")
 		}
-		t.Options, n, err = _GovDecodeWeightedVoteOptionSlice(data[dynamicOffset:])
+		t.Options, n, err = DecodeWeightedVoteOptionSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}

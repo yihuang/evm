@@ -49,12 +49,12 @@ func (value Balance) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := BalanceStaticSize // Start dynamic data after static section
 	// Field ContractAddress: address
-	if _, err := _BankEncodeAddress(value.ContractAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ContractAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Amount: uint256
-	if _, err := _BankEncodeUint256(value.Amount, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -80,26 +80,20 @@ func (t *Balance) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field ContractAddress: address
-	t.ContractAddress, _, err = _BankDecodeAddress(data[0:])
+	t.ContractAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _BankDecodeUint256(data[32:])
+	t.Amount, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	return dynamicOffset, nil
 }
 
-// _BankEncodeAddress encodes address to ABI bytes
-func _BankEncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _BankEncodeBalanceSlice encodes (address,uint256)[] to ABI bytes
-func _BankEncodeBalanceSlice(value []Balance, buf []byte) (int, error) {
+// EncodeBalanceSlice encodes (address,uint256)[] to ABI bytes
+func EncodeBalanceSlice(value []Balance, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -117,29 +111,14 @@ func _BankEncodeBalanceSlice(value []Balance, buf []byte) (int, error) {
 	return offset + 32, nil
 }
 
-// _BankEncodeUint256 encodes uint256 to ABI bytes
-func _BankEncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _BankSizeBalanceSlice returns the encoded size of (address,uint256)[]
-func _BankSizeBalanceSlice(value []Balance) int {
+// SizeBalanceSlice returns the encoded size of (address,uint256)[]
+func SizeBalanceSlice(value []Balance) int {
 	size := 32 + 64*len(value) // length + static elements
 	return size
 }
 
-// _BankDecodeAddress decodes address from ABI bytes
-func _BankDecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _BankDecodeBalanceSlice decodes (address,uint256)[] from ABI bytes
-func _BankDecodeBalanceSlice(data []byte) ([]Balance, int, error) {
+// DecodeBalanceSlice decodes (address,uint256)[] from ABI bytes
+func DecodeBalanceSlice(data []byte) ([]Balance, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -166,15 +145,6 @@ func _BankDecodeBalanceSlice(data []byte) ([]Balance, int, error) {
 	return result, offset + 32, nil
 }
 
-// _BankDecodeUint256 decodes uint256 from ABI bytes
-func _BankDecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
 const BalancesCallStaticSize = 32
 
 // BalancesCall represents an ABI tuple
@@ -194,7 +164,7 @@ func (value BalancesCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := BalancesCallStaticSize // Start dynamic data after static section
 	// Field Account: address
-	if _, err := _BankEncodeAddress(value.Account, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Account, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -220,7 +190,7 @@ func (t *BalancesCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Account: address
-	t.Account, _, err = _BankDecodeAddress(data[0:])
+	t.Account, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -247,7 +217,7 @@ type BalancesReturn struct {
 // EncodedSize returns the total encoded size of BalancesReturn
 func (t BalancesReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _BankSizeBalanceSlice(t.Balances)
+	dynamicSize += SizeBalanceSlice(t.Balances)
 
 	return BalancesReturnStaticSize + dynamicSize
 }
@@ -264,7 +234,7 @@ func (value BalancesReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _BankEncodeBalanceSlice(value.Balances, buf[dynamicOffset:])
+	n, err = EncodeBalanceSlice(value.Balances, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -298,7 +268,7 @@ func (t *BalancesReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Balances")
 		}
-		t.Balances, n, err = _BankDecodeBalanceSlice(data[dynamicOffset:])
+		t.Balances, n, err = DecodeBalanceSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -326,7 +296,7 @@ func (value SupplyOfCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := SupplyOfCallStaticSize // Start dynamic data after static section
 	// Field Erc20Address: address
-	if _, err := _BankEncodeAddress(value.Erc20Address, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Erc20Address, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -352,7 +322,7 @@ func (t *SupplyOfCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Erc20Address: address
-	t.Erc20Address, _, err = _BankDecodeAddress(data[0:])
+	t.Erc20Address, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -388,7 +358,7 @@ func (value SupplyOfReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := SupplyOfReturnStaticSize // Start dynamic data after static section
 	// Field TotalSupply: uint256
-	if _, err := _BankEncodeUint256(value.TotalSupply, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.TotalSupply, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -414,7 +384,7 @@ func (t *SupplyOfReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field TotalSupply: uint256
-	t.TotalSupply, _, err = _BankDecodeUint256(data[0:])
+	t.TotalSupply, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -446,7 +416,7 @@ type TotalSupplyReturn struct {
 // EncodedSize returns the total encoded size of TotalSupplyReturn
 func (t TotalSupplyReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _BankSizeBalanceSlice(t.TotalSupply)
+	dynamicSize += SizeBalanceSlice(t.TotalSupply)
 
 	return TotalSupplyReturnStaticSize + dynamicSize
 }
@@ -463,7 +433,7 @@ func (value TotalSupplyReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _BankEncodeBalanceSlice(value.TotalSupply, buf[dynamicOffset:])
+	n, err = EncodeBalanceSlice(value.TotalSupply, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -497,7 +467,7 @@ func (t *TotalSupplyReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field TotalSupply")
 		}
-		t.TotalSupply, n, err = _BankDecodeBalanceSlice(data[dynamicOffset:])
+		t.TotalSupply, n, err = DecodeBalanceSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}

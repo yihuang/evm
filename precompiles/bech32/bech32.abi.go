@@ -25,49 +25,6 @@ const (
 	HexToBech32ID = 4183337356
 )
 
-// _Bech32EncodeAddress encodes address to ABI bytes
-func _Bech32EncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _Bech32EncodeString encodes string to ABI bytes
-func _Bech32EncodeString(value string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], []byte(value))
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _Bech32SizeString returns the encoded size of string
-func _Bech32SizeString(value string) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded string data
-	return size
-}
-
-// _Bech32DecodeAddress decodes address from ABI bytes
-func _Bech32DecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _Bech32DecodeString decodes string from ABI bytes
-func _Bech32DecodeString(data []byte) (string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return "", 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := string(data[32 : 32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
 const Bech32ToHexCallStaticSize = 32
 
 // Bech32ToHexCall represents an ABI tuple
@@ -78,7 +35,7 @@ type Bech32ToHexCall struct {
 // EncodedSize returns the total encoded size of Bech32ToHexCall
 func (t Bech32ToHexCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Bech32SizeString(t.Bech32Address)
+	dynamicSize += abi.SizeString(t.Bech32Address)
 
 	return Bech32ToHexCallStaticSize + dynamicSize
 }
@@ -95,7 +52,7 @@ func (value Bech32ToHexCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Bech32EncodeString(value.Bech32Address, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Bech32Address, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -129,7 +86,7 @@ func (t *Bech32ToHexCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Bech32Address")
 		}
-		t.Bech32Address, n, err = _Bech32DecodeString(data[dynamicOffset:])
+		t.Bech32Address, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -167,7 +124,7 @@ func (value Bech32ToHexReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := Bech32ToHexReturnStaticSize // Start dynamic data after static section
 	// Field Addr: address
-	if _, err := _Bech32EncodeAddress(value.Addr, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Addr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -193,7 +150,7 @@ func (t *Bech32ToHexReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Addr: address
-	t.Addr, _, err = _Bech32DecodeAddress(data[0:])
+	t.Addr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -211,7 +168,7 @@ type HexToBech32Call struct {
 // EncodedSize returns the total encoded size of HexToBech32Call
 func (t HexToBech32Call) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Bech32SizeString(t.Prefix)
+	dynamicSize += abi.SizeString(t.Prefix)
 
 	return HexToBech32CallStaticSize + dynamicSize
 }
@@ -225,7 +182,7 @@ func (value HexToBech32Call) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Addr: address
-	if _, err := _Bech32EncodeAddress(value.Addr, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Addr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -233,7 +190,7 @@ func (value HexToBech32Call) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Bech32EncodeString(value.Prefix, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Prefix, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -262,7 +219,7 @@ func (t *HexToBech32Call) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Addr: address
-	t.Addr, _, err = _Bech32DecodeAddress(data[0:])
+	t.Addr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -272,7 +229,7 @@ func (t *HexToBech32Call) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Prefix")
 		}
-		t.Prefix, n, err = _Bech32DecodeString(data[dynamicOffset:])
+		t.Prefix, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -301,7 +258,7 @@ type HexToBech32Return struct {
 // EncodedSize returns the total encoded size of HexToBech32Return
 func (t HexToBech32Return) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Bech32SizeString(t.Bech32Address)
+	dynamicSize += abi.SizeString(t.Bech32Address)
 
 	return HexToBech32ReturnStaticSize + dynamicSize
 }
@@ -318,7 +275,7 @@ func (value HexToBech32Return) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Bech32EncodeString(value.Bech32Address, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Bech32Address, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -352,7 +309,7 @@ func (t *HexToBech32Return) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Bech32Address")
 		}
-		t.Bech32Address, n, err = _Bech32DecodeString(data[dynamicOffset:])
+		t.Bech32Address, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}

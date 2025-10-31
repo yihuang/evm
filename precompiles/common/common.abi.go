@@ -34,7 +34,7 @@ type Coin struct {
 // EncodedSize returns the total encoded size of Coin
 func (t Coin) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _CommonSizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Denom)
 
 	return CoinStaticSize + dynamicSize
 }
@@ -51,14 +51,14 @@ func (value Coin) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeString(value.Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _CommonEncodeUint256(value.Amount, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -90,14 +90,14 @@ func (t *Coin) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t.Denom, n, err = _CommonDecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _CommonDecodeUint256(data[32:])
+	t.Amount, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -124,12 +124,12 @@ func (value Dec) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := DecStaticSize // Start dynamic data after static section
 	// Field Value: uint256
-	if _, err := _CommonEncodeUint256(value.Value, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Value, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field Precision: uint8
-	if _, err := _CommonEncodeUint8(value.Precision, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Precision, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -155,12 +155,12 @@ func (t *Dec) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Value: uint256
-	t.Value, _, err = _CommonDecodeUint256(data[0:])
+	t.Value, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Precision: uint8
-	t.Precision, _, err = _CommonDecodeUint8(data[32:])
+	t.Precision, _, err = abi.DecodeUint8(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -179,7 +179,7 @@ type DecCoin struct {
 // EncodedSize returns the total encoded size of DecCoin
 func (t DecCoin) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _CommonSizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Denom)
 
 	return DecCoinStaticSize + dynamicSize
 }
@@ -196,19 +196,19 @@ func (value DecCoin) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeString(value.Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _CommonEncodeUint256(value.Amount, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field Precision: uint8
-	if _, err := _CommonEncodeUint8(value.Precision, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Precision, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -240,19 +240,19 @@ func (t *DecCoin) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t.Denom, n, err = _CommonDecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _CommonDecodeUint256(data[32:])
+	t.Amount, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Precision: uint8
-	t.Precision, _, err = _CommonDecodeUint8(data[64:])
+	t.Precision, _, err = abi.DecodeUint8(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -279,12 +279,12 @@ func (value Height) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := HeightStaticSize // Start dynamic data after static section
 	// Field RevisionNumber: uint64
-	if _, err := _CommonEncodeUint64(value.RevisionNumber, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.RevisionNumber, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field RevisionHeight: uint64
-	if _, err := _CommonEncodeUint64(value.RevisionHeight, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.RevisionHeight, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -310,12 +310,12 @@ func (t *Height) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field RevisionNumber: uint64
-	t.RevisionNumber, _, err = _CommonDecodeUint64(data[0:])
+	t.RevisionNumber, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field RevisionHeight: uint64
-	t.RevisionHeight, _, err = _CommonDecodeUint64(data[32:])
+	t.RevisionHeight, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -336,11 +336,11 @@ type ICS20Allocation struct {
 // EncodedSize returns the total encoded size of ICS20Allocation
 func (t ICS20Allocation) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _CommonSizeString(t.SourcePort)
-	dynamicSize += _CommonSizeString(t.SourceChannel)
-	dynamicSize += _CommonSizeCoinSlice(t.SpendLimit)
-	dynamicSize += _CommonSizeStringSlice(t.AllowList)
-	dynamicSize += _CommonSizeStringSlice(t.AllowedPacketData)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += SizeCoinSlice(t.SpendLimit)
+	dynamicSize += abi.SizeStringSlice(t.AllowList)
+	dynamicSize += abi.SizeStringSlice(t.AllowedPacketData)
 
 	return ICS20AllocationStaticSize + dynamicSize
 }
@@ -357,7 +357,7 @@ func (value ICS20Allocation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeString(value.SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -367,7 +367,7 @@ func (value ICS20Allocation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeString(value.SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -377,7 +377,7 @@ func (value ICS20Allocation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeCoinSlice(value.SpendLimit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.SpendLimit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -387,7 +387,7 @@ func (value ICS20Allocation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeStringSlice(value.AllowList, buf[dynamicOffset:])
+	n, err = abi.EncodeStringSlice(value.AllowList, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -397,7 +397,7 @@ func (value ICS20Allocation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeStringSlice(value.AllowedPacketData, buf[dynamicOffset:])
+	n, err = abi.EncodeStringSlice(value.AllowedPacketData, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -431,7 +431,7 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t.SourcePort, n, err = _CommonDecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -443,7 +443,7 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t.SourceChannel, n, err = _CommonDecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -455,7 +455,7 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SpendLimit")
 		}
-		t.SpendLimit, n, err = _CommonDecodeCoinSlice(data[dynamicOffset:])
+		t.SpendLimit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -467,7 +467,7 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field AllowList")
 		}
-		t.AllowList, n, err = _CommonDecodeStringSlice(data[dynamicOffset:])
+		t.AllowList, n, err = abi.DecodeStringSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -479,7 +479,7 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field AllowedPacketData")
 		}
-		t.AllowedPacketData, n, err = _CommonDecodeStringSlice(data[dynamicOffset:])
+		t.AllowedPacketData, n, err = abi.DecodeStringSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -502,7 +502,7 @@ type PageRequest struct {
 // EncodedSize returns the total encoded size of PageRequest
 func (t PageRequest) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _CommonSizeBytes(t.Key)
+	dynamicSize += abi.SizeBytes(t.Key)
 
 	return PageRequestStaticSize + dynamicSize
 }
@@ -519,29 +519,29 @@ func (value PageRequest) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeBytes(value.Key, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.Key, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Offset: uint64
-	if _, err := _CommonEncodeUint64(value.Offset, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Offset, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field Limit: uint64
-	if _, err := _CommonEncodeUint64(value.Limit, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Limit, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field CountTotal: bool
-	if _, err := _CommonEncodeBool(value.CountTotal, buf[96:]); err != nil {
+	if _, err := abi.EncodeBool(value.CountTotal, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field Reverse: bool
-	if _, err := _CommonEncodeBool(value.Reverse, buf[128:]); err != nil {
+	if _, err := abi.EncodeBool(value.Reverse, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -573,29 +573,29 @@ func (t *PageRequest) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Key")
 		}
-		t.Key, n, err = _CommonDecodeBytes(data[dynamicOffset:])
+		t.Key, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Offset: uint64
-	t.Offset, _, err = _CommonDecodeUint64(data[32:])
+	t.Offset, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Limit: uint64
-	t.Limit, _, err = _CommonDecodeUint64(data[64:])
+	t.Limit, _, err = abi.DecodeUint64(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CountTotal: bool
-	t.CountTotal, _, err = _CommonDecodeBool(data[96:])
+	t.CountTotal, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Reverse: bool
-	t.Reverse, _, err = _CommonDecodeBool(data[128:])
+	t.Reverse, _, err = abi.DecodeBool(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -613,7 +613,7 @@ type PageResponse struct {
 // EncodedSize returns the total encoded size of PageResponse
 func (t PageResponse) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _CommonSizeBytes(t.NextKey)
+	dynamicSize += abi.SizeBytes(t.NextKey)
 
 	return PageResponseStaticSize + dynamicSize
 }
@@ -630,14 +630,14 @@ func (value PageResponse) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _CommonEncodeBytes(value.NextKey, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.NextKey, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Total: uint64
-	if _, err := _CommonEncodeUint64(value.Total, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Total, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -669,41 +669,22 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field NextKey")
 		}
-		t.NextKey, n, err = _CommonDecodeBytes(data[dynamicOffset:])
+		t.NextKey, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Total: uint64
-	t.Total, _, err = _CommonDecodeUint64(data[32:])
+	t.Total, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	return dynamicOffset, nil
 }
 
-// _CommonEncodeBool encodes bool to ABI bytes
-func _CommonEncodeBool(value bool, buf []byte) (int, error) {
-	if value {
-		buf[31] = 1
-	}
-	return 32, nil
-}
-
-// _CommonEncodeBytes encodes bytes to ABI bytes
-func _CommonEncodeBytes(value []byte, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], value)
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _CommonEncodeCoinSlice encodes (string,uint256)[] to ABI bytes
-func _CommonEncodeCoinSlice(value []Coin, buf []byte) (int, error) {
+// EncodeCoinSlice encodes (string,uint256)[] to ABI bytes
+func EncodeCoinSlice(value []Coin, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -727,70 +708,8 @@ func _CommonEncodeCoinSlice(value []Coin, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _CommonEncodeString encodes string to ABI bytes
-func _CommonEncodeString(value string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], []byte(value))
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _CommonEncodeStringSlice encodes string[] to ABI bytes
-func _CommonEncodeStringSlice(value []string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-	buf = buf[32:]
-
-	// Encode elements with dynamic types
-	var offset int
-	dynamicOffset := len(value) * 32
-	for _, elem := range value {
-		// Write offset for element
-		offset += 32
-		binary.BigEndian.PutUint64(buf[offset-8:offset], uint64(dynamicOffset))
-
-		// Write element at dynamic region
-		n, err := _CommonEncodeString(elem, buf[dynamicOffset:])
-		if err != nil {
-			return 0, err
-		}
-		dynamicOffset += n
-	}
-
-	return dynamicOffset + 32, nil
-}
-
-// _CommonEncodeUint256 encodes uint256 to ABI bytes
-func _CommonEncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _CommonEncodeUint64 encodes uint64 to ABI bytes
-func _CommonEncodeUint64(value uint64, buf []byte) (int, error) {
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _CommonEncodeUint8 encodes uint8 to ABI bytes
-func _CommonEncodeUint8(value uint8, buf []byte) (int, error) {
-	buf[31] = byte(value)
-	return 32, nil
-}
-
-// _CommonSizeBytes returns the encoded size of bytes
-func _CommonSizeBytes(value []byte) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded bytes data
-	return size
-}
-
-// _CommonSizeCoinSlice returns the encoded size of (string,uint256)[]
-func _CommonSizeCoinSlice(value []Coin) int {
+// SizeCoinSlice returns the encoded size of (string,uint256)[]
+func SizeCoinSlice(value []Coin) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -798,43 +717,8 @@ func _CommonSizeCoinSlice(value []Coin) int {
 	return size
 }
 
-// _CommonSizeString returns the encoded size of string
-func _CommonSizeString(value string) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded string data
-	return size
-}
-
-// _CommonSizeStringSlice returns the encoded size of string[]
-func _CommonSizeStringSlice(value []string) int {
-	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
-	for _, elem := range value {
-		size += _CommonSizeString(elem)
-	}
-	return size
-}
-
-// _CommonDecodeBool decodes bool from ABI bytes
-func _CommonDecodeBool(data []byte) (bool, int, error) {
-	result := data[31] != 0
-	return result, 32, nil
-}
-
-// _CommonDecodeBytes decodes bytes from ABI bytes
-func _CommonDecodeBytes(data []byte) ([]byte, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := make([]byte, length)
-	copy(result, data[32:32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _CommonDecodeCoinSlice decodes (string,uint256)[] from ABI bytes
-func _CommonDecodeCoinSlice(data []byte) ([]Coin, int, error) {
+// DecodeCoinSlice decodes (string,uint256)[] from ABI bytes
+func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -865,74 +749,6 @@ func _CommonDecodeCoinSlice(data []byte) ([]Coin, int, error) {
 		dynamicOffset += n
 	}
 	return result, dynamicOffset + 32, nil
-}
-
-// _CommonDecodeString decodes string from ABI bytes
-func _CommonDecodeString(data []byte) (string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return "", 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := string(data[32 : 32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _CommonDecodeStringSlice decodes string[] from ABI bytes
-func _CommonDecodeStringSlice(data []byte) ([]string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32 {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-	data = data[32:]
-	if len(data) < 32*length {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-	var (
-		n      int
-		err    error
-		offset int
-	)
-	// Decode elements with dynamic types
-	result := make([]string, length)
-	dynamicOffset := length * 32
-	for i := 0; i < length; i++ {
-		offset += 32
-		tmp := int(binary.BigEndian.Uint64(data[offset-8 : offset]))
-		if dynamicOffset != tmp {
-			return nil, 0, fmt.Errorf("invalid offset for slice element %d: expected %d, got %d", i, dynamicOffset, tmp)
-		}
-		result[i], n, err = _CommonDecodeString(data[dynamicOffset:])
-		if err != nil {
-			return nil, 0, err
-		}
-		dynamicOffset += n
-	}
-	return result, dynamicOffset + 32, nil
-}
-
-// _CommonDecodeUint256 decodes uint256 from ABI bytes
-func _CommonDecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _CommonDecodeUint64 decodes uint64 from ABI bytes
-func _CommonDecodeUint64(data []byte) (uint64, int, error) {
-	result := binary.BigEndian.Uint64(data[24:32])
-	return result, 32, nil
-}
-
-// _CommonDecodeUint8 decodes uint8 from ABI bytes
-func _CommonDecodeUint8(data []byte) (uint8, int, error) {
-	result := uint8(data[31])
-	return result, 32, nil
 }
 
 const DummyCallStaticSize = 288

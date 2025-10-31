@@ -79,17 +79,17 @@ func (value CommissionRates) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CommissionRatesStaticSize // Start dynamic data after static section
 	// Field Rate: uint256
-	if _, err := _StakingEncodeUint256(value.Rate, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Rate, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field MaxRate: uint256
-	if _, err := _StakingEncodeUint256(value.MaxRate, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.MaxRate, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field MaxChangeRate: uint256
-	if _, err := _StakingEncodeUint256(value.MaxChangeRate, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.MaxChangeRate, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -115,17 +115,17 @@ func (t *CommissionRates) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field Rate: uint256
-	t.Rate, _, err = _StakingDecodeUint256(data[0:])
+	t.Rate, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MaxRate: uint256
-	t.MaxRate, _, err = _StakingDecodeUint256(data[32:])
+	t.MaxRate, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MaxChangeRate: uint256
-	t.MaxChangeRate, _, err = _StakingDecodeUint256(data[64:])
+	t.MaxChangeRate, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -146,11 +146,11 @@ type Description struct {
 // EncodedSize returns the total encoded size of Description
 func (t Description) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.Moniker)
-	dynamicSize += _StakingSizeString(t.Identity)
-	dynamicSize += _StakingSizeString(t.Website)
-	dynamicSize += _StakingSizeString(t.SecurityContact)
-	dynamicSize += _StakingSizeString(t.Details)
+	dynamicSize += abi.SizeString(t.Moniker)
+	dynamicSize += abi.SizeString(t.Identity)
+	dynamicSize += abi.SizeString(t.Website)
+	dynamicSize += abi.SizeString(t.SecurityContact)
+	dynamicSize += abi.SizeString(t.Details)
 
 	return DescriptionStaticSize + dynamicSize
 }
@@ -167,7 +167,7 @@ func (value Description) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Moniker, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Moniker, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -177,7 +177,7 @@ func (value Description) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Identity, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Identity, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -187,7 +187,7 @@ func (value Description) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Website, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Website, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -197,7 +197,7 @@ func (value Description) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.SecurityContact, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SecurityContact, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -207,7 +207,7 @@ func (value Description) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Details, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Details, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -241,7 +241,7 @@ func (t *Description) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Moniker")
 		}
-		t.Moniker, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Moniker, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -253,7 +253,7 @@ func (t *Description) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Identity")
 		}
-		t.Identity, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Identity, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -265,7 +265,7 @@ func (t *Description) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Website")
 		}
-		t.Website, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Website, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -277,7 +277,7 @@ func (t *Description) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SecurityContact")
 		}
-		t.SecurityContact, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.SecurityContact, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -289,7 +289,7 @@ func (t *Description) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Details")
 		}
-		t.Details, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Details, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -309,7 +309,7 @@ type PageResponse struct {
 // EncodedSize returns the total encoded size of PageResponse
 func (t PageResponse) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeBytes(t.NextKey)
+	dynamicSize += abi.SizeBytes(t.NextKey)
 
 	return PageResponseStaticSize + dynamicSize
 }
@@ -326,14 +326,14 @@ func (value PageResponse) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeBytes(value.NextKey, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.NextKey, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Total: uint64
-	if _, err := _StakingEncodeUint64(value.Total, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint64(value.Total, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -365,14 +365,14 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field NextKey")
 		}
-		t.NextKey, n, err = _StakingDecodeBytes(data[dynamicOffset:])
+		t.NextKey, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Total: uint64
-	t.Total, _, err = _StakingDecodeUint64(data[32:])
+	t.Total, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -392,10 +392,10 @@ type Redelegation struct {
 // EncodedSize returns the total encoded size of Redelegation
 func (t Redelegation) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.DelegatorAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorSrcAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorDstAddress)
-	dynamicSize += _StakingSizeRedelegationEntrySlice(t.Entries)
+	dynamicSize += abi.SizeString(t.DelegatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorSrcAddress)
+	dynamicSize += abi.SizeString(t.ValidatorDstAddress)
+	dynamicSize += SizeRedelegationEntrySlice(t.Entries)
 
 	return RedelegationStaticSize + dynamicSize
 }
@@ -412,7 +412,7 @@ func (value Redelegation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.DelegatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.DelegatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -422,7 +422,7 @@ func (value Redelegation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -432,7 +432,7 @@ func (value Redelegation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -442,7 +442,7 @@ func (value Redelegation) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeRedelegationEntrySlice(value.Entries, buf[dynamicOffset:])
+	n, err = EncodeRedelegationEntrySlice(value.Entries, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -476,7 +476,7 @@ func (t *Redelegation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field DelegatorAddress")
 		}
-		t.DelegatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.DelegatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -488,7 +488,7 @@ func (t *Redelegation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorSrcAddress")
 		}
-		t.ValidatorSrcAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorSrcAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -500,7 +500,7 @@ func (t *Redelegation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorDstAddress")
 		}
-		t.ValidatorDstAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorDstAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -512,7 +512,7 @@ func (t *Redelegation) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Entries")
 		}
-		t.Entries, n, err = _StakingDecodeRedelegationEntrySlice(data[dynamicOffset:])
+		t.Entries, n, err = DecodeRedelegationEntrySlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -543,22 +543,22 @@ func (value RedelegationEntry) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := RedelegationEntryStaticSize // Start dynamic data after static section
 	// Field CreationHeight: int64
-	if _, err := _StakingEncodeInt64(value.CreationHeight, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CreationHeight, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field CompletionTime: int64
-	if _, err := _StakingEncodeInt64(value.CompletionTime, buf[32:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CompletionTime, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field InitialBalance: uint256
-	if _, err := _StakingEncodeUint256(value.InitialBalance, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.InitialBalance, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field SharesDst: uint256
-	if _, err := _StakingEncodeUint256(value.SharesDst, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.SharesDst, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -584,22 +584,22 @@ func (t *RedelegationEntry) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field CreationHeight: int64
-	t.CreationHeight, _, err = _StakingDecodeInt64(data[0:])
+	t.CreationHeight, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CompletionTime: int64
-	t.CompletionTime, _, err = _StakingDecodeInt64(data[32:])
+	t.CompletionTime, _, err = abi.DecodeInt64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field InitialBalance: uint256
-	t.InitialBalance, _, err = _StakingDecodeUint256(data[64:])
+	t.InitialBalance, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field SharesDst: uint256
-	t.SharesDst, _, err = _StakingDecodeUint256(data[96:])
+	t.SharesDst, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -631,7 +631,7 @@ func (value RedelegationEntryResponse) EncodeTo(buf []byte) (int, error) {
 	}
 
 	// Field Balance: uint256
-	if _, err := _StakingEncodeUint256(value.Balance, buf[128:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Balance, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -662,7 +662,7 @@ func (t *RedelegationEntryResponse) Decode(data []byte) (int, error) {
 		return 0, err
 	}
 	// Decode static field Balance: uint256
-	t.Balance, _, err = _StakingDecodeUint256(data[128:])
+	t.Balance, _, err = abi.DecodeUint256(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -682,10 +682,10 @@ type RedelegationOutput struct {
 // EncodedSize returns the total encoded size of RedelegationOutput
 func (t RedelegationOutput) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.DelegatorAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorSrcAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorDstAddress)
-	dynamicSize += _StakingSizeRedelegationEntrySlice(t.Entries)
+	dynamicSize += abi.SizeString(t.DelegatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorSrcAddress)
+	dynamicSize += abi.SizeString(t.ValidatorDstAddress)
+	dynamicSize += SizeRedelegationEntrySlice(t.Entries)
 
 	return RedelegationOutputStaticSize + dynamicSize
 }
@@ -702,7 +702,7 @@ func (value RedelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.DelegatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.DelegatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -712,7 +712,7 @@ func (value RedelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -722,7 +722,7 @@ func (value RedelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -732,7 +732,7 @@ func (value RedelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[96+24:96+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeRedelegationEntrySlice(value.Entries, buf[dynamicOffset:])
+	n, err = EncodeRedelegationEntrySlice(value.Entries, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -766,7 +766,7 @@ func (t *RedelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field DelegatorAddress")
 		}
-		t.DelegatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.DelegatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -778,7 +778,7 @@ func (t *RedelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorSrcAddress")
 		}
-		t.ValidatorSrcAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorSrcAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -790,7 +790,7 @@ func (t *RedelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorDstAddress")
 		}
-		t.ValidatorDstAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorDstAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -802,7 +802,7 @@ func (t *RedelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Entries")
 		}
-		t.Entries, n, err = _StakingDecodeRedelegationEntrySlice(data[dynamicOffset:])
+		t.Entries, n, err = DecodeRedelegationEntrySlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -823,7 +823,7 @@ type RedelegationResponse struct {
 func (t RedelegationResponse) EncodedSize() int {
 	dynamicSize := 0
 	dynamicSize += t.Redelegation.EncodedSize()
-	dynamicSize += _StakingSizeRedelegationEntryResponseSlice(t.Entries)
+	dynamicSize += SizeRedelegationEntryResponseSlice(t.Entries)
 
 	return RedelegationResponseStaticSize + dynamicSize
 }
@@ -850,7 +850,7 @@ func (value RedelegationResponse) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeRedelegationEntryResponseSlice(value.Entries, buf[dynamicOffset:])
+	n, err = EncodeRedelegationEntryResponseSlice(value.Entries, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -896,7 +896,7 @@ func (t *RedelegationResponse) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Entries")
 		}
-		t.Entries, n, err = _StakingDecodeRedelegationEntryResponseSlice(data[dynamicOffset:])
+		t.Entries, n, err = DecodeRedelegationEntryResponseSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -929,32 +929,32 @@ func (value UnbondingDelegationEntry) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := UnbondingDelegationEntryStaticSize // Start dynamic data after static section
 	// Field CreationHeight: int64
-	if _, err := _StakingEncodeInt64(value.CreationHeight, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CreationHeight, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field CompletionTime: int64
-	if _, err := _StakingEncodeInt64(value.CompletionTime, buf[32:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CompletionTime, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field InitialBalance: uint256
-	if _, err := _StakingEncodeUint256(value.InitialBalance, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.InitialBalance, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field Balance: uint256
-	if _, err := _StakingEncodeUint256(value.Balance, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Balance, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field UnbondingId: uint64
-	if _, err := _StakingEncodeUint64(value.UnbondingId, buf[128:]); err != nil {
+	if _, err := abi.EncodeUint64(value.UnbondingId, buf[128:]); err != nil {
 		return 0, err
 	}
 
 	// Field UnbondingOnHoldRefCount: int64
-	if _, err := _StakingEncodeInt64(value.UnbondingOnHoldRefCount, buf[160:]); err != nil {
+	if _, err := abi.EncodeInt64(value.UnbondingOnHoldRefCount, buf[160:]); err != nil {
 		return 0, err
 	}
 
@@ -980,32 +980,32 @@ func (t *UnbondingDelegationEntry) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 192
 	// Decode static field CreationHeight: int64
-	t.CreationHeight, _, err = _StakingDecodeInt64(data[0:])
+	t.CreationHeight, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CompletionTime: int64
-	t.CompletionTime, _, err = _StakingDecodeInt64(data[32:])
+	t.CompletionTime, _, err = abi.DecodeInt64(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field InitialBalance: uint256
-	t.InitialBalance, _, err = _StakingDecodeUint256(data[64:])
+	t.InitialBalance, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Balance: uint256
-	t.Balance, _, err = _StakingDecodeUint256(data[96:])
+	t.Balance, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field UnbondingId: uint64
-	t.UnbondingId, _, err = _StakingDecodeUint64(data[128:])
+	t.UnbondingId, _, err = abi.DecodeUint64(data[128:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field UnbondingOnHoldRefCount: int64
-	t.UnbondingOnHoldRefCount, _, err = _StakingDecodeInt64(data[160:])
+	t.UnbondingOnHoldRefCount, _, err = abi.DecodeInt64(data[160:])
 	if err != nil {
 		return 0, err
 	}
@@ -1024,9 +1024,9 @@ type UnbondingDelegationOutput struct {
 // EncodedSize returns the total encoded size of UnbondingDelegationOutput
 func (t UnbondingDelegationOutput) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.DelegatorAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
-	dynamicSize += _StakingSizeUnbondingDelegationEntrySlice(t.Entries)
+	dynamicSize += abi.SizeString(t.DelegatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
+	dynamicSize += SizeUnbondingDelegationEntrySlice(t.Entries)
 
 	return UnbondingDelegationOutputStaticSize + dynamicSize
 }
@@ -1043,7 +1043,7 @@ func (value UnbondingDelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.DelegatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.DelegatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1053,7 +1053,7 @@ func (value UnbondingDelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1063,7 +1063,7 @@ func (value UnbondingDelegationOutput) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeUnbondingDelegationEntrySlice(value.Entries, buf[dynamicOffset:])
+	n, err = EncodeUnbondingDelegationEntrySlice(value.Entries, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1097,7 +1097,7 @@ func (t *UnbondingDelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field DelegatorAddress")
 		}
-		t.DelegatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.DelegatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1109,7 +1109,7 @@ func (t *UnbondingDelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1121,7 +1121,7 @@ func (t *UnbondingDelegationOutput) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Entries")
 		}
-		t.Entries, n, err = _StakingDecodeUnbondingDelegationEntrySlice(data[dynamicOffset:])
+		t.Entries, n, err = DecodeUnbondingDelegationEntrySlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1150,8 +1150,8 @@ type Validator struct {
 // EncodedSize returns the total encoded size of Validator
 func (t Validator) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.OperatorAddress)
-	dynamicSize += _StakingSizeString(t.ConsensusPubkey)
+	dynamicSize += abi.SizeString(t.OperatorAddress)
+	dynamicSize += abi.SizeString(t.ConsensusPubkey)
 	dynamicSize += t.Description.EncodedSize()
 
 	return ValidatorStaticSize + dynamicSize
@@ -1169,7 +1169,7 @@ func (value Validator) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.OperatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.OperatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1179,29 +1179,29 @@ func (value Validator) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ConsensusPubkey, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ConsensusPubkey, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Jailed: bool
-	if _, err := _StakingEncodeBool(value.Jailed, buf[64:]); err != nil {
+	if _, err := abi.EncodeBool(value.Jailed, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field Status: uint8
-	if _, err := _StakingEncodeUint8(value.Status, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint8(value.Status, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field Tokens: uint256
-	if _, err := _StakingEncodeUint256(value.Tokens, buf[128:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Tokens, buf[128:]); err != nil {
 		return 0, err
 	}
 
 	// Field DelegatorShares: uint256
-	if _, err := _StakingEncodeUint256(value.DelegatorShares, buf[160:]); err != nil {
+	if _, err := abi.EncodeUint256(value.DelegatorShares, buf[160:]); err != nil {
 		return 0, err
 	}
 
@@ -1216,22 +1216,22 @@ func (value Validator) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset += n
 
 	// Field UnbondingHeight: int64
-	if _, err := _StakingEncodeInt64(value.UnbondingHeight, buf[224:]); err != nil {
+	if _, err := abi.EncodeInt64(value.UnbondingHeight, buf[224:]); err != nil {
 		return 0, err
 	}
 
 	// Field UnbondingTime: int64
-	if _, err := _StakingEncodeInt64(value.UnbondingTime, buf[256:]); err != nil {
+	if _, err := abi.EncodeInt64(value.UnbondingTime, buf[256:]); err != nil {
 		return 0, err
 	}
 
 	// Field Commission: uint256
-	if _, err := _StakingEncodeUint256(value.Commission, buf[288:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Commission, buf[288:]); err != nil {
 		return 0, err
 	}
 
 	// Field MinSelfDelegation: uint256
-	if _, err := _StakingEncodeUint256(value.MinSelfDelegation, buf[320:]); err != nil {
+	if _, err := abi.EncodeUint256(value.MinSelfDelegation, buf[320:]); err != nil {
 		return 0, err
 	}
 
@@ -1263,7 +1263,7 @@ func (t *Validator) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field OperatorAddress")
 		}
-		t.OperatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.OperatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1275,29 +1275,29 @@ func (t *Validator) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ConsensusPubkey")
 		}
-		t.ConsensusPubkey, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ConsensusPubkey, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Jailed: bool
-	t.Jailed, _, err = _StakingDecodeBool(data[64:])
+	t.Jailed, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Status: uint8
-	t.Status, _, err = _StakingDecodeUint8(data[96:])
+	t.Status, _, err = abi.DecodeUint8(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Tokens: uint256
-	t.Tokens, _, err = _StakingDecodeUint256(data[128:])
+	t.Tokens, _, err = abi.DecodeUint256(data[128:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field DelegatorShares: uint256
-	t.DelegatorShares, _, err = _StakingDecodeUint256(data[160:])
+	t.DelegatorShares, _, err = abi.DecodeUint256(data[160:])
 	if err != nil {
 		return 0, err
 	}
@@ -1314,74 +1314,30 @@ func (t *Validator) Decode(data []byte) (int, error) {
 		dynamicOffset += n
 	}
 	// Decode static field UnbondingHeight: int64
-	t.UnbondingHeight, _, err = _StakingDecodeInt64(data[224:])
+	t.UnbondingHeight, _, err = abi.DecodeInt64(data[224:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field UnbondingTime: int64
-	t.UnbondingTime, _, err = _StakingDecodeInt64(data[256:])
+	t.UnbondingTime, _, err = abi.DecodeInt64(data[256:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Commission: uint256
-	t.Commission, _, err = _StakingDecodeUint256(data[288:])
+	t.Commission, _, err = abi.DecodeUint256(data[288:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MinSelfDelegation: uint256
-	t.MinSelfDelegation, _, err = _StakingDecodeUint256(data[320:])
+	t.MinSelfDelegation, _, err = abi.DecodeUint256(data[320:])
 	if err != nil {
 		return 0, err
 	}
 	return dynamicOffset, nil
 }
 
-// _StakingEncodeAddress encodes address to ABI bytes
-func _StakingEncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _StakingEncodeBool encodes bool to ABI bytes
-func _StakingEncodeBool(value bool, buf []byte) (int, error) {
-	if value {
-		buf[31] = 1
-	}
-	return 32, nil
-}
-
-// _StakingEncodeBytes encodes bytes to ABI bytes
-func _StakingEncodeBytes(value []byte, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], value)
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _StakingEncodeInt256 encodes int256 to ABI bytes
-func _StakingEncodeInt256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], true); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _StakingEncodeInt64 encodes int64 to ABI bytes
-func _StakingEncodeInt64(value int64, buf []byte) (int, error) {
-	if value < 0 {
-		for i := 0; i < 24; i++ {
-			buf[i] = 0xff
-		}
-	}
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _StakingEncodeRedelegationEntryResponseSlice encodes ((int64,int64,uint256,uint256),uint256)[] to ABI bytes
-func _StakingEncodeRedelegationEntryResponseSlice(value []RedelegationEntryResponse, buf []byte) (int, error) {
+// EncodeRedelegationEntryResponseSlice encodes ((int64,int64,uint256,uint256),uint256)[] to ABI bytes
+func EncodeRedelegationEntryResponseSlice(value []RedelegationEntryResponse, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1399,8 +1355,8 @@ func _StakingEncodeRedelegationEntryResponseSlice(value []RedelegationEntryRespo
 	return offset + 32, nil
 }
 
-// _StakingEncodeRedelegationEntrySlice encodes (int64,int64,uint256,uint256)[] to ABI bytes
-func _StakingEncodeRedelegationEntrySlice(value []RedelegationEntry, buf []byte) (int, error) {
+// EncodeRedelegationEntrySlice encodes (int64,int64,uint256,uint256)[] to ABI bytes
+func EncodeRedelegationEntrySlice(value []RedelegationEntry, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1418,8 +1374,8 @@ func _StakingEncodeRedelegationEntrySlice(value []RedelegationEntry, buf []byte)
 	return offset + 32, nil
 }
 
-// _StakingEncodeRedelegationResponseSlice encodes ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[] to ABI bytes
-func _StakingEncodeRedelegationResponseSlice(value []RedelegationResponse, buf []byte) (int, error) {
+// EncodeRedelegationResponseSlice encodes ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[] to ABI bytes
+func EncodeRedelegationResponseSlice(value []RedelegationResponse, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1443,39 +1399,8 @@ func _StakingEncodeRedelegationResponseSlice(value []RedelegationResponse, buf [
 	return dynamicOffset + 32, nil
 }
 
-// _StakingEncodeString encodes string to ABI bytes
-func _StakingEncodeString(value string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], []byte(value))
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _StakingEncodeUint256 encodes uint256 to ABI bytes
-func _StakingEncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _StakingEncodeUint64 encodes uint64 to ABI bytes
-func _StakingEncodeUint64(value uint64, buf []byte) (int, error) {
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _StakingEncodeUint8 encodes uint8 to ABI bytes
-func _StakingEncodeUint8(value uint8, buf []byte) (int, error) {
-	buf[31] = byte(value)
-	return 32, nil
-}
-
-// _StakingEncodeUnbondingDelegationEntrySlice encodes (int64,int64,uint256,uint256,uint64,int64)[] to ABI bytes
-func _StakingEncodeUnbondingDelegationEntrySlice(value []UnbondingDelegationEntry, buf []byte) (int, error) {
+// EncodeUnbondingDelegationEntrySlice encodes (int64,int64,uint256,uint256,uint64,int64)[] to ABI bytes
+func EncodeUnbondingDelegationEntrySlice(value []UnbondingDelegationEntry, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1493,8 +1418,8 @@ func _StakingEncodeUnbondingDelegationEntrySlice(value []UnbondingDelegationEntr
 	return offset + 32, nil
 }
 
-// _StakingEncodeValidatorSlice encodes (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[] to ABI bytes
-func _StakingEncodeValidatorSlice(value []Validator, buf []byte) (int, error) {
+// EncodeValidatorSlice encodes (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[] to ABI bytes
+func EncodeValidatorSlice(value []Validator, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -1518,26 +1443,20 @@ func _StakingEncodeValidatorSlice(value []Validator, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _StakingSizeBytes returns the encoded size of bytes
-func _StakingSizeBytes(value []byte) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded bytes data
-	return size
-}
-
-// _StakingSizeRedelegationEntryResponseSlice returns the encoded size of ((int64,int64,uint256,uint256),uint256)[]
-func _StakingSizeRedelegationEntryResponseSlice(value []RedelegationEntryResponse) int {
+// SizeRedelegationEntryResponseSlice returns the encoded size of ((int64,int64,uint256,uint256),uint256)[]
+func SizeRedelegationEntryResponseSlice(value []RedelegationEntryResponse) int {
 	size := 32 + 160*len(value) // length + static elements
 	return size
 }
 
-// _StakingSizeRedelegationEntrySlice returns the encoded size of (int64,int64,uint256,uint256)[]
-func _StakingSizeRedelegationEntrySlice(value []RedelegationEntry) int {
+// SizeRedelegationEntrySlice returns the encoded size of (int64,int64,uint256,uint256)[]
+func SizeRedelegationEntrySlice(value []RedelegationEntry) int {
 	size := 32 + 128*len(value) // length + static elements
 	return size
 }
 
-// _StakingSizeRedelegationResponseSlice returns the encoded size of ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[]
-func _StakingSizeRedelegationResponseSlice(value []RedelegationResponse) int {
+// SizeRedelegationResponseSlice returns the encoded size of ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[]
+func SizeRedelegationResponseSlice(value []RedelegationResponse) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1545,20 +1464,14 @@ func _StakingSizeRedelegationResponseSlice(value []RedelegationResponse) int {
 	return size
 }
 
-// _StakingSizeString returns the encoded size of string
-func _StakingSizeString(value string) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded string data
-	return size
-}
-
-// _StakingSizeUnbondingDelegationEntrySlice returns the encoded size of (int64,int64,uint256,uint256,uint64,int64)[]
-func _StakingSizeUnbondingDelegationEntrySlice(value []UnbondingDelegationEntry) int {
+// SizeUnbondingDelegationEntrySlice returns the encoded size of (int64,int64,uint256,uint256,uint64,int64)[]
+func SizeUnbondingDelegationEntrySlice(value []UnbondingDelegationEntry) int {
 	size := 32 + 192*len(value) // length + static elements
 	return size
 }
 
-// _StakingSizeValidatorSlice returns the encoded size of (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[]
-func _StakingSizeValidatorSlice(value []Validator) int {
+// SizeValidatorSlice returns the encoded size of (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[]
+func SizeValidatorSlice(value []Validator) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -1566,54 +1479,8 @@ func _StakingSizeValidatorSlice(value []Validator) int {
 	return size
 }
 
-// _StakingDecodeAddress decodes address from ABI bytes
-func _StakingDecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _StakingDecodeBool decodes bool from ABI bytes
-func _StakingDecodeBool(data []byte) (bool, int, error) {
-	result := data[31] != 0
-	return result, 32, nil
-}
-
-// _StakingDecodeBytes decodes bytes from ABI bytes
-func _StakingDecodeBytes(data []byte) ([]byte, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := make([]byte, length)
-	copy(result, data[32:32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _StakingDecodeInt256 decodes int256 from ABI bytes
-func _StakingDecodeInt256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], true)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _StakingDecodeInt64 decodes int64 from ABI bytes
-func _StakingDecodeInt64(data []byte) (int64, int, error) {
-	var result int64
-	result = int64(binary.BigEndian.Uint64(data[24:32]))
-	if data[0]&0x80 != 0 { // Check sign bit
-		result = result | ^0x7fffffffffffffff // Sign extend
-	}
-	return result, 32, nil
-}
-
-// _StakingDecodeRedelegationEntryResponseSlice decodes ((int64,int64,uint256,uint256),uint256)[] from ABI bytes
-func _StakingDecodeRedelegationEntryResponseSlice(data []byte) ([]RedelegationEntryResponse, int, error) {
+// DecodeRedelegationEntryResponseSlice decodes ((int64,int64,uint256,uint256),uint256)[] from ABI bytes
+func DecodeRedelegationEntryResponseSlice(data []byte) ([]RedelegationEntryResponse, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1640,8 +1507,8 @@ func _StakingDecodeRedelegationEntryResponseSlice(data []byte) ([]RedelegationEn
 	return result, offset + 32, nil
 }
 
-// _StakingDecodeRedelegationEntrySlice decodes (int64,int64,uint256,uint256)[] from ABI bytes
-func _StakingDecodeRedelegationEntrySlice(data []byte) ([]RedelegationEntry, int, error) {
+// DecodeRedelegationEntrySlice decodes (int64,int64,uint256,uint256)[] from ABI bytes
+func DecodeRedelegationEntrySlice(data []byte) ([]RedelegationEntry, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1668,8 +1535,8 @@ func _StakingDecodeRedelegationEntrySlice(data []byte) ([]RedelegationEntry, int
 	return result, offset + 32, nil
 }
 
-// _StakingDecodeRedelegationResponseSlice decodes ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[] from ABI bytes
-func _StakingDecodeRedelegationResponseSlice(data []byte) ([]RedelegationResponse, int, error) {
+// DecodeRedelegationResponseSlice decodes ((string,string,string,(int64,int64,uint256,uint256)[]),((int64,int64,uint256,uint256),uint256)[])[] from ABI bytes
+func DecodeRedelegationResponseSlice(data []byte) ([]RedelegationResponse, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1702,42 +1569,8 @@ func _StakingDecodeRedelegationResponseSlice(data []byte) ([]RedelegationRespons
 	return result, dynamicOffset + 32, nil
 }
 
-// _StakingDecodeString decodes string from ABI bytes
-func _StakingDecodeString(data []byte) (string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return "", 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := string(data[32 : 32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _StakingDecodeUint256 decodes uint256 from ABI bytes
-func _StakingDecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _StakingDecodeUint64 decodes uint64 from ABI bytes
-func _StakingDecodeUint64(data []byte) (uint64, int, error) {
-	result := binary.BigEndian.Uint64(data[24:32])
-	return result, 32, nil
-}
-
-// _StakingDecodeUint8 decodes uint8 from ABI bytes
-func _StakingDecodeUint8(data []byte) (uint8, int, error) {
-	result := uint8(data[31])
-	return result, 32, nil
-}
-
-// _StakingDecodeUnbondingDelegationEntrySlice decodes (int64,int64,uint256,uint256,uint64,int64)[] from ABI bytes
-func _StakingDecodeUnbondingDelegationEntrySlice(data []byte) ([]UnbondingDelegationEntry, int, error) {
+// DecodeUnbondingDelegationEntrySlice decodes (int64,int64,uint256,uint256,uint64,int64)[] from ABI bytes
+func DecodeUnbondingDelegationEntrySlice(data []byte) ([]UnbondingDelegationEntry, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1764,8 +1597,8 @@ func _StakingDecodeUnbondingDelegationEntrySlice(data []byte) ([]UnbondingDelega
 	return result, offset + 32, nil
 }
 
-// _StakingDecodeValidatorSlice decodes (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[] from ABI bytes
-func _StakingDecodeValidatorSlice(data []byte) ([]Validator, int, error) {
+// DecodeValidatorSlice decodes (string,string,bool,uint8,uint256,uint256,(string,string,string,string,string),int64,int64,uint256,uint256)[] from ABI bytes
+func DecodeValidatorSlice(data []byte) ([]Validator, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -1811,7 +1644,7 @@ type CancelUnbondingDelegationCall struct {
 // EncodedSize returns the total encoded size of CancelUnbondingDelegationCall
 func (t CancelUnbondingDelegationCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
 
 	return CancelUnbondingDelegationCallStaticSize + dynamicSize
 }
@@ -1825,7 +1658,7 @@ func (value CancelUnbondingDelegationCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1833,19 +1666,19 @@ func (value CancelUnbondingDelegationCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field CreationHeight: uint256
-	if _, err := _StakingEncodeUint256(value.CreationHeight, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.CreationHeight, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -1872,7 +1705,7 @@ func (t *CancelUnbondingDelegationCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1882,19 +1715,19 @@ func (t *CancelUnbondingDelegationCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[64:])
+	t.Amount, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CreationHeight: uint256
-	t.CreationHeight, _, err = _StakingDecodeUint256(data[96:])
+	t.CreationHeight, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -1930,7 +1763,7 @@ func (value CancelUnbondingDelegationReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CancelUnbondingDelegationReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _StakingEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1956,7 +1789,7 @@ func (t *CancelUnbondingDelegationReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _StakingDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1979,7 +1812,7 @@ type CreateValidatorCall struct {
 func (t CreateValidatorCall) EncodedSize() int {
 	dynamicSize := 0
 	dynamicSize += t.Description.EncodedSize()
-	dynamicSize += _StakingSizeString(t.Pubkey)
+	dynamicSize += abi.SizeString(t.Pubkey)
 
 	return CreateValidatorCallStaticSize + dynamicSize
 }
@@ -2008,12 +1841,12 @@ func (value CreateValidatorCall) EncodeTo(buf []byte) (int, error) {
 	}
 
 	// Field MinSelfDelegation: uint256
-	if _, err := _StakingEncodeUint256(value.MinSelfDelegation, buf[128:]); err != nil {
+	if _, err := abi.EncodeUint256(value.MinSelfDelegation, buf[128:]); err != nil {
 		return 0, err
 	}
 
 	// Field ValidatorAddress: address
-	if _, err := _StakingEncodeAddress(value.ValidatorAddress, buf[160:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ValidatorAddress, buf[160:]); err != nil {
 		return 0, err
 	}
 
@@ -2021,14 +1854,14 @@ func (value CreateValidatorCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[192+24:192+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Pubkey, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Pubkey, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Value: uint256
-	if _, err := _StakingEncodeUint256(value.Value, buf[224:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Value, buf[224:]); err != nil {
 		return 0, err
 	}
 
@@ -2072,12 +1905,12 @@ func (t *CreateValidatorCall) Decode(data []byte) (int, error) {
 		return 0, err
 	}
 	// Decode static field MinSelfDelegation: uint256
-	t.MinSelfDelegation, _, err = _StakingDecodeUint256(data[128:])
+	t.MinSelfDelegation, _, err = abi.DecodeUint256(data[128:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field ValidatorAddress: address
-	t.ValidatorAddress, _, err = _StakingDecodeAddress(data[160:])
+	t.ValidatorAddress, _, err = abi.DecodeAddress(data[160:])
 	if err != nil {
 		return 0, err
 	}
@@ -2087,14 +1920,14 @@ func (t *CreateValidatorCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Pubkey")
 		}
-		t.Pubkey, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Pubkey, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Value: uint256
-	t.Value, _, err = _StakingDecodeUint256(data[224:])
+	t.Value, _, err = abi.DecodeUint256(data[224:])
 	if err != nil {
 		return 0, err
 	}
@@ -2130,7 +1963,7 @@ func (value CreateValidatorReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CreateValidatorReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _StakingEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2156,7 +1989,7 @@ func (t *CreateValidatorReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _StakingDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2175,7 +2008,7 @@ type DelegateCall struct {
 // EncodedSize returns the total encoded size of DelegateCall
 func (t DelegateCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
 
 	return DelegateCallStaticSize + dynamicSize
 }
@@ -2189,7 +2022,7 @@ func (value DelegateCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2197,14 +2030,14 @@ func (value DelegateCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -2231,7 +2064,7 @@ func (t *DelegateCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2241,14 +2074,14 @@ func (t *DelegateCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[64:])
+	t.Amount, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -2284,7 +2117,7 @@ func (value DelegateReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := DelegateReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _StakingEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2310,7 +2143,7 @@ func (t *DelegateReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _StakingDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2328,7 +2161,7 @@ type DelegationCall struct {
 // EncodedSize returns the total encoded size of DelegationCall
 func (t DelegationCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
 
 	return DelegationCallStaticSize + dynamicSize
 }
@@ -2342,7 +2175,7 @@ func (value DelegationCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2350,7 +2183,7 @@ func (value DelegationCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2379,7 +2212,7 @@ func (t *DelegationCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2389,7 +2222,7 @@ func (t *DelegationCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2433,7 +2266,7 @@ func (value DelegationReturn) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field Shares: uint256
-	if _, err := _StakingEncodeUint256(value.Shares, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Shares, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2470,7 +2303,7 @@ func (t *DelegationReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Shares: uint256
-	t.Shares, _, err = _StakingDecodeUint256(data[0:])
+	t.Shares, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2526,17 +2359,17 @@ func (value EditValidatorCall) EncodeTo(buf []byte) (int, error) {
 	dynamicOffset += n
 
 	// Field ValidatorAddress: address
-	if _, err := _StakingEncodeAddress(value.ValidatorAddress, buf[32:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ValidatorAddress, buf[32:]); err != nil {
 		return 0, err
 	}
 
 	// Field CommissionRate: int256
-	if _, err := _StakingEncodeInt256(value.CommissionRate, buf[64:]); err != nil {
+	if _, err := abi.EncodeInt256(value.CommissionRate, buf[64:]); err != nil {
 		return 0, err
 	}
 
 	// Field MinSelfDelegation: int256
-	if _, err := _StakingEncodeInt256(value.MinSelfDelegation, buf[96:]); err != nil {
+	if _, err := abi.EncodeInt256(value.MinSelfDelegation, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -2575,17 +2408,17 @@ func (t *EditValidatorCall) Decode(data []byte) (int, error) {
 		dynamicOffset += n
 	}
 	// Decode static field ValidatorAddress: address
-	t.ValidatorAddress, _, err = _StakingDecodeAddress(data[32:])
+	t.ValidatorAddress, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CommissionRate: int256
-	t.CommissionRate, _, err = _StakingDecodeInt256(data[64:])
+	t.CommissionRate, _, err = abi.DecodeInt256(data[64:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MinSelfDelegation: int256
-	t.MinSelfDelegation, _, err = _StakingDecodeInt256(data[96:])
+	t.MinSelfDelegation, _, err = abi.DecodeInt256(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -2621,7 +2454,7 @@ func (value EditValidatorReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := EditValidatorReturnStaticSize // Start dynamic data after static section
 	// Field Success: bool
-	if _, err := _StakingEncodeBool(value.Success, buf[0:]); err != nil {
+	if _, err := abi.EncodeBool(value.Success, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2647,7 +2480,7 @@ func (t *EditValidatorReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Success: bool
-	t.Success, _, err = _StakingDecodeBool(data[0:])
+	t.Success, _, err = abi.DecodeBool(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2667,8 +2500,8 @@ type RedelegateCall struct {
 // EncodedSize returns the total encoded size of RedelegateCall
 func (t RedelegateCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorSrcAddress)
-	dynamicSize += _StakingSizeString(t.ValidatorDstAddress)
+	dynamicSize += abi.SizeString(t.ValidatorSrcAddress)
+	dynamicSize += abi.SizeString(t.ValidatorDstAddress)
 
 	return RedelegateCallStaticSize + dynamicSize
 }
@@ -2682,7 +2515,7 @@ func (value RedelegateCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2690,7 +2523,7 @@ func (value RedelegateCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorSrcAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2700,14 +2533,14 @@ func (value RedelegateCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorDstAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -2734,7 +2567,7 @@ func (t *RedelegateCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2744,7 +2577,7 @@ func (t *RedelegateCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorSrcAddress")
 		}
-		t.ValidatorSrcAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorSrcAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2756,14 +2589,14 @@ func (t *RedelegateCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorDstAddress")
 		}
-		t.ValidatorDstAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorDstAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[96:])
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -2799,7 +2632,7 @@ func (value RedelegateReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := RedelegateReturnStaticSize // Start dynamic data after static section
 	// Field CompletionTime: int64
-	if _, err := _StakingEncodeInt64(value.CompletionTime, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CompletionTime, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2825,7 +2658,7 @@ func (t *RedelegateReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field CompletionTime: int64
-	t.CompletionTime, _, err = _StakingDecodeInt64(data[0:])
+	t.CompletionTime, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2844,8 +2677,8 @@ type RedelegationCall struct {
 // EncodedSize returns the total encoded size of RedelegationCall
 func (t RedelegationCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.SrcValidatorAddress)
-	dynamicSize += _StakingSizeString(t.DstValidatorAddress)
+	dynamicSize += abi.SizeString(t.SrcValidatorAddress)
+	dynamicSize += abi.SizeString(t.DstValidatorAddress)
 
 	return RedelegationCallStaticSize + dynamicSize
 }
@@ -2859,7 +2692,7 @@ func (value RedelegationCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -2867,7 +2700,7 @@ func (value RedelegationCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.SrcValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SrcValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2877,7 +2710,7 @@ func (value RedelegationCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.DstValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.DstValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2906,7 +2739,7 @@ func (t *RedelegationCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2916,7 +2749,7 @@ func (t *RedelegationCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SrcValidatorAddress")
 		}
-		t.SrcValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.SrcValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2928,7 +2761,7 @@ func (t *RedelegationCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field DstValidatorAddress")
 		}
-		t.DstValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.DstValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3030,8 +2863,8 @@ type RedelegationsCall struct {
 // EncodedSize returns the total encoded size of RedelegationsCall
 func (t RedelegationsCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.SrcValidatorAddress)
-	dynamicSize += _StakingSizeString(t.DstValidatorAddress)
+	dynamicSize += abi.SizeString(t.SrcValidatorAddress)
+	dynamicSize += abi.SizeString(t.DstValidatorAddress)
 	dynamicSize += t.PageRequest.EncodedSize()
 
 	return RedelegationsCallStaticSize + dynamicSize
@@ -3046,7 +2879,7 @@ func (value RedelegationsCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3054,7 +2887,7 @@ func (value RedelegationsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.SrcValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SrcValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3064,7 +2897,7 @@ func (value RedelegationsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.DstValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.DstValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3103,7 +2936,7 @@ func (t *RedelegationsCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 128
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3113,7 +2946,7 @@ func (t *RedelegationsCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SrcValidatorAddress")
 		}
-		t.SrcValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.SrcValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3125,7 +2958,7 @@ func (t *RedelegationsCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field DstValidatorAddress")
 		}
-		t.DstValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.DstValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3167,7 +3000,7 @@ type RedelegationsReturn struct {
 // EncodedSize returns the total encoded size of RedelegationsReturn
 func (t RedelegationsReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeRedelegationResponseSlice(t.Response)
+	dynamicSize += SizeRedelegationResponseSlice(t.Response)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return RedelegationsReturnStaticSize + dynamicSize
@@ -3185,7 +3018,7 @@ func (value RedelegationsReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeRedelegationResponseSlice(value.Response, buf[dynamicOffset:])
+	n, err = EncodeRedelegationResponseSlice(value.Response, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3229,7 +3062,7 @@ func (t *RedelegationsReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Response")
 		}
-		t.Response, n, err = _StakingDecodeRedelegationResponseSlice(data[dynamicOffset:])
+		t.Response, n, err = DecodeRedelegationResponseSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3261,7 +3094,7 @@ type UnbondingDelegationCall struct {
 // EncodedSize returns the total encoded size of UnbondingDelegationCall
 func (t UnbondingDelegationCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
 
 	return UnbondingDelegationCallStaticSize + dynamicSize
 }
@@ -3275,7 +3108,7 @@ func (value UnbondingDelegationCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3283,7 +3116,7 @@ func (value UnbondingDelegationCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3312,7 +3145,7 @@ func (t *UnbondingDelegationCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3322,7 +3155,7 @@ func (t *UnbondingDelegationCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3423,7 +3256,7 @@ type UndelegateCall struct {
 // EncodedSize returns the total encoded size of UndelegateCall
 func (t UndelegateCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.ValidatorAddress)
+	dynamicSize += abi.SizeString(t.ValidatorAddress)
 
 	return UndelegateCallStaticSize + dynamicSize
 }
@@ -3437,7 +3270,7 @@ func (value UndelegateCall) EncodeTo(buf []byte) (int, error) {
 		n   int
 	)
 	// Field DelegatorAddress: address
-	if _, err := _StakingEncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.DelegatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3445,14 +3278,14 @@ func (value UndelegateCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.ValidatorAddress, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddress, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[64:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -3479,7 +3312,7 @@ func (t *UndelegateCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 96
 	// Decode static field DelegatorAddress: address
-	t.DelegatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.DelegatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3489,14 +3322,14 @@ func (t *UndelegateCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ValidatorAddress")
 		}
-		t.ValidatorAddress, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.ValidatorAddress, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[64:])
+	t.Amount, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -3532,7 +3365,7 @@ func (value UndelegateReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := UndelegateReturnStaticSize // Start dynamic data after static section
 	// Field CompletionTime: int64
-	if _, err := _StakingEncodeInt64(value.CompletionTime, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt64(value.CompletionTime, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3558,7 +3391,7 @@ func (t *UndelegateReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field CompletionTime: int64
-	t.CompletionTime, _, err = _StakingDecodeInt64(data[0:])
+	t.CompletionTime, _, err = abi.DecodeInt64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3584,7 +3417,7 @@ func (value ValidatorCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := ValidatorCallStaticSize // Start dynamic data after static section
 	// Field ValidatorAddress: address
-	if _, err := _StakingEncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
+	if _, err := abi.EncodeAddress(value.ValidatorAddress, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3610,7 +3443,7 @@ func (t *ValidatorCall) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field ValidatorAddress: address
-	t.ValidatorAddress, _, err = _StakingDecodeAddress(data[0:])
+	t.ValidatorAddress, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3708,7 +3541,7 @@ type ValidatorsCall struct {
 // EncodedSize returns the total encoded size of ValidatorsCall
 func (t ValidatorsCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeString(t.Status)
+	dynamicSize += abi.SizeString(t.Status)
 	dynamicSize += t.PageRequest.EncodedSize()
 
 	return ValidatorsCallStaticSize + dynamicSize
@@ -3726,7 +3559,7 @@ func (value ValidatorsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeString(value.Status, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Status, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3770,7 +3603,7 @@ func (t *ValidatorsCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Status")
 		}
-		t.Status, n, err = _StakingDecodeString(data[dynamicOffset:])
+		t.Status, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3812,7 +3645,7 @@ type ValidatorsReturn struct {
 // EncodedSize returns the total encoded size of ValidatorsReturn
 func (t ValidatorsReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _StakingSizeValidatorSlice(t.Validators)
+	dynamicSize += SizeValidatorSlice(t.Validators)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return ValidatorsReturnStaticSize + dynamicSize
@@ -3830,7 +3663,7 @@ func (value ValidatorsReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _StakingEncodeValidatorSlice(value.Validators, buf[dynamicOffset:])
+	n, err = EncodeValidatorSlice(value.Validators, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3874,7 +3707,7 @@ func (t *ValidatorsReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Validators")
 		}
-		t.Validators, n, err = _StakingDecodeValidatorSlice(data[dynamicOffset:])
+		t.Validators, n, err = DecodeValidatorSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3949,7 +3782,7 @@ func (e CancelUnbondingDelegationEventIndexed) EncodeTopics() ([]common.Hash, er
 	{
 		// DelegatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -3957,7 +3790,7 @@ func (e CancelUnbondingDelegationEventIndexed) EncodeTopics() ([]common.Hash, er
 	{
 		// ValidatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -3974,11 +3807,11 @@ func (e *CancelUnbondingDelegationEventIndexed) DecodeTopics(topics []common.Has
 		return fmt.Errorf("invalid event topic for CancelUnbondingDelegation event")
 	}
 	var err error
-	e.DelegatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.DelegatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
-	e.ValidatorAddress, _, err = _StakingDecodeAddress(topics[2][:])
+	e.ValidatorAddress, _, err = abi.DecodeAddress(topics[2][:])
 	if err != nil {
 		return err
 	}
@@ -4005,12 +3838,12 @@ func (value CancelUnbondingDelegationEventData) EncodeTo(buf []byte) (int, error
 	// Encode tuple fields
 	dynamicOffset := CancelUnbondingDelegationEventDataStaticSize // Start dynamic data after static section
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field CreationHeight: uint256
-	if _, err := _StakingEncodeUint256(value.CreationHeight, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.CreationHeight, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4036,12 +3869,12 @@ func (t *CancelUnbondingDelegationEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[0:])
+	t.Amount, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CreationHeight: uint256
-	t.CreationHeight, _, err = _StakingDecodeUint256(data[32:])
+	t.CreationHeight, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -4081,7 +3914,7 @@ func (e CreateValidatorEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4098,7 +3931,7 @@ func (e *CreateValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for CreateValidator event")
 	}
 	var err error
-	e.ValidatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.ValidatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -4124,7 +3957,7 @@ func (value CreateValidatorEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := CreateValidatorEventDataStaticSize // Start dynamic data after static section
 	// Field Value: uint256
-	if _, err := _StakingEncodeUint256(value.Value, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Value, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -4150,7 +3983,7 @@ func (t *CreateValidatorEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field Value: uint256
-	t.Value, _, err = _StakingDecodeUint256(data[0:])
+	t.Value, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -4195,7 +4028,7 @@ func (e DelegateEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// DelegatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4203,7 +4036,7 @@ func (e DelegateEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4220,11 +4053,11 @@ func (e *DelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for Delegate event")
 	}
 	var err error
-	e.DelegatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.DelegatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
-	e.ValidatorAddress, _, err = _StakingDecodeAddress(topics[2][:])
+	e.ValidatorAddress, _, err = abi.DecodeAddress(topics[2][:])
 	if err != nil {
 		return err
 	}
@@ -4251,12 +4084,12 @@ func (value DelegateEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := DelegateEventDataStaticSize // Start dynamic data after static section
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field NewShares: uint256
-	if _, err := _StakingEncodeUint256(value.NewShares, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.NewShares, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4282,12 +4115,12 @@ func (t *DelegateEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[0:])
+	t.Amount, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field NewShares: uint256
-	t.NewShares, _, err = _StakingDecodeUint256(data[32:])
+	t.NewShares, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -4329,7 +4162,7 @@ func (e EditValidatorEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4346,7 +4179,7 @@ func (e *EditValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for EditValidator event")
 	}
 	var err error
-	e.ValidatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.ValidatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -4373,12 +4206,12 @@ func (value EditValidatorEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := EditValidatorEventDataStaticSize // Start dynamic data after static section
 	// Field CommissionRate: int256
-	if _, err := _StakingEncodeInt256(value.CommissionRate, buf[0:]); err != nil {
+	if _, err := abi.EncodeInt256(value.CommissionRate, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field MinSelfDelegation: int256
-	if _, err := _StakingEncodeInt256(value.MinSelfDelegation, buf[32:]); err != nil {
+	if _, err := abi.EncodeInt256(value.MinSelfDelegation, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4404,12 +4237,12 @@ func (t *EditValidatorEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field CommissionRate: int256
-	t.CommissionRate, _, err = _StakingDecodeInt256(data[0:])
+	t.CommissionRate, _, err = abi.DecodeInt256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field MinSelfDelegation: int256
-	t.MinSelfDelegation, _, err = _StakingDecodeInt256(data[32:])
+	t.MinSelfDelegation, _, err = abi.DecodeInt256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -4457,7 +4290,7 @@ func (e RedelegateEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// DelegatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4465,7 +4298,7 @@ func (e RedelegateEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorSrcAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorSrcAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorSrcAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4473,7 +4306,7 @@ func (e RedelegateEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorDstAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorDstAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorDstAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4490,15 +4323,15 @@ func (e *RedelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for Redelegate event")
 	}
 	var err error
-	e.DelegatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.DelegatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
-	e.ValidatorSrcAddress, _, err = _StakingDecodeAddress(topics[2][:])
+	e.ValidatorSrcAddress, _, err = abi.DecodeAddress(topics[2][:])
 	if err != nil {
 		return err
 	}
-	e.ValidatorDstAddress, _, err = _StakingDecodeAddress(topics[3][:])
+	e.ValidatorDstAddress, _, err = abi.DecodeAddress(topics[3][:])
 	if err != nil {
 		return err
 	}
@@ -4525,12 +4358,12 @@ func (value RedelegateEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := RedelegateEventDataStaticSize // Start dynamic data after static section
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field CompletionTime: uint256
-	if _, err := _StakingEncodeUint256(value.CompletionTime, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.CompletionTime, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4556,12 +4389,12 @@ func (t *RedelegateEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[0:])
+	t.Amount, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CompletionTime: uint256
-	t.CompletionTime, _, err = _StakingDecodeUint256(data[32:])
+	t.CompletionTime, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -4606,7 +4439,7 @@ func (e UnbondEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// DelegatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.DelegatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4614,7 +4447,7 @@ func (e UnbondEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// ValidatorAddress
 		var hash common.Hash
-		if _, err := _StakingEncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.ValidatorAddress, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
@@ -4631,11 +4464,11 @@ func (e *UnbondEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for Unbond event")
 	}
 	var err error
-	e.DelegatorAddress, _, err = _StakingDecodeAddress(topics[1][:])
+	e.DelegatorAddress, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
-	e.ValidatorAddress, _, err = _StakingDecodeAddress(topics[2][:])
+	e.ValidatorAddress, _, err = abi.DecodeAddress(topics[2][:])
 	if err != nil {
 		return err
 	}
@@ -4662,12 +4495,12 @@ func (value UnbondEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := UnbondEventDataStaticSize // Start dynamic data after static section
 	// Field Amount: uint256
-	if _, err := _StakingEncodeUint256(value.Amount, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[0:]); err != nil {
 		return 0, err
 	}
 
 	// Field CompletionTime: uint256
-	if _, err := _StakingEncodeUint256(value.CompletionTime, buf[32:]); err != nil {
+	if _, err := abi.EncodeUint256(value.CompletionTime, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -4693,12 +4526,12 @@ func (t *UnbondEventData) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 64
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _StakingDecodeUint256(data[0:])
+	t.Amount, _, err = abi.DecodeUint256(data[0:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field CompletionTime: uint256
-	t.CompletionTime, _, err = _StakingDecodeUint256(data[32:])
+	t.CompletionTime, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}

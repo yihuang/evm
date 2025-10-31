@@ -46,8 +46,8 @@ type Denom struct {
 // EncodedSize returns the total encoded size of Denom
 func (t Denom) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.Base)
-	dynamicSize += _Ics20SizeHopSlice(t.Trace)
+	dynamicSize += abi.SizeString(t.Base)
+	dynamicSize += SizeHopSlice(t.Trace)
 
 	return DenomStaticSize + dynamicSize
 }
@@ -64,7 +64,7 @@ func (value Denom) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Base, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Base, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -74,7 +74,7 @@ func (value Denom) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeHopSlice(value.Trace, buf[dynamicOffset:])
+	n, err = EncodeHopSlice(value.Trace, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -108,7 +108,7 @@ func (t *Denom) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Base")
 		}
-		t.Base, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Base, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -120,7 +120,7 @@ func (t *Denom) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Trace")
 		}
-		t.Trace, n, err = _Ics20DecodeHopSlice(data[dynamicOffset:])
+		t.Trace, n, err = DecodeHopSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -140,8 +140,8 @@ type Hop struct {
 // EncodedSize returns the total encoded size of Hop
 func (t Hop) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.PortId)
-	dynamicSize += _Ics20SizeString(t.ChannelId)
+	dynamicSize += abi.SizeString(t.PortId)
+	dynamicSize += abi.SizeString(t.ChannelId)
 
 	return HopStaticSize + dynamicSize
 }
@@ -158,7 +158,7 @@ func (value Hop) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.PortId, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.PortId, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -168,7 +168,7 @@ func (value Hop) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.ChannelId, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ChannelId, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -202,7 +202,7 @@ func (t *Hop) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field PortId")
 		}
-		t.PortId, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.PortId, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -214,7 +214,7 @@ func (t *Hop) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field ChannelId")
 		}
-		t.ChannelId, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.ChannelId, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -223,33 +223,8 @@ func (t *Hop) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
-// _Ics20EncodeAddress encodes address to ABI bytes
-func _Ics20EncodeAddress(value common.Address, buf []byte) (int, error) {
-	copy(buf[12:32], value[:])
-	return 32, nil
-}
-
-// _Ics20EncodeBool encodes bool to ABI bytes
-func _Ics20EncodeBool(value bool, buf []byte) (int, error) {
-	if value {
-		buf[31] = 1
-	}
-	return 32, nil
-}
-
-// _Ics20EncodeBytes encodes bytes to ABI bytes
-func _Ics20EncodeBytes(value []byte, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], value)
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _Ics20EncodeDenomSlice encodes (string,(string,string)[])[] to ABI bytes
-func _Ics20EncodeDenomSlice(value []Denom, buf []byte) (int, error) {
+// EncodeDenomSlice encodes (string,(string,string)[])[] to ABI bytes
+func EncodeDenomSlice(value []Denom, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -273,8 +248,8 @@ func _Ics20EncodeDenomSlice(value []Denom, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _Ics20EncodeHopSlice encodes (string,string)[] to ABI bytes
-func _Ics20EncodeHopSlice(value []Hop, buf []byte) (int, error) {
+// EncodeHopSlice encodes (string,string)[] to ABI bytes
+func EncodeHopSlice(value []Hop, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -298,39 +273,8 @@ func _Ics20EncodeHopSlice(value []Hop, buf []byte) (int, error) {
 	return dynamicOffset + 32, nil
 }
 
-// _Ics20EncodeString encodes string to ABI bytes
-func _Ics20EncodeString(value string, buf []byte) (int, error) {
-	// Encode length
-	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
-
-	// Encode data
-	copy(buf[32:], []byte(value))
-
-	return 32 + abi.Pad32(len(value)), nil
-}
-
-// _Ics20EncodeUint256 encodes uint256 to ABI bytes
-func _Ics20EncodeUint256(value *big.Int, buf []byte) (int, error) {
-	if err := abi.EncodeBigInt(value, buf[:32], false); err != nil {
-		return 0, err
-	}
-	return 32, nil
-}
-
-// _Ics20EncodeUint64 encodes uint64 to ABI bytes
-func _Ics20EncodeUint64(value uint64, buf []byte) (int, error) {
-	binary.BigEndian.PutUint64(buf[24:32], uint64(value))
-	return 32, nil
-}
-
-// _Ics20SizeBytes returns the encoded size of bytes
-func _Ics20SizeBytes(value []byte) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded bytes data
-	return size
-}
-
-// _Ics20SizeDenomSlice returns the encoded size of (string,(string,string)[])[]
-func _Ics20SizeDenomSlice(value []Denom) int {
+// SizeDenomSlice returns the encoded size of (string,(string,string)[])[]
+func SizeDenomSlice(value []Denom) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -338,8 +282,8 @@ func _Ics20SizeDenomSlice(value []Denom) int {
 	return size
 }
 
-// _Ics20SizeHopSlice returns the encoded size of (string,string)[]
-func _Ics20SizeHopSlice(value []Hop) int {
+// SizeHopSlice returns the encoded size of (string,string)[]
+func SizeHopSlice(value []Hop) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -347,41 +291,8 @@ func _Ics20SizeHopSlice(value []Hop) int {
 	return size
 }
 
-// _Ics20SizeString returns the encoded size of string
-func _Ics20SizeString(value string) int {
-	size := 32 + abi.Pad32(len(value)) // length + padded string data
-	return size
-}
-
-// _Ics20DecodeAddress decodes address from ABI bytes
-func _Ics20DecodeAddress(data []byte) (common.Address, int, error) {
-	var result common.Address
-	copy(result[:], data[12:32])
-	return result, 32, nil
-}
-
-// _Ics20DecodeBool decodes bool from ABI bytes
-func _Ics20DecodeBool(data []byte) (bool, int, error) {
-	result := data[31] != 0
-	return result, 32, nil
-}
-
-// _Ics20DecodeBytes decodes bytes from ABI bytes
-func _Ics20DecodeBytes(data []byte) ([]byte, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return nil, 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := make([]byte, length)
-	copy(result, data[32:32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _Ics20DecodeDenomSlice decodes (string,(string,string)[])[] from ABI bytes
-func _Ics20DecodeDenomSlice(data []byte) ([]Denom, int, error) {
+// DecodeDenomSlice decodes (string,(string,string)[])[] from ABI bytes
+func DecodeDenomSlice(data []byte) ([]Denom, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -414,8 +325,8 @@ func _Ics20DecodeDenomSlice(data []byte) ([]Denom, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
-// _Ics20DecodeHopSlice decodes (string,string)[] from ABI bytes
-func _Ics20DecodeHopSlice(data []byte) ([]Hop, int, error) {
+// DecodeHopSlice decodes (string,string)[] from ABI bytes
+func DecodeHopSlice(data []byte) ([]Hop, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -448,34 +359,6 @@ func _Ics20DecodeHopSlice(data []byte) ([]Hop, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
-// _Ics20DecodeString decodes string from ABI bytes
-func _Ics20DecodeString(data []byte) (string, int, error) {
-	// Decode length
-	length := int(binary.BigEndian.Uint64(data[24:32]))
-	if len(data) < 32+abi.Pad32(length) {
-		return "", 0, io.ErrUnexpectedEOF
-	}
-
-	// Decode data
-	result := string(data[32 : 32+length])
-	return result, 32 + abi.Pad32(length), nil
-}
-
-// _Ics20DecodeUint256 decodes uint256 from ABI bytes
-func _Ics20DecodeUint256(data []byte) (*big.Int, int, error) {
-	result, err := abi.DecodeBigInt(data[:32], false)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 32, nil
-}
-
-// _Ics20DecodeUint64 decodes uint64 from ABI bytes
-func _Ics20DecodeUint64(data []byte) (uint64, int, error) {
-	result := binary.BigEndian.Uint64(data[24:32])
-	return result, 32, nil
-}
-
 const DenomCallStaticSize = 32
 
 // DenomCall represents an ABI tuple
@@ -486,7 +369,7 @@ type DenomCall struct {
 // EncodedSize returns the total encoded size of DenomCall
 func (t DenomCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.Hash)
+	dynamicSize += abi.SizeString(t.Hash)
 
 	return DenomCallStaticSize + dynamicSize
 }
@@ -503,7 +386,7 @@ func (value DenomCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Hash, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Hash, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -537,7 +420,7 @@ func (t *DenomCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Hash")
 		}
-		t.Hash, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Hash, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -636,7 +519,7 @@ type DenomHashCall struct {
 // EncodedSize returns the total encoded size of DenomHashCall
 func (t DenomHashCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.Trace)
+	dynamicSize += abi.SizeString(t.Trace)
 
 	return DenomHashCallStaticSize + dynamicSize
 }
@@ -653,7 +536,7 @@ func (value DenomHashCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Trace, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Trace, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -687,7 +570,7 @@ func (t *DenomHashCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Trace")
 		}
-		t.Trace, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Trace, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -716,7 +599,7 @@ type DenomHashReturn struct {
 // EncodedSize returns the total encoded size of DenomHashReturn
 func (t DenomHashReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.Hash)
+	dynamicSize += abi.SizeString(t.Hash)
 
 	return DenomHashReturnStaticSize + dynamicSize
 }
@@ -733,7 +616,7 @@ func (value DenomHashReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Hash, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Hash, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -767,7 +650,7 @@ func (t *DenomHashReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Hash")
 		}
-		t.Hash, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Hash, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -867,7 +750,7 @@ type DenomsReturn struct {
 // EncodedSize returns the total encoded size of DenomsReturn
 func (t DenomsReturn) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeDenomSlice(t.Denoms)
+	dynamicSize += SizeDenomSlice(t.Denoms)
 	dynamicSize += t.PageResponse.EncodedSize()
 
 	return DenomsReturnStaticSize + dynamicSize
@@ -885,7 +768,7 @@ func (value DenomsReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeDenomSlice(value.Denoms, buf[dynamicOffset:])
+	n, err = EncodeDenomSlice(value.Denoms, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -929,7 +812,7 @@ func (t *DenomsReturn) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Denoms")
 		}
-		t.Denoms, n, err = _Ics20DecodeDenomSlice(data[dynamicOffset:])
+		t.Denoms, n, err = DecodeDenomSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -968,11 +851,11 @@ type TransferCall struct {
 // EncodedSize returns the total encoded size of TransferCall
 func (t TransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.SourcePort)
-	dynamicSize += _Ics20SizeString(t.SourceChannel)
-	dynamicSize += _Ics20SizeString(t.Denom)
-	dynamicSize += _Ics20SizeString(t.Receiver)
-	dynamicSize += _Ics20SizeString(t.Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return TransferCallStaticSize + dynamicSize
 }
@@ -989,7 +872,7 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -999,7 +882,7 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1009,19 +892,19 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _Ics20EncodeUint256(value.Amount, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
 	// Field Sender: address
-	if _, err := _Ics20EncodeAddress(value.Sender, buf[128:]); err != nil {
+	if _, err := abi.EncodeAddress(value.Sender, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -1029,7 +912,7 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1041,7 +924,7 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	}
 
 	// Field TimeoutTimestamp: uint64
-	if _, err := _Ics20EncodeUint64(value.TimeoutTimestamp, buf[256:]); err != nil {
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[256:]); err != nil {
 		return 0, err
 	}
 
@@ -1049,7 +932,7 @@ func (value TransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[288+24:288+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1083,7 +966,7 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t.SourcePort, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1095,7 +978,7 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t.SourceChannel, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1107,19 +990,19 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t.Denom, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _Ics20DecodeUint256(data[96:])
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
 	// Decode static field Sender: address
-	t.Sender, _, err = _Ics20DecodeAddress(data[128:])
+	t.Sender, _, err = abi.DecodeAddress(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -1129,7 +1012,7 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t.Receiver, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1141,7 +1024,7 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		return 0, err
 	}
 	// Decode static field TimeoutTimestamp: uint64
-	t.TimeoutTimestamp, _, err = _Ics20DecodeUint64(data[256:])
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
 	if err != nil {
 		return 0, err
 	}
@@ -1151,7 +1034,7 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t.Memo, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1189,7 +1072,7 @@ func (value TransferReturn) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TransferReturnStaticSize // Start dynamic data after static section
 	// Field NextSequence: uint64
-	if _, err := _Ics20EncodeUint64(value.NextSequence, buf[0:]); err != nil {
+	if _, err := abi.EncodeUint64(value.NextSequence, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1215,7 +1098,7 @@ func (t *TransferReturn) Decode(data []byte) (int, error) {
 	)
 	dynamicOffset := 32
 	// Decode static field NextSequence: uint64
-	t.NextSequence, _, err = _Ics20DecodeUint64(data[0:])
+	t.NextSequence, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1272,16 +1155,16 @@ func (e IBCTransferEventIndexed) EncodeTopics() ([]common.Hash, error) {
 	{
 		// Sender
 		var hash common.Hash
-		if _, err := _Ics20EncodeAddress(e.Sender, hash[:]); err != nil {
+		if _, err := abi.EncodeAddress(e.Sender, hash[:]); err != nil {
 			return nil, err
 		}
 		topics = append(topics, hash)
 	}
 	{
 		// Receiver
-		encodedSize := _Ics20SizeString(e.Receiver)
+		encodedSize := abi.SizeString(e.Receiver)
 		buf := make([]byte, encodedSize)
-		if _, err := _Ics20EncodeString(e.Receiver, buf); err != nil {
+		if _, err := abi.EncodeString(e.Receiver, buf); err != nil {
 			return nil, err
 		}
 		hash := crypto.Keccak256Hash(buf)
@@ -1299,7 +1182,7 @@ func (e *IBCTransferEventIndexed) DecodeTopics(topics []common.Hash) error {
 		return fmt.Errorf("invalid event topic for IBCTransfer event")
 	}
 	var err error
-	e.Sender, _, err = _Ics20DecodeAddress(topics[1][:])
+	e.Sender, _, err = abi.DecodeAddress(topics[1][:])
 	if err != nil {
 		return err
 	}
@@ -1320,10 +1203,10 @@ type IBCTransferEventData struct {
 // EncodedSize returns the total encoded size of IBCTransferEventData
 func (t IBCTransferEventData) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += _Ics20SizeString(t.SourcePort)
-	dynamicSize += _Ics20SizeString(t.SourceChannel)
-	dynamicSize += _Ics20SizeString(t.Denom)
-	dynamicSize += _Ics20SizeString(t.Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return IBCTransferEventDataStaticSize + dynamicSize
 }
@@ -1340,7 +1223,7 @@ func (value IBCTransferEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1350,7 +1233,7 @@ func (value IBCTransferEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1360,14 +1243,14 @@ func (value IBCTransferEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
 	// Field Amount: uint256
-	if _, err := _Ics20EncodeUint256(value.Amount, buf[96:]); err != nil {
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -1375,7 +1258,7 @@ func (value IBCTransferEventData) EncodeTo(buf []byte) (int, error) {
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = _Ics20EncodeString(value.Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1409,7 +1292,7 @@ func (t *IBCTransferEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t.SourcePort, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1421,7 +1304,7 @@ func (t *IBCTransferEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t.SourceChannel, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1433,14 +1316,14 @@ func (t *IBCTransferEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t.Denom, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
 	// Decode static field Amount: uint256
-	t.Amount, _, err = _Ics20DecodeUint256(data[96:])
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -1450,7 +1333,7 @@ func (t *IBCTransferEventData) Decode(data []byte) (int, error) {
 		if offset != dynamicOffset {
 			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t.Memo, n, err = _Ics20DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
