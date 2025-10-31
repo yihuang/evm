@@ -33,120 +33,6 @@ const (
 	UnjailID          = 1151258598
 )
 
-const PageRequestStaticSize = 160
-
-// PageRequest represents an ABI tuple
-type PageRequest struct {
-	Key        []byte
-	Offset     uint64
-	Limit      uint64
-	CountTotal bool
-	Reverse    bool
-}
-
-// EncodedSize returns the total encoded size of PageRequest
-func (t PageRequest) EncodedSize() int {
-	dynamicSize := 0
-	dynamicSize += abi.SizeBytes(t.Key)
-
-	return PageRequestStaticSize + dynamicSize
-}
-
-// EncodeTo encodes PageRequest to ABI bytes in the provided buffer
-func (value PageRequest) EncodeTo(buf []byte) (int, error) {
-	// Encode tuple fields
-	dynamicOffset := PageRequestStaticSize // Start dynamic data after static section
-	var (
-		err error
-		n   int
-	)
-	// Field Key: bytes
-	// Encode offset pointer
-	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
-	// Encode dynamic data
-	n, err = abi.EncodeBytes(value.Key, buf[dynamicOffset:])
-	if err != nil {
-		return 0, err
-	}
-	dynamicOffset += n
-
-	// Field Offset: uint64
-	if _, err := abi.EncodeUint64(value.Offset, buf[32:]); err != nil {
-		return 0, err
-	}
-
-	// Field Limit: uint64
-	if _, err := abi.EncodeUint64(value.Limit, buf[64:]); err != nil {
-		return 0, err
-	}
-
-	// Field CountTotal: bool
-	if _, err := abi.EncodeBool(value.CountTotal, buf[96:]); err != nil {
-		return 0, err
-	}
-
-	// Field Reverse: bool
-	if _, err := abi.EncodeBool(value.Reverse, buf[128:]); err != nil {
-		return 0, err
-	}
-
-	return dynamicOffset, nil
-}
-
-// Encode encodes PageRequest to ABI bytes
-func (value PageRequest) Encode() ([]byte, error) {
-	buf := make([]byte, value.EncodedSize())
-	if _, err := value.EncodeTo(buf); err != nil {
-		return nil, err
-	}
-	return buf, nil
-}
-
-// Decode decodes PageRequest from ABI bytes in the provided buffer
-func (t *PageRequest) Decode(data []byte) (int, error) {
-	if len(data) < 160 {
-		return 0, io.ErrUnexpectedEOF
-	}
-	var (
-		err error
-		n   int
-	)
-	dynamicOffset := 160
-	// Decode dynamic field Key
-	{
-		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
-		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field Key")
-		}
-		t.Key, n, err = abi.DecodeBytes(data[dynamicOffset:])
-		if err != nil {
-			return 0, err
-		}
-		dynamicOffset += n
-	}
-	// Decode static field Offset: uint64
-	t.Offset, _, err = abi.DecodeUint64(data[32:])
-	if err != nil {
-		return 0, err
-	}
-	// Decode static field Limit: uint64
-	t.Limit, _, err = abi.DecodeUint64(data[64:])
-	if err != nil {
-		return 0, err
-	}
-	// Decode static field CountTotal: bool
-	t.CountTotal, _, err = abi.DecodeBool(data[96:])
-	if err != nil {
-		return 0, err
-	}
-	// Decode static field Reverse: bool
-	t.Reverse, _, err = abi.DecodeBool(data[128:])
-	if err != nil {
-		return 0, err
-	}
-	return dynamicOffset, nil
-}
-
 const PageResponseStaticSize = 64
 
 // PageResponse represents an ABI tuple
@@ -669,7 +555,7 @@ const GetSigningInfosCallStaticSize = 32
 
 // GetSigningInfosCall represents an ABI tuple
 type GetSigningInfosCall struct {
-	Pagination PageRequest
+	Pagination cmn.PageRequest
 }
 
 // EncodedSize returns the total encoded size of GetSigningInfosCall

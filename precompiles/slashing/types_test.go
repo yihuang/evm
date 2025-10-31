@@ -19,13 +19,15 @@ func TestParseSigningInfoArgs(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		args            []interface{}
+		args            GetSigningInfoCall
 		wantErr         bool
 		wantConsAddress string
 	}{
 		{
-			name:            "valid address",
-			args:            []interface{}{validAddr},
+			name: "valid address",
+			args: GetSigningInfoCall{
+				ConsAddress: validAddr,
+			},
 			wantErr:         false,
 			wantConsAddress: expectedConsAddr,
 		},

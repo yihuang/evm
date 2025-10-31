@@ -124,8 +124,8 @@ func TestNewMsgFundCommunityPool(t *testing.T) {
 		{
 			name: "valid",
 			args: FundCommunityPoolCall{
-				DepositorAddress: depositorAddr,
-				Amount:           validCoins,
+				Depositor: depositorAddr,
+				Amount:    validCoins,
 			},
 			wantErr:       false,
 			wantDepositor: expectedDepositorAddr,
@@ -169,7 +169,7 @@ func TestNewMsgDepositValidatorRewardsPool(t *testing.T) {
 		{
 			name: "valid",
 			args: DepositValidatorRewardsPoolCall{
-				DepositorAddress: depositorAddr,
+				Depositor:        depositorAddr,
 				ValidatorAddress: validatorAddr,
 				Amount:           validCoins,
 			},

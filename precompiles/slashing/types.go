@@ -43,13 +43,9 @@ type SigningInfosInput struct {
 }
 
 // ParseSigningInfoArgs parses the arguments for the signing info query
-func ParseSigningInfoArgs(args []interface{}, consCodec address.Codec) (*slashingtypes.QuerySigningInfoRequest, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
-	}
-
-	hexAddr, ok := args[0].(common.Address)
-	if !ok || hexAddr == (common.Address{}) {
+func ParseSigningInfoArgs(args GetSigningInfoCall, consCodec address.Codec) (*slashingtypes.QuerySigningInfoRequest, error) {
+	hexAddr := args.ConsAddress
+	if hexAddr == (common.Address{}) {
 		return nil, fmt.Errorf("invalid consensus address")
 	}
 
@@ -64,18 +60,9 @@ func ParseSigningInfoArgs(args []interface{}, consCodec address.Codec) (*slashin
 }
 
 // ParseSigningInfosArgs parses the arguments for the signing infos query
-func ParseSigningInfosArgs(method *abi.Method, args []interface{}) (*slashingtypes.QuerySigningInfosRequest, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 1, len(args))
-	}
-
-	var input SigningInfosInput
-	if err := method.Inputs.Copy(&input, args); err != nil {
-		return nil, fmt.Errorf("error while unpacking args to SigningInfosInput: %s", err)
-	}
-
+func ParseSigningInfosArgs(method *abi.Method, args GetSigningInfosCall) (*slashingtypes.QuerySigningInfosRequest, error) {
 	return &slashingtypes.QuerySigningInfosRequest{
-		Pagination: &input.Pagination,
+		Pagination: args.Pagination.ToPageRequest(),
 	}, nil
 }
 
