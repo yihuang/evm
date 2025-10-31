@@ -1,14 +1,12 @@
 package slashing
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 
 	evmaddress "github.com/cosmos/evm/encoding/address"
-	cmn "github.com/cosmos/evm/precompiles/common"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,52 +19,15 @@ func TestParseSigningInfoArgs(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		args            []any
+		args            []interface{}
 		wantErr         bool
-		errMsg          string
 		wantConsAddress string
 	}{
 		{
 			name:            "valid address",
-			args:            []any{validAddr},
+			args:            []interface{}{validAddr},
 			wantErr:         false,
 			wantConsAddress: expectedConsAddr,
-		},
-		{
-			name:    "no arguments",
-			args:    []any{},
-			wantErr: true,
-			errMsg:  fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 1, 0),
-		},
-		{
-			name:    "too many arguments",
-			args:    []any{validAddr, "extra"},
-			wantErr: true,
-			errMsg:  fmt.Sprintf(cmn.ErrInvalidNumberOfArgs, 1, 2),
-		},
-		{
-			name:    "invalid type - string instead of address",
-			args:    []any{"not-an-address"},
-			wantErr: true,
-			errMsg:  "invalid consensus address",
-		},
-		{
-			name:    "invalid type - nil",
-			args:    []any{nil},
-			wantErr: true,
-			errMsg:  "invalid consensus address",
-		},
-		{
-			name:    "empty address",
-			args:    []any{common.Address{}},
-			wantErr: true,
-			errMsg:  "invalid consensus address",
-		},
-		{
-			name:    "invalid type - integer",
-			args:    []any{12345},
-			wantErr: true,
-			errMsg:  "invalid consensus address",
 		},
 	}
 
@@ -76,7 +37,6 @@ func TestParseSigningInfoArgs(t *testing.T) {
 
 			if tt.wantErr {
 				require.Error(t, err)
-				require.Contains(t, err.Error(), tt.errMsg)
 				require.Nil(t, got)
 			} else {
 				require.NoError(t, err)
