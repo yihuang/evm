@@ -1,41 +1,19 @@
 package bech32
 
 import (
-	"bytes"
+	"encoding/binary"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
-
-	_ "embed"
 
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module bech32
-
 var _ vm.PrecompiledContract = &Precompile{}
-
-var (
-	// Embed abi json file to the executable binary. Needed when importing as dependency.
-	//
-	//go:embed abi.json
-	f   []byte
-	ABI abi.ABI
-)
-
-func init() {
-	var err error
-	ABI, err = abi.JSON(bytes.NewReader(f))
-	if err != nil {
-		panic(err)
-	}
-}
 
 // Precompile defines the precompiled contract for Bech32 encoding.
 type Precompile struct {
-	abi.ABI
 	baseGas uint64
 }
 
@@ -47,7 +25,6 @@ func NewPrecompile(baseGas uint64) (*Precompile, error) {
 	}
 
 	return &Precompile{
-		ABI:     ABI,
 		baseGas: baseGas,
 	}, nil
 }
@@ -69,18 +46,11 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 		return nil, vm.ErrExecutionReverted
 	}
 
-	methodID := contract.Input[:4]
-	// NOTE: this function iterates over the method map and returns
-	// the method with the given ID
-	method, err := p.MethodById(methodID)
-	if err != nil {
-		return nil, err
-	}
-
+	methodID := binary.BigEndian.Uint32(contract.Input[:4])
 	argsBz := contract.Input[4:]
 
-	switch method.Name {
-	case "hexToBech32":
+	switch methodID {
+	case HexToBech32ID:
 		var hexToBech32Args HexToBech32Call
 		if _, err := hexToBech32Args.Decode(argsBz); err != nil {
 			return nil, err
@@ -90,7 +60,7 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 			return nil, err
 		}
 		bz, err = result.Encode()
-	case "bech32ToHex":
+	case Bech32ToHexID:
 		var bech32ToHexArgs Bech32ToHexCall
 		if _, err := bech32ToHexArgs.Decode(argsBz); err != nil {
 			return nil, err
@@ -100,6 +70,8 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 			return nil, err
 		}
 		bz, err = result.Encode()
+	default:
+		return nil, vm.ErrExecutionReverted
 	}
 
 	if err != nil {

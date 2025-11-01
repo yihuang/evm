@@ -1,13 +1,10 @@
 package werc20
 
 import (
-	"bytes"
+	"encoding/binary"
 	"slices"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/vm"
-
-	_ "embed"
 
 	ibcutils "github.com/cosmos/evm/ibc"
 	cmn "github.com/cosmos/evm/precompiles/common"
@@ -16,24 +13,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
-
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module werc20
-
-var (
-	// Embed abi json file to the executable binary. Needed when importing as dependency.
-	//
-	//go:embed abi.json
-	f   []byte
-	ABI abi.ABI
-)
-
-func init() {
-	var err error
-	ABI, err = abi.JSON(bytes.NewReader(f))
-	if err != nil {
-		panic(err)
-	}
-}
 
 var _ vm.PrecompiledContract = &Precompile{}
 
@@ -60,9 +39,6 @@ func NewPrecompile(
 ) *Precompile {
 	erc20Precompile := erc20.NewPrecompile(tokenPair, bankKeeper, erc20Keeper, transferKeeper)
 
-	// use the IWERC20 ABI
-	erc20Precompile.ABI = ABI
-
 	return &Precompile{
 		Precompile: erc20Precompile,
 	}
@@ -79,16 +55,12 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 		return DepositRequiredGas
 	}
 
-	methodID := input[:4]
-	method, err := p.MethodById(methodID)
-	if err != nil {
-		return 0
-	}
+	methodID := binary.BigEndian.Uint32(input[:4])
 
-	switch method.Name {
-	case DepositMethod:
+	switch methodID {
+	case DepositID:
 		return DepositRequiredGas
-	case WithdrawMethod:
+	case WithdrawID:
 		return WithdrawRequiredGas
 	default:
 		return p.Precompile.RequiredGas(input)

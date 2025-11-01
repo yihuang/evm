@@ -1,10 +1,9 @@
 package erc20
 
 import (
-	"bytes"
+	"encoding/binary"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/vm"
 
 	_ "embed"
@@ -39,29 +38,12 @@ const (
 	GasAllowance    = 3_225
 )
 
-var (
-	// Embed abi json file to the executable binary. Needed when importing as dependency.
-	//
-	//go:embed abi.json
-	f   []byte
-	ABI abi.ABI
-)
-
-func init() {
-	var err error
-	ABI, err = abi.JSON(bytes.NewReader(f))
-	if err != nil {
-		panic(err)
-	}
-}
-
 var _ vm.PrecompiledContract = &Precompile{}
 
 // Precompile defines the precompiled contract for ERC-20.
 type Precompile struct {
 	cmn.Precompile
 
-	abi.ABI
 	tokenPair      erc20types.TokenPair
 	transferKeeper ibcutils.TransferKeeper
 	erc20Keeper    Erc20Keeper
@@ -84,7 +66,6 @@ func NewPrecompile(
 			ContractAddress:       tokenPair.GetERC20Contract(),
 			BalanceHandlerFactory: cmn.NewBalanceHandlerFactory(bankKeeper),
 		},
-		ABI:            ABI,
 		tokenPair:      tokenPair,
 		BankKeeper:     bankKeeper,
 		erc20Keeper:    erc20Keeper,
@@ -99,35 +80,31 @@ func (p Precompile) RequiredGas(input []byte) uint64 {
 		return 0
 	}
 
-	methodID := input[:4]
-	method, err := p.MethodById(methodID)
-	if err != nil {
-		return 0
-	}
+	methodID := binary.BigEndian.Uint32(input[:4])
 
 	// TODO: these values were obtained from Remix using the ERC20.sol from OpenZeppelin.
 	// We should execute the transactions using the ERC20MinterBurnerDecimals.sol from Cosmos EVM testnet
 	// to ensure parity in the values.
-	switch method.Name {
+	switch methodID {
 	// ERC-20 transactions
-	case TransferMethod:
+	case TransferID:
 		return GasTransfer
-	case TransferFromMethod:
+	case TransferFromID:
 		return GasTransferFrom
-	case ApproveMethod:
+	case ApproveID:
 		return GasApprove
 	// ERC-20 queries
-	case NameMethod:
+	case NameID:
 		return GasName
-	case SymbolMethod:
+	case SymbolID:
 		return GasSymbol
-	case DecimalsMethod:
+	case DecimalsID:
 		return GasDecimals
-	case TotalSupplyMethod:
+	case TotalSupplyID:
 		return GasTotalSupply
-	case BalanceOfMethod:
+	case BalanceOfID:
 		return GasBalanceOf
-	case AllowanceMethod:
+	case AllowanceID:
 		return GasAllowance
 	default:
 		return 0
