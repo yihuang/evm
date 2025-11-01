@@ -149,58 +149,63 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 		return nil, fmt.Errorf(ErrCannotReceiveFunds, contract.Value().String())
 	}
 
-	method, args, err := cmn.SetupABI(p.ABI, contract, readOnly, p.IsTransaction)
+	methodID, input, err := cmn.ParseMethod(contract.Input, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
 
-	return p.HandleMethod(ctx, contract, stateDB, method, args)
+	switch methodID {
+	// ERC-20 transactions
+	case TransferID:
+		return cmn.RunWithStateDB(ctx, func(ctx sdk.Context, args *TransferCall, stateDB vm.StateDB, contract *vm.Contract) (*TransferReturn, error) {
+			return p.Transfer(ctx, *args, stateDB, contract)
+		}, input, stateDB, contract)
+	case TransferFromID:
+		return cmn.RunWithStateDB(ctx, func(ctx sdk.Context, args *TransferFromCall, stateDB vm.StateDB, contract *vm.Contract) (*TransferFromReturn, error) {
+			return p.TransferFrom(ctx, *args, stateDB, contract)
+		}, input, stateDB, contract)
+	case ApproveID:
+		return cmn.RunWithStateDB(ctx, func(ctx sdk.Context, args *ApproveCall, stateDB vm.StateDB, contract *vm.Contract) (*ApproveReturn, error) {
+			return p.Approve(ctx, *args, stateDB, contract)
+		}, input, stateDB, contract)
+	// ERC-20 queries
+	case NameID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *NameCall) (*NameReturn, error) {
+			return p.Name(ctx, args)
+		}, input)
+	case SymbolID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *SymbolCall) (*SymbolReturn, error) {
+			return p.Symbol(ctx, args)
+		}, input)
+	case DecimalsID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *DecimalsCall) (*DecimalsReturn, error) {
+			return p.Decimals(ctx, args)
+		}, input)
+	case TotalSupplyID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *TotalSupplyCall) (*TotalSupplyReturn, error) {
+			return p.TotalSupply(ctx, args)
+		}, input)
+	case BalanceOfID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *BalanceOfCall) (*BalanceOfReturn, error) {
+			return p.BalanceOf(ctx, args)
+		}, input)
+	case AllowanceID:
+		return cmn.Run(ctx, func(ctx sdk.Context, args *AllowanceCall) (*AllowanceReturn, error) {
+			return p.Allowance(ctx, args)
+		}, input)
+	default:
+		return nil, fmt.Errorf(cmn.ErrUnknownMethod, methodID)
+	}
 }
 
 // IsTransaction checks if the given method name corresponds to a transaction or query.
-func (Precompile) IsTransaction(method *abi.Method) bool {
-	switch method.Name {
-	case TransferMethod,
-		TransferFromMethod,
-		ApproveMethod:
+func (Precompile) IsTransaction(methodID uint32) bool {
+	switch methodID {
+	case TransferID,
+		TransferFromID,
+		ApproveID:
 		return true
 	default:
 		return false
 	}
-}
-
-// HandleMethod handles the execution of each of the ERC-20 methods.
-func (p *Precompile) HandleMethod(
-	ctx sdk.Context,
-	contract *vm.Contract,
-	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) (bz []byte, err error) {
-	switch method.Name {
-	// ERC-20 transactions
-	case TransferMethod:
-		bz, err = p.Transfer(ctx, contract, stateDB, method, args)
-	case TransferFromMethod:
-		bz, err = p.TransferFrom(ctx, contract, stateDB, method, args)
-	case ApproveMethod:
-		bz, err = p.Approve(ctx, contract, stateDB, method, args)
-	// ERC-20 queries
-	case NameMethod:
-		bz, err = p.Name(ctx, contract, stateDB, method, args)
-	case SymbolMethod:
-		bz, err = p.Symbol(ctx, contract, stateDB, method, args)
-	case DecimalsMethod:
-		bz, err = p.Decimals(ctx, contract, stateDB, method, args)
-	case TotalSupplyMethod:
-		bz, err = p.TotalSupply(ctx, contract, stateDB, method, args)
-	case BalanceOfMethod:
-		bz, err = p.BalanceOf(ctx, contract, stateDB, method, args)
-	case AllowanceMethod:
-		bz, err = p.Allowance(ctx, contract, stateDB, method, args)
-	default:
-		return nil, fmt.Errorf(cmn.ErrUnknownMethod, method.Name)
-	}
-
-	return bz, err
 }

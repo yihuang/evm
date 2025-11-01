@@ -78,16 +78,28 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 	}
 
 	argsBz := contract.Input[4:]
-	args, err := method.Inputs.Unpack(argsBz)
-	if err != nil {
-		return nil, err
-	}
 
 	switch method.Name {
-	case HexToBech32Method:
-		bz, err = p.HexToBech32(method, args)
-	case Bech32ToHexMethod:
-		bz, err = p.Bech32ToHex(method, args)
+	case "hexToBech32":
+		var hexToBech32Args HexToBech32Call
+		if _, err := hexToBech32Args.Decode(argsBz); err != nil {
+			return nil, err
+		}
+		result, err := p.HexToBech32(hexToBech32Args)
+		if err != nil {
+			return nil, err
+		}
+		bz, err = result.Encode()
+	case "bech32ToHex":
+		var bech32ToHexArgs Bech32ToHexCall
+		if _, err := bech32ToHexArgs.Decode(argsBz); err != nil {
+			return nil, err
+		}
+		result, err := p.Bech32ToHex(bech32ToHexArgs)
+		if err != nil {
+			return nil, err
+		}
+		bz, err = result.Encode()
 	}
 
 	if err != nil {
@@ -96,3 +108,4 @@ func (p Precompile) Run(_ *vm.EVM, contract *vm.Contract, _ bool) (bz []byte, er
 
 	return bz, nil
 }
+

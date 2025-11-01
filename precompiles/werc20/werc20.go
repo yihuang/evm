@@ -102,7 +102,7 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readonly bool) ([]by
 }
 
 func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Contract, readOnly bool) ([]byte, error) {
-	method, args, err := cmn.SetupABI(p.ABI, contract, readOnly, p.IsTransaction)
+	methodID, input, err := cmn.ParseMethod(contract.Input, readOnly, p.IsTransaction)
 	if err != nil {
 		return nil, err
 	}
@@ -110,15 +110,14 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 	var bz []byte
 
 	switch {
-	case method.Type == abi.Fallback,
-		method.Type == abi.Receive,
-		method.Name == DepositMethod:
+	case methodID == 0, // fallback or receive
+		methodID == DepositID:
 		bz, err = p.Deposit(ctx, contract, stateDB)
-	case method.Name == WithdrawMethod:
-		bz, err = p.Withdraw(ctx, contract, stateDB, args)
+	case methodID == WithdrawID:
+		return cmn.RunWithStateDB(ctx, p.Withdraw, input, stateDB, contract)
 	default:
 		// ERC20 transactions and queries
-		bz, err = p.HandleMethod(ctx, contract, stateDB, method, args)
+		bz, err = p.Precompile.Execute(ctx, stateDB, contract, readOnly)
 	}
 
 	return bz, err
@@ -126,13 +125,12 @@ func (p Precompile) Execute(ctx sdk.Context, stateDB vm.StateDB, contract *vm.Co
 
 // IsTransaction returns true if the given method name correspond to a
 // transaction. Returns false otherwise.
-func (p Precompile) IsTransaction(method *abi.Method) bool {
-	txMethodName := []string{DepositMethod, WithdrawMethod}
-	txMethodType := []abi.FunctionType{abi.Fallback, abi.Receive}
+func (p Precompile) IsTransaction(methodID uint32) bool {
+	txMethodIDs := []uint32{DepositID, WithdrawID}
 
-	if slices.Contains(txMethodName, method.Name) || slices.Contains(txMethodType, method.Type) {
+	if slices.Contains(txMethodIDs, methodID) || methodID == 0 {
 		return true
 	}
 
-	return p.Precompile.IsTransaction(method)
+	return p.Precompile.IsTransaction(methodID)
 }
