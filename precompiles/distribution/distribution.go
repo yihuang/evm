@@ -19,7 +19,7 @@ import (
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module distribution -external-tuples Coin=cmn.Coin,Dec=cmn.Dec,DecCoin=cmn.DecCoin,PageRequest=cmn.PageRequest -imports cmn=github.com/cosmos/evm/precompiles/common
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output distribution.abi.go -external-tuples Coin=cmn.Coin,Dec=cmn.Dec,DecCoin=cmn.DecCoin,PageRequest=cmn.PageRequest -imports cmn=github.com/cosmos/evm/precompiles/common
 
 var _ vm.PrecompiledContract = &Precompile{}
 

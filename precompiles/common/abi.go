@@ -5,7 +5,7 @@ import (
 	"github.com/yihuang/go-abi"
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -var=CommonABI -module common
+//go:generate go run github.com/yihuang/go-abi/cmd -var=CommonABI -output common.abi.go
 
 var CommonABI = []string{
 	"struct Coin {string denom; uint256 amount;}",

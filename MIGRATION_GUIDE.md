@@ -71,43 +71,7 @@ contractData = ContractData{
 }
 ```
 
-### 3. Create Helper Functions
-
-Add these helper functions to your test_utils.go:
-
-```go
-// decodeBalancesResult decodes the result from a balances query
-func decodeBalancesResult(data []byte) ([]bank.Balance, error) {
-    var result bank.BalancesReturn
-    _, err := result.Decode(data)
-    if err != nil {
-        return nil, err
-    }
-    return result.Balances, nil
-}
-
-// decodeTotalSupplyResult decodes the result from a totalSupply query
-func decodeTotalSupplyResult(data []byte) ([]bank.Balance, error) {
-    var result bank.TotalSupplyReturn
-    _, err := result.Decode(data)
-    if err != nil {
-        return nil, err
-    }
-    return result.TotalSupply, nil
-}
-
-// decodeSupplyOfResult decodes the result from a supplyOf query
-func decodeSupplyOfResult(data []byte) (*big.Int, error) {
-    var result bank.SupplyOfReturn
-    _, err := result.Decode(data)
-    if err != nil {
-        return nil, err
-    }
-    return result.TotalSupply, nil
-}
-```
-
-### 4. Update getTxAndCallArgs Function
+### 3. Update getTxAndCallArgs Function
 
 This function handles encoding for direct precompile calls. Replace manual encoding with `EncodeWithSelector()`:
 

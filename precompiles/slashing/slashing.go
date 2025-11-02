@@ -21,7 +21,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module slashing -package slashing -external-tuples Dec=cmn.Dec,PageRequest=cmn.PageRequest -imports cmn=github.com/cosmos/evm/precompiles/common
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output slashing.abi.go -package slashing -external-tuples Dec=cmn.Dec,PageRequest=cmn.PageRequest -imports cmn=github.com/cosmos/evm/precompiles/common
 
 var _ vm.PrecompiledContract = &Precompile{}
 
