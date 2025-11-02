@@ -84,6 +84,8 @@ func (t GetCounterCall) EncodeWithSelector() ([]byte, error) {
 
 const GetCounterReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetCounterReturn)(nil)
+
 // GetCounterReturn represents an ABI tuple
 type GetCounterReturn struct {
 	Field1 *big.Int
@@ -173,6 +175,8 @@ var (
 )
 
 // AddedEvent represents the Added event
+var _ abi.Event = (*AddedEvent)(nil)
+
 type AddedEvent struct {
 	AddedEventIndexed
 	AddedEventData
@@ -203,6 +207,8 @@ func (e AddedEvent) GetEventID() common.Hash {
 type AddedEventIndexed abi.EmptyIndexed
 
 const AddedEventDataStaticSize = 32
+
+var _ abi.Tuple = (*AddedEventData)(nil)
 
 // AddedEventData represents an ABI tuple
 type AddedEventData struct {
@@ -255,6 +261,8 @@ func (t *AddedEventData) Decode(data []byte) (int, error) {
 }
 
 // ChangedEvent represents the Changed event
+var _ abi.Event = (*ChangedEvent)(nil)
+
 type ChangedEvent struct {
 	ChangedEventIndexed
 	ChangedEventData
@@ -285,6 +293,8 @@ func (e ChangedEvent) GetEventID() common.Hash {
 type ChangedEventIndexed abi.EmptyIndexed
 
 const ChangedEventDataStaticSize = 32
+
+var _ abi.Tuple = (*ChangedEventData)(nil)
 
 // ChangedEventData represents an ABI tuple
 type ChangedEventData struct {

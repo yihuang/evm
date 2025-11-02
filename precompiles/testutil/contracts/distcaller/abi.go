@@ -119,6 +119,8 @@ const (
 
 const CoinStaticSize = 64
 
+var _ abi.Tuple = (*Coin)(nil)
+
 // Coin represents an ABI tuple
 type Coin struct {
 	Denom  string
@@ -200,6 +202,8 @@ func (t *Coin) Decode(data []byte) (int, error) {
 
 const DecStaticSize = 64
 
+var _ abi.Tuple = (*Dec)(nil)
+
 // Dec represents an ABI tuple
 type Dec struct {
 	Value     *big.Int
@@ -262,6 +266,8 @@ func (t *Dec) Decode(data []byte) (int, error) {
 }
 
 const DecCoinStaticSize = 96
+
+var _ abi.Tuple = (*DecCoin)(nil)
 
 // DecCoin represents an ABI tuple
 type DecCoin struct {
@@ -354,6 +360,8 @@ func (t *DecCoin) Decode(data []byte) (int, error) {
 }
 
 const DelegationDelegatorRewardStaticSize = 64
+
+var _ abi.Tuple = (*DelegationDelegatorReward)(nil)
 
 // DelegationDelegatorReward represents an ABI tuple
 type DelegationDelegatorReward struct {
@@ -448,6 +456,8 @@ func (t *DelegationDelegatorReward) Decode(data []byte) (int, error) {
 }
 
 const PageRequestStaticSize = 160
+
+var _ abi.Tuple = (*PageRequest)(nil)
 
 // PageRequest represents an ABI tuple
 type PageRequest struct {
@@ -563,6 +573,8 @@ func (t *PageRequest) Decode(data []byte) (int, error) {
 
 const PageResponseStaticSize = 64
 
+var _ abi.Tuple = (*PageResponse)(nil)
+
 // PageResponse represents an ABI tuple
 type PageResponse struct {
 	NextKey []byte
@@ -643,6 +655,8 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 }
 
 const ValidatorDistributionInfoStaticSize = 96
+
+var _ abi.Tuple = (*ValidatorDistributionInfo)(nil)
 
 // ValidatorDistributionInfo represents an ABI tuple
 type ValidatorDistributionInfo struct {
@@ -761,6 +775,8 @@ func (t *ValidatorDistributionInfo) Decode(data []byte) (int, error) {
 }
 
 const ValidatorSlashEventStaticSize = 96
+
+var _ abi.Tuple = (*ValidatorSlashEvent)(nil)
 
 // ValidatorSlashEvent represents an ABI tuple
 type ValidatorSlashEvent struct {
@@ -1107,6 +1123,8 @@ func (t CounterCall) EncodeWithSelector() ([]byte, error) {
 
 const CounterReturnStaticSize = 32
 
+var _ abi.Tuple = (*CounterReturn)(nil)
+
 // CounterReturn represents an ABI tuple
 type CounterReturn struct {
 	Field1 int64
@@ -1157,7 +1175,11 @@ func (t *CounterReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DelegateCallSetWithdrawAddressCall)(nil)
+
 const DelegateCallSetWithdrawAddressCallStaticSize = 64
+
+var _ abi.Tuple = (*DelegateCallSetWithdrawAddressCall)(nil)
 
 // DelegateCallSetWithdrawAddressCall represents an ABI tuple
 type DelegateCallSetWithdrawAddressCall struct {
@@ -1320,6 +1342,8 @@ func (t GetCommunityPoolCall) EncodeWithSelector() ([]byte, error) {
 
 const GetCommunityPoolReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetCommunityPoolReturn)(nil)
+
 // GetCommunityPoolReturn represents an ABI tuple
 type GetCommunityPoolReturn struct {
 	Field1 []DecCoin
@@ -1388,7 +1412,11 @@ func (t *GetCommunityPoolReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDelegationRewardsCall)(nil)
+
 const GetDelegationRewardsCallStaticSize = 64
+
+var _ abi.Tuple = (*GetDelegationRewardsCall)(nil)
 
 // GetDelegationRewardsCall represents an ABI tuple
 type GetDelegationRewardsCall struct {
@@ -1491,6 +1519,8 @@ func (t GetDelegationRewardsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetDelegationRewardsReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetDelegationRewardsReturn)(nil)
+
 // GetDelegationRewardsReturn represents an ABI tuple
 type GetDelegationRewardsReturn struct {
 	Field1 []DecCoin
@@ -1559,7 +1589,11 @@ func (t *GetDelegationRewardsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDelegationTotalRewardsCall)(nil)
+
 const GetDelegationTotalRewardsCallStaticSize = 32
+
+var _ abi.Tuple = (*GetDelegationTotalRewardsCall)(nil)
 
 // GetDelegationTotalRewardsCall represents an ABI tuple
 type GetDelegationTotalRewardsCall struct {
@@ -1632,6 +1666,8 @@ func (t GetDelegationTotalRewardsCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const GetDelegationTotalRewardsReturnStaticSize = 64
+
+var _ abi.Tuple = (*GetDelegationTotalRewardsReturn)(nil)
 
 // GetDelegationTotalRewardsReturn represents an ABI tuple
 type GetDelegationTotalRewardsReturn struct {
@@ -1725,7 +1761,11 @@ func (t *GetDelegationTotalRewardsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDelegatorValidatorsCall)(nil)
+
 const GetDelegatorValidatorsCallStaticSize = 32
+
+var _ abi.Tuple = (*GetDelegatorValidatorsCall)(nil)
 
 // GetDelegatorValidatorsCall represents an ABI tuple
 type GetDelegatorValidatorsCall struct {
@@ -1799,6 +1839,8 @@ func (t GetDelegatorValidatorsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetDelegatorValidatorsReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetDelegatorValidatorsReturn)(nil)
+
 // GetDelegatorValidatorsReturn represents an ABI tuple
 type GetDelegatorValidatorsReturn struct {
 	Field1 []string
@@ -1867,7 +1909,11 @@ func (t *GetDelegatorValidatorsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDelegatorWithdrawAddressCall)(nil)
+
 const GetDelegatorWithdrawAddressCallStaticSize = 32
+
+var _ abi.Tuple = (*GetDelegatorWithdrawAddressCall)(nil)
 
 // GetDelegatorWithdrawAddressCall represents an ABI tuple
 type GetDelegatorWithdrawAddressCall struct {
@@ -1941,6 +1987,8 @@ func (t GetDelegatorWithdrawAddressCall) EncodeWithSelector() ([]byte, error) {
 
 const GetDelegatorWithdrawAddressReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetDelegatorWithdrawAddressReturn)(nil)
+
 // GetDelegatorWithdrawAddressReturn represents an ABI tuple
 type GetDelegatorWithdrawAddressReturn struct {
 	Field1 string
@@ -2009,7 +2057,11 @@ func (t *GetDelegatorWithdrawAddressReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetValidatorCommissionCall)(nil)
+
 const GetValidatorCommissionCallStaticSize = 32
+
+var _ abi.Tuple = (*GetValidatorCommissionCall)(nil)
 
 // GetValidatorCommissionCall represents an ABI tuple
 type GetValidatorCommissionCall struct {
@@ -2101,6 +2153,8 @@ func (t GetValidatorCommissionCall) EncodeWithSelector() ([]byte, error) {
 
 const GetValidatorCommissionReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetValidatorCommissionReturn)(nil)
+
 // GetValidatorCommissionReturn represents an ABI tuple
 type GetValidatorCommissionReturn struct {
 	Field1 []DecCoin
@@ -2169,7 +2223,11 @@ func (t *GetValidatorCommissionReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetValidatorDistributionInfoCall)(nil)
+
 const GetValidatorDistributionInfoCallStaticSize = 32
+
+var _ abi.Tuple = (*GetValidatorDistributionInfoCall)(nil)
 
 // GetValidatorDistributionInfoCall represents an ABI tuple
 type GetValidatorDistributionInfoCall struct {
@@ -2261,6 +2319,8 @@ func (t GetValidatorDistributionInfoCall) EncodeWithSelector() ([]byte, error) {
 
 const GetValidatorDistributionInfoReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetValidatorDistributionInfoReturn)(nil)
+
 // GetValidatorDistributionInfoReturn represents an ABI tuple
 type GetValidatorDistributionInfoReturn struct {
 	Field1 ValidatorDistributionInfo
@@ -2329,7 +2389,11 @@ func (t *GetValidatorDistributionInfoReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetValidatorOutstandingRewardsCall)(nil)
+
 const GetValidatorOutstandingRewardsCallStaticSize = 32
+
+var _ abi.Tuple = (*GetValidatorOutstandingRewardsCall)(nil)
 
 // GetValidatorOutstandingRewardsCall represents an ABI tuple
 type GetValidatorOutstandingRewardsCall struct {
@@ -2421,6 +2485,8 @@ func (t GetValidatorOutstandingRewardsCall) EncodeWithSelector() ([]byte, error)
 
 const GetValidatorOutstandingRewardsReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetValidatorOutstandingRewardsReturn)(nil)
+
 // GetValidatorOutstandingRewardsReturn represents an ABI tuple
 type GetValidatorOutstandingRewardsReturn struct {
 	Field1 []DecCoin
@@ -2489,7 +2555,11 @@ func (t *GetValidatorOutstandingRewardsReturn) Decode(data []byte) (int, error) 
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetValidatorSlashesCall)(nil)
+
 const GetValidatorSlashesCallStaticSize = 128
+
+var _ abi.Tuple = (*GetValidatorSlashesCall)(nil)
 
 // GetValidatorSlashesCall represents an ABI tuple
 type GetValidatorSlashesCall struct {
@@ -2627,6 +2697,8 @@ func (t GetValidatorSlashesCall) EncodeWithSelector() ([]byte, error) {
 
 const GetValidatorSlashesReturnStaticSize = 64
 
+var _ abi.Tuple = (*GetValidatorSlashesReturn)(nil)
+
 // GetValidatorSlashesReturn represents an ABI tuple
 type GetValidatorSlashesReturn struct {
 	Field1 []ValidatorSlashEvent
@@ -2719,7 +2791,11 @@ func (t *GetValidatorSlashesReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*RevertWithdrawRewardsAndTransferCall)(nil)
+
 const RevertWithdrawRewardsAndTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*RevertWithdrawRewardsAndTransferCall)(nil)
 
 // RevertWithdrawRewardsAndTransferCall represents an ABI tuple
 type RevertWithdrawRewardsAndTransferCall struct {
@@ -2847,7 +2923,11 @@ type RevertWithdrawRewardsAndTransferReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*StaticCallGetWithdrawAddressCall)(nil)
+
 const StaticCallGetWithdrawAddressCallStaticSize = 32
+
+var _ abi.Tuple = (*StaticCallGetWithdrawAddressCall)(nil)
 
 // StaticCallGetWithdrawAddressCall represents an ABI tuple
 type StaticCallGetWithdrawAddressCall struct {
@@ -2921,6 +3001,8 @@ func (t StaticCallGetWithdrawAddressCall) EncodeWithSelector() ([]byte, error) {
 
 const StaticCallGetWithdrawAddressReturnStaticSize = 32
 
+var _ abi.Tuple = (*StaticCallGetWithdrawAddressReturn)(nil)
+
 // StaticCallGetWithdrawAddressReturn represents an ABI tuple
 type StaticCallGetWithdrawAddressReturn struct {
 	Field1 []byte
@@ -2989,7 +3071,11 @@ func (t *StaticCallGetWithdrawAddressReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*StaticCallSetWithdrawAddressCall)(nil)
+
 const StaticCallSetWithdrawAddressCallStaticSize = 64
+
+var _ abi.Tuple = (*StaticCallSetWithdrawAddressCall)(nil)
 
 // StaticCallSetWithdrawAddressCall represents an ABI tuple
 type StaticCallSetWithdrawAddressCall struct {
@@ -3095,7 +3181,11 @@ type StaticCallSetWithdrawAddressReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*TestClaimRewardsCall)(nil)
+
 const TestClaimRewardsCallStaticSize = 64
+
+var _ abi.Tuple = (*TestClaimRewardsCall)(nil)
 
 // TestClaimRewardsCall represents an ABI tuple
 type TestClaimRewardsCall struct {
@@ -3180,6 +3270,8 @@ func (t TestClaimRewardsCall) EncodeWithSelector() ([]byte, error) {
 
 const TestClaimRewardsReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestClaimRewardsReturn)(nil)
+
 // TestClaimRewardsReturn represents an ABI tuple
 type TestClaimRewardsReturn struct {
 	Success bool
@@ -3230,7 +3322,11 @@ func (t *TestClaimRewardsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestClaimRewardsWithTransferCall)(nil)
+
 const TestClaimRewardsWithTransferCallStaticSize = 96
+
+var _ abi.Tuple = (*TestClaimRewardsWithTransferCall)(nil)
 
 // TestClaimRewardsWithTransferCall represents an ABI tuple
 type TestClaimRewardsWithTransferCall struct {
@@ -3329,7 +3425,11 @@ type TestClaimRewardsWithTransferReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*TestDelegateFromContractCall)(nil)
+
 const TestDelegateFromContractCallStaticSize = 64
+
+var _ abi.Tuple = (*TestDelegateFromContractCall)(nil)
 
 // TestDelegateFromContractCall represents an ABI tuple
 type TestDelegateFromContractCall struct {
@@ -3435,7 +3535,11 @@ type TestDelegateFromContractReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*TestDepositValidatorRewardsPoolCall)(nil)
+
 const TestDepositValidatorRewardsPoolCallStaticSize = 96
+
+var _ abi.Tuple = (*TestDepositValidatorRewardsPoolCall)(nil)
 
 // TestDepositValidatorRewardsPoolCall represents an ABI tuple
 type TestDepositValidatorRewardsPoolCall struct {
@@ -3562,6 +3666,8 @@ func (t TestDepositValidatorRewardsPoolCall) EncodeWithSelector() ([]byte, error
 
 const TestDepositValidatorRewardsPoolReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestDepositValidatorRewardsPoolReturn)(nil)
+
 // TestDepositValidatorRewardsPoolReturn represents an ABI tuple
 type TestDepositValidatorRewardsPoolReturn struct {
 	Success bool
@@ -3612,7 +3718,11 @@ func (t *TestDepositValidatorRewardsPoolReturn) Decode(data []byte) (int, error)
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestDepositValidatorRewardsPoolWithTransferCall)(nil)
+
 const TestDepositValidatorRewardsPoolWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestDepositValidatorRewardsPoolWithTransferCall)(nil)
 
 // TestDepositValidatorRewardsPoolWithTransferCall represents an ABI tuple
 type TestDepositValidatorRewardsPoolWithTransferCall struct {
@@ -3753,7 +3863,11 @@ type TestDepositValidatorRewardsPoolWithTransferReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*TestFundCommunityPoolCall)(nil)
+
 const TestFundCommunityPoolCallStaticSize = 64
+
+var _ abi.Tuple = (*TestFundCommunityPoolCall)(nil)
 
 // TestFundCommunityPoolCall represents an ABI tuple
 type TestFundCommunityPoolCall struct {
@@ -3856,6 +3970,8 @@ func (t TestFundCommunityPoolCall) EncodeWithSelector() ([]byte, error) {
 
 const TestFundCommunityPoolReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestFundCommunityPoolReturn)(nil)
+
 // TestFundCommunityPoolReturn represents an ABI tuple
 type TestFundCommunityPoolReturn struct {
 	Success bool
@@ -3906,7 +4022,11 @@ func (t *TestFundCommunityPoolReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestFundCommunityPoolWithTransferCall)(nil)
+
 const TestFundCommunityPoolWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestFundCommunityPoolWithTransferCall)(nil)
 
 // TestFundCommunityPoolWithTransferCall represents an ABI tuple
 type TestFundCommunityPoolWithTransferCall struct {
@@ -4034,7 +4154,11 @@ type TestFundCommunityPoolWithTransferReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*TestRevertStateCall)(nil)
+
 const TestRevertStateCallStaticSize = 96
+
+var _ abi.Tuple = (*TestRevertStateCall)(nil)
 
 // TestRevertStateCall represents an ABI tuple
 type TestRevertStateCall struct {
@@ -4161,6 +4285,8 @@ func (t TestRevertStateCall) EncodeWithSelector() ([]byte, error) {
 
 const TestRevertStateReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestRevertStateReturn)(nil)
+
 // TestRevertStateReturn represents an ABI tuple
 type TestRevertStateReturn struct {
 	Field1 []Coin
@@ -4229,7 +4355,11 @@ func (t *TestRevertStateReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSetWithdrawAddressCall)(nil)
+
 const TestSetWithdrawAddressCallStaticSize = 64
+
+var _ abi.Tuple = (*TestSetWithdrawAddressCall)(nil)
 
 // TestSetWithdrawAddressCall represents an ABI tuple
 type TestSetWithdrawAddressCall struct {
@@ -4332,6 +4462,8 @@ func (t TestSetWithdrawAddressCall) EncodeWithSelector() ([]byte, error) {
 
 const TestSetWithdrawAddressReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSetWithdrawAddressReturn)(nil)
+
 // TestSetWithdrawAddressReturn represents an ABI tuple
 type TestSetWithdrawAddressReturn struct {
 	Field1 bool
@@ -4382,7 +4514,11 @@ func (t *TestSetWithdrawAddressReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSetWithdrawAddressFromContractCall)(nil)
+
 const TestSetWithdrawAddressFromContractCallStaticSize = 32
+
+var _ abi.Tuple = (*TestSetWithdrawAddressFromContractCall)(nil)
 
 // TestSetWithdrawAddressFromContractCall represents an ABI tuple
 type TestSetWithdrawAddressFromContractCall struct {
@@ -4474,6 +4610,8 @@ func (t TestSetWithdrawAddressFromContractCall) EncodeWithSelector() ([]byte, er
 
 const TestSetWithdrawAddressFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSetWithdrawAddressFromContractReturn)(nil)
+
 // TestSetWithdrawAddressFromContractReturn represents an ABI tuple
 type TestSetWithdrawAddressFromContractReturn struct {
 	Field1 bool
@@ -4524,7 +4662,11 @@ func (t *TestSetWithdrawAddressFromContractReturn) Decode(data []byte) (int, err
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestTryClaimRewardsCall)(nil)
+
 const TestTryClaimRewardsCallStaticSize = 64
+
+var _ abi.Tuple = (*TestTryClaimRewardsCall)(nil)
 
 // TestTryClaimRewardsCall represents an ABI tuple
 type TestTryClaimRewardsCall struct {
@@ -4609,6 +4751,8 @@ func (t TestTryClaimRewardsCall) EncodeWithSelector() ([]byte, error) {
 
 const TestTryClaimRewardsReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestTryClaimRewardsReturn)(nil)
+
 // TestTryClaimRewardsReturn represents an ABI tuple
 type TestTryClaimRewardsReturn struct {
 	Field1 bool
@@ -4659,7 +4803,11 @@ func (t *TestTryClaimRewardsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestWithdrawDelegatorRewardCall)(nil)
+
 const TestWithdrawDelegatorRewardCallStaticSize = 64
+
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardCall)(nil)
 
 // TestWithdrawDelegatorRewardCall represents an ABI tuple
 type TestWithdrawDelegatorRewardCall struct {
@@ -4762,6 +4910,8 @@ func (t TestWithdrawDelegatorRewardCall) EncodeWithSelector() ([]byte, error) {
 
 const TestWithdrawDelegatorRewardReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardReturn)(nil)
+
 // TestWithdrawDelegatorRewardReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardReturn struct {
 	Field1 []Coin
@@ -4830,7 +4980,11 @@ func (t *TestWithdrawDelegatorRewardReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestWithdrawDelegatorRewardFromContractCall)(nil)
+
 const TestWithdrawDelegatorRewardFromContractCallStaticSize = 32
+
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardFromContractCall)(nil)
 
 // TestWithdrawDelegatorRewardFromContractCall represents an ABI tuple
 type TestWithdrawDelegatorRewardFromContractCall struct {
@@ -4922,6 +5076,8 @@ func (t TestWithdrawDelegatorRewardFromContractCall) EncodeWithSelector() ([]byt
 
 const TestWithdrawDelegatorRewardFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardFromContractReturn)(nil)
+
 // TestWithdrawDelegatorRewardFromContractReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardFromContractReturn struct {
 	Field1 []Coin
@@ -4990,7 +5146,11 @@ func (t *TestWithdrawDelegatorRewardFromContractReturn) Decode(data []byte) (int
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestWithdrawDelegatorRewardWithTransferCall)(nil)
+
 const TestWithdrawDelegatorRewardWithTransferCallStaticSize = 96
+
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardWithTransferCall)(nil)
 
 // TestWithdrawDelegatorRewardWithTransferCall represents an ABI tuple
 type TestWithdrawDelegatorRewardWithTransferCall struct {
@@ -5104,6 +5264,8 @@ func (t TestWithdrawDelegatorRewardWithTransferCall) EncodeWithSelector() ([]byt
 
 const TestWithdrawDelegatorRewardWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestWithdrawDelegatorRewardWithTransferReturn)(nil)
+
 // TestWithdrawDelegatorRewardWithTransferReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardWithTransferReturn struct {
 	Coins []Coin
@@ -5172,7 +5334,11 @@ func (t *TestWithdrawDelegatorRewardWithTransferReturn) Decode(data []byte) (int
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestWithdrawValidatorCommissionCall)(nil)
+
 const TestWithdrawValidatorCommissionCallStaticSize = 32
+
+var _ abi.Tuple = (*TestWithdrawValidatorCommissionCall)(nil)
 
 // TestWithdrawValidatorCommissionCall represents an ABI tuple
 type TestWithdrawValidatorCommissionCall struct {
@@ -5264,6 +5430,8 @@ func (t TestWithdrawValidatorCommissionCall) EncodeWithSelector() ([]byte, error
 
 const TestWithdrawValidatorCommissionReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestWithdrawValidatorCommissionReturn)(nil)
+
 // TestWithdrawValidatorCommissionReturn represents an ABI tuple
 type TestWithdrawValidatorCommissionReturn struct {
 	Field1 []Coin
@@ -5332,7 +5500,11 @@ func (t *TestWithdrawValidatorCommissionReturn) Decode(data []byte) (int, error)
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestWithdrawValidatorCommissionWithTransferCall)(nil)
+
 const TestWithdrawValidatorCommissionWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestWithdrawValidatorCommissionWithTransferCall)(nil)
 
 // TestWithdrawValidatorCommissionWithTransferCall represents an ABI tuple
 type TestWithdrawValidatorCommissionWithTransferCall struct {
@@ -5457,6 +5629,8 @@ func (t TestWithdrawValidatorCommissionWithTransferCall) EncodeWithSelector() ([
 
 const TestWithdrawValidatorCommissionWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestWithdrawValidatorCommissionWithTransferReturn)(nil)
+
 // TestWithdrawValidatorCommissionWithTransferReturn represents an ABI tuple
 type TestWithdrawValidatorCommissionWithTransferReturn struct {
 	Coins []Coin
@@ -5525,7 +5699,11 @@ func (t *TestWithdrawValidatorCommissionWithTransferReturn) Decode(data []byte) 
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*WithdrawDelegatorRewardsAndRevertCall)(nil)
+
 const WithdrawDelegatorRewardsAndRevertCallStaticSize = 64
+
+var _ abi.Tuple = (*WithdrawDelegatorRewardsAndRevertCall)(nil)
 
 // WithdrawDelegatorRewardsAndRevertCall represents an ABI tuple
 type WithdrawDelegatorRewardsAndRevertCall struct {
@@ -5627,6 +5805,8 @@ func (t WithdrawDelegatorRewardsAndRevertCall) EncodeWithSelector() ([]byte, err
 }
 
 const WithdrawDelegatorRewardsAndRevertReturnStaticSize = 32
+
+var _ abi.Tuple = (*WithdrawDelegatorRewardsAndRevertReturn)(nil)
 
 // WithdrawDelegatorRewardsAndRevertReturn represents an ABI tuple
 type WithdrawDelegatorRewardsAndRevertReturn struct {

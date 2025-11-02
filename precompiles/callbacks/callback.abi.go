@@ -24,7 +24,11 @@ const (
 	OnPacketTimeoutID         = 529458691
 )
 
+var _ abi.Method = (*OnPacketAcknowledgementCall)(nil)
+
 const OnPacketAcknowledgementCallStaticSize = 160
+
+var _ abi.Tuple = (*OnPacketAcknowledgementCall)(nil)
 
 // OnPacketAcknowledgementCall represents an ABI tuple
 type OnPacketAcknowledgementCall struct {
@@ -202,7 +206,11 @@ type OnPacketAcknowledgementReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*OnPacketTimeoutCall)(nil)
+
 const OnPacketTimeoutCallStaticSize = 128
+
+var _ abi.Tuple = (*OnPacketTimeoutCall)(nil)
 
 // OnPacketTimeoutCall represents an ABI tuple
 type OnPacketTimeoutCall struct {

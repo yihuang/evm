@@ -14,6 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output werc20.abi.go
+
 var _ vm.PrecompiledContract = &Precompile{}
 
 // Precompile defines the precompiled contract for WERC20.

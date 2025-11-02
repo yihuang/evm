@@ -71,6 +71,8 @@ const (
 
 const CoinStaticSize = 64
 
+var _ abi.Tuple = (*Coin)(nil)
+
 // Coin represents an ABI tuple
 type Coin struct {
 	Denom  string
@@ -151,6 +153,8 @@ func (t *Coin) Decode(data []byte) (int, error) {
 }
 
 const ParamsStaticSize = 512
+
+var _ abi.Tuple = (*Params)(nil)
 
 // Params represents an ABI tuple
 type Params struct {
@@ -597,6 +601,8 @@ func (t CounterCall) EncodeWithSelector() ([]byte, error) {
 
 const CounterReturnStaticSize = 32
 
+var _ abi.Tuple = (*CounterReturn)(nil)
+
 // CounterReturn represents an ABI tuple
 type CounterReturn struct {
 	Field1 int64
@@ -704,6 +710,8 @@ func (t GetParamsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetParamsReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetParamsReturn)(nil)
+
 // GetParamsReturn represents an ABI tuple
 type GetParamsReturn struct {
 	Params Params
@@ -772,7 +780,11 @@ func (t *GetParamsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestCancelFromContractWithTransferCall)(nil)
+
 const TestCancelFromContractWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestCancelFromContractWithTransferCall)(nil)
 
 // TestCancelFromContractWithTransferCall represents an ABI tuple
 type TestCancelFromContractWithTransferCall struct {
@@ -879,6 +891,8 @@ func (t TestCancelFromContractWithTransferCall) EncodeWithSelector() ([]byte, er
 
 const TestCancelFromContractWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestCancelFromContractWithTransferReturn)(nil)
+
 // TestCancelFromContractWithTransferReturn represents an ABI tuple
 type TestCancelFromContractWithTransferReturn struct {
 	Success bool
@@ -929,7 +943,11 @@ func (t *TestCancelFromContractWithTransferReturn) Decode(data []byte) (int, err
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestCancelProposalFromContractCall)(nil)
+
 const TestCancelProposalFromContractCallStaticSize = 32
+
+var _ abi.Tuple = (*TestCancelProposalFromContractCall)(nil)
 
 // TestCancelProposalFromContractCall represents an ABI tuple
 type TestCancelProposalFromContractCall struct {
@@ -1003,6 +1021,8 @@ func (t TestCancelProposalFromContractCall) EncodeWithSelector() ([]byte, error)
 
 const TestCancelProposalFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestCancelProposalFromContractReturn)(nil)
+
 // TestCancelProposalFromContractReturn represents an ABI tuple
 type TestCancelProposalFromContractReturn struct {
 	Success bool
@@ -1053,7 +1073,11 @@ func (t *TestCancelProposalFromContractReturn) Decode(data []byte) (int, error) 
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestCancelWithTransferCall)(nil)
+
 const TestCancelWithTransferCallStaticSize = 96
+
+var _ abi.Tuple = (*TestCancelWithTransferCall)(nil)
 
 // TestCancelWithTransferCall represents an ABI tuple
 type TestCancelWithTransferCall struct {
@@ -1149,6 +1173,8 @@ func (t TestCancelWithTransferCall) EncodeWithSelector() ([]byte, error) {
 
 const TestCancelWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestCancelWithTransferReturn)(nil)
+
 // TestCancelWithTransferReturn represents an ABI tuple
 type TestCancelWithTransferReturn struct {
 	Success bool
@@ -1199,7 +1225,11 @@ func (t *TestCancelWithTransferReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestDepositCall)(nil)
+
 const TestDepositCallStaticSize = 96
+
+var _ abi.Tuple = (*TestDepositCall)(nil)
 
 // TestDepositCall represents an ABI tuple
 type TestDepositCall struct {
@@ -1313,6 +1343,8 @@ func (t TestDepositCall) EncodeWithSelector() ([]byte, error) {
 
 const TestDepositReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestDepositReturn)(nil)
+
 // TestDepositReturn represents an ABI tuple
 type TestDepositReturn struct {
 	Success bool
@@ -1363,7 +1395,11 @@ func (t *TestDepositReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestDepositFromContractCall)(nil)
+
 const TestDepositFromContractCallStaticSize = 64
+
+var _ abi.Tuple = (*TestDepositFromContractCall)(nil)
 
 // TestDepositFromContractCall represents an ABI tuple
 type TestDepositFromContractCall struct {
@@ -1466,6 +1502,8 @@ func (t TestDepositFromContractCall) EncodeWithSelector() ([]byte, error) {
 
 const TestDepositFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestDepositFromContractReturn)(nil)
+
 // TestDepositFromContractReturn represents an ABI tuple
 type TestDepositFromContractReturn struct {
 	Success bool
@@ -1516,7 +1554,11 @@ func (t *TestDepositFromContractReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestDepositFromContractWithTransferCall)(nil)
+
 const TestDepositFromContractWithTransferCallStaticSize = 160
+
+var _ abi.Tuple = (*TestDepositFromContractWithTransferCall)(nil)
 
 // TestDepositFromContractWithTransferCall represents an ABI tuple
 type TestDepositFromContractWithTransferCall struct {
@@ -1652,6 +1694,8 @@ func (t TestDepositFromContractWithTransferCall) EncodeWithSelector() ([]byte, e
 
 const TestDepositFromContractWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestDepositFromContractWithTransferReturn)(nil)
+
 // TestDepositFromContractWithTransferReturn represents an ABI tuple
 type TestDepositFromContractWithTransferReturn struct {
 	Success bool
@@ -1702,7 +1746,11 @@ func (t *TestDepositFromContractWithTransferReturn) Decode(data []byte) (int, er
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestDepositWithTransferCall)(nil)
+
 const TestDepositWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestDepositWithTransferCall)(nil)
 
 // TestDepositWithTransferCall represents an ABI tuple
 type TestDepositWithTransferCall struct {
@@ -1827,6 +1875,8 @@ func (t TestDepositWithTransferCall) EncodeWithSelector() ([]byte, error) {
 
 const TestDepositWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestDepositWithTransferReturn)(nil)
+
 // TestDepositWithTransferReturn represents an ABI tuple
 type TestDepositWithTransferReturn struct {
 	Success bool
@@ -1877,7 +1927,11 @@ func (t *TestDepositWithTransferReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestFundCommunityPoolCall)(nil)
+
 const TestFundCommunityPoolCallStaticSize = 96
+
+var _ abi.Tuple = (*TestFundCommunityPoolCall)(nil)
 
 // TestFundCommunityPoolCall represents an ABI tuple
 type TestFundCommunityPoolCall struct {
@@ -2004,6 +2058,8 @@ func (t TestFundCommunityPoolCall) EncodeWithSelector() ([]byte, error) {
 
 const TestFundCommunityPoolReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestFundCommunityPoolReturn)(nil)
+
 // TestFundCommunityPoolReturn represents an ABI tuple
 type TestFundCommunityPoolReturn struct {
 	Success bool
@@ -2054,7 +2110,11 @@ func (t *TestFundCommunityPoolReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSubmitProposalCall)(nil)
+
 const TestSubmitProposalCallStaticSize = 96
+
+var _ abi.Tuple = (*TestSubmitProposalCall)(nil)
 
 // TestSubmitProposalCall represents an ABI tuple
 type TestSubmitProposalCall struct {
@@ -2181,6 +2241,8 @@ func (t TestSubmitProposalCall) EncodeWithSelector() ([]byte, error) {
 
 const TestSubmitProposalReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSubmitProposalReturn)(nil)
+
 // TestSubmitProposalReturn represents an ABI tuple
 type TestSubmitProposalReturn struct {
 	ProposalId uint64
@@ -2231,7 +2293,11 @@ func (t *TestSubmitProposalReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSubmitProposalFromContractCall)(nil)
+
 const TestSubmitProposalFromContractCallStaticSize = 64
+
+var _ abi.Tuple = (*TestSubmitProposalFromContractCall)(nil)
 
 // TestSubmitProposalFromContractCall represents an ABI tuple
 type TestSubmitProposalFromContractCall struct {
@@ -2347,6 +2413,8 @@ func (t TestSubmitProposalFromContractCall) EncodeWithSelector() ([]byte, error)
 
 const TestSubmitProposalFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSubmitProposalFromContractReturn)(nil)
+
 // TestSubmitProposalFromContractReturn represents an ABI tuple
 type TestSubmitProposalFromContractReturn struct {
 	ProposalId uint64
@@ -2397,7 +2465,11 @@ func (t *TestSubmitProposalFromContractReturn) Decode(data []byte) (int, error) 
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSubmitProposalFromContractWithTransferCall)(nil)
+
 const TestSubmitProposalFromContractWithTransferCallStaticSize = 160
+
+var _ abi.Tuple = (*TestSubmitProposalFromContractWithTransferCall)(nil)
 
 // TestSubmitProposalFromContractWithTransferCall represents an ABI tuple
 type TestSubmitProposalFromContractWithTransferCall struct {
@@ -2546,6 +2618,8 @@ func (t TestSubmitProposalFromContractWithTransferCall) EncodeWithSelector() ([]
 
 const TestSubmitProposalFromContractWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSubmitProposalFromContractWithTransferReturn)(nil)
+
 // TestSubmitProposalFromContractWithTransferReturn represents an ABI tuple
 type TestSubmitProposalFromContractWithTransferReturn struct {
 	Field1 uint64
@@ -2596,7 +2670,11 @@ func (t *TestSubmitProposalFromContractWithTransferReturn) Decode(data []byte) (
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestSubmitProposalWithTransferCall)(nil)
+
 const TestSubmitProposalWithTransferCallStaticSize = 128
+
+var _ abi.Tuple = (*TestSubmitProposalWithTransferCall)(nil)
 
 // TestSubmitProposalWithTransferCall represents an ABI tuple
 type TestSubmitProposalWithTransferCall struct {
@@ -2734,6 +2812,8 @@ func (t TestSubmitProposalWithTransferCall) EncodeWithSelector() ([]byte, error)
 
 const TestSubmitProposalWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestSubmitProposalWithTransferReturn)(nil)
+
 // TestSubmitProposalWithTransferReturn represents an ABI tuple
 type TestSubmitProposalWithTransferReturn struct {
 	Field1 uint64
@@ -2784,7 +2864,11 @@ func (t *TestSubmitProposalWithTransferReturn) Decode(data []byte) (int, error) 
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestTransferCancelFundCall)(nil)
+
 const TestTransferCancelFundCallStaticSize = 128
+
+var _ abi.Tuple = (*TestTransferCancelFundCall)(nil)
 
 // TestTransferCancelFundCall represents an ABI tuple
 type TestTransferCancelFundCall struct {
@@ -2921,6 +3005,8 @@ func (t TestTransferCancelFundCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const TestTransferCancelFundReturnStaticSize = 32
+
+var _ abi.Tuple = (*TestTransferCancelFundReturn)(nil)
 
 // TestTransferCancelFundReturn represents an ABI tuple
 type TestTransferCancelFundReturn struct {

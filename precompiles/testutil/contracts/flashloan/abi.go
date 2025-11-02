@@ -32,7 +32,11 @@ const (
 	OwnerID               = 2376452955
 )
 
+var _ abi.Method = (*DelegateWithRevertCall)(nil)
+
 const DelegateWithRevertCallStaticSize = 96
+
+var _ abi.Tuple = (*DelegateWithRevertCall)(nil)
 
 // DelegateWithRevertCall represents an ABI tuple
 type DelegateWithRevertCall struct {
@@ -149,7 +153,11 @@ type DelegateWithRevertReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*FlashLoanCall)(nil)
+
 const FlashLoanCallStaticSize = 64
+
+var _ abi.Tuple = (*FlashLoanCall)(nil)
 
 // FlashLoanCall represents an ABI tuple
 type FlashLoanCall struct {
@@ -252,6 +260,8 @@ func (t FlashLoanCall) EncodeWithSelector() ([]byte, error) {
 
 const FlashLoanReturnStaticSize = 32
 
+var _ abi.Tuple = (*FlashLoanReturn)(nil)
+
 // FlashLoanReturn represents an ABI tuple
 type FlashLoanReturn struct {
 	Field1 bool
@@ -302,7 +312,11 @@ func (t *FlashLoanReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*FlashLoanWithRevertCall)(nil)
+
 const FlashLoanWithRevertCallStaticSize = 64
+
+var _ abi.Tuple = (*FlashLoanWithRevertCall)(nil)
 
 // FlashLoanWithRevertCall represents an ABI tuple
 type FlashLoanWithRevertCall struct {
@@ -405,6 +419,8 @@ func (t FlashLoanWithRevertCall) EncodeWithSelector() ([]byte, error) {
 
 const FlashLoanWithRevertReturnStaticSize = 32
 
+var _ abi.Tuple = (*FlashLoanWithRevertReturn)(nil)
+
 // FlashLoanWithRevertReturn represents an ABI tuple
 type FlashLoanWithRevertReturn struct {
 	Field1 bool
@@ -481,6 +497,8 @@ func (t OwnerCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const OwnerReturnStaticSize = 32
+
+var _ abi.Tuple = (*OwnerReturn)(nil)
 
 // OwnerReturn represents an ABI tuple
 type OwnerReturn struct {

@@ -60,6 +60,8 @@ const (
 
 const CommissionRatesStaticSize = 96
 
+var _ abi.Tuple = (*CommissionRates)(nil)
+
 // CommissionRates represents an ABI tuple
 type CommissionRates struct {
 	Rate          *big.Int
@@ -133,6 +135,8 @@ func (t *CommissionRates) Decode(data []byte) (int, error) {
 }
 
 const DescriptionStaticSize = 160
+
+var _ abi.Tuple = (*Description)(nil)
 
 // Description represents an ABI tuple
 type Description struct {
@@ -300,6 +304,8 @@ func (t *Description) Decode(data []byte) (int, error) {
 
 const PageResponseStaticSize = 64
 
+var _ abi.Tuple = (*PageResponse)(nil)
+
 // PageResponse represents an ABI tuple
 type PageResponse struct {
 	NextKey []byte
@@ -380,6 +386,8 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 }
 
 const RedelegationStaticSize = 128
+
+var _ abi.Tuple = (*Redelegation)(nil)
 
 // Redelegation represents an ABI tuple
 type Redelegation struct {
@@ -523,6 +531,8 @@ func (t *Redelegation) Decode(data []byte) (int, error) {
 
 const RedelegationEntryStaticSize = 128
 
+var _ abi.Tuple = (*RedelegationEntry)(nil)
+
 // RedelegationEntry represents an ABI tuple
 type RedelegationEntry struct {
 	CreationHeight int64
@@ -608,6 +618,8 @@ func (t *RedelegationEntry) Decode(data []byte) (int, error) {
 
 const RedelegationEntryResponseStaticSize = 160
 
+var _ abi.Tuple = (*RedelegationEntryResponse)(nil)
+
 // RedelegationEntryResponse represents an ABI tuple
 type RedelegationEntryResponse struct {
 	RedelegationEntry RedelegationEntry
@@ -670,6 +682,8 @@ func (t *RedelegationEntryResponse) Decode(data []byte) (int, error) {
 }
 
 const RedelegationOutputStaticSize = 128
+
+var _ abi.Tuple = (*RedelegationOutput)(nil)
 
 // RedelegationOutput represents an ABI tuple
 type RedelegationOutput struct {
@@ -813,6 +827,8 @@ func (t *RedelegationOutput) Decode(data []byte) (int, error) {
 
 const RedelegationResponseStaticSize = 64
 
+var _ abi.Tuple = (*RedelegationResponse)(nil)
+
 // RedelegationResponse represents an ABI tuple
 type RedelegationResponse struct {
 	Redelegation Redelegation
@@ -906,6 +922,8 @@ func (t *RedelegationResponse) Decode(data []byte) (int, error) {
 }
 
 const UnbondingDelegationEntryStaticSize = 192
+
+var _ abi.Tuple = (*UnbondingDelegationEntry)(nil)
 
 // UnbondingDelegationEntry represents an ABI tuple
 type UnbondingDelegationEntry struct {
@@ -1013,6 +1031,8 @@ func (t *UnbondingDelegationEntry) Decode(data []byte) (int, error) {
 }
 
 const UnbondingDelegationOutputStaticSize = 96
+
+var _ abi.Tuple = (*UnbondingDelegationOutput)(nil)
 
 // UnbondingDelegationOutput represents an ABI tuple
 type UnbondingDelegationOutput struct {
@@ -1131,6 +1151,8 @@ func (t *UnbondingDelegationOutput) Decode(data []byte) (int, error) {
 }
 
 const ValidatorStaticSize = 352
+
+var _ abi.Tuple = (*Validator)(nil)
 
 // Validator represents an ABI tuple
 type Validator struct {
@@ -1631,7 +1653,11 @@ func DecodeValidatorSlice(data []byte) ([]Validator, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*CancelUnbondingDelegationCall)(nil)
+
 const CancelUnbondingDelegationCallStaticSize = 128
+
+var _ abi.Tuple = (*CancelUnbondingDelegationCall)(nil)
 
 // CancelUnbondingDelegationCall represents an ABI tuple
 type CancelUnbondingDelegationCall struct {
@@ -1756,6 +1782,8 @@ func (t CancelUnbondingDelegationCall) EncodeWithSelector() ([]byte, error) {
 
 const CancelUnbondingDelegationReturnStaticSize = 32
 
+var _ abi.Tuple = (*CancelUnbondingDelegationReturn)(nil)
+
 // CancelUnbondingDelegationReturn represents an ABI tuple
 type CancelUnbondingDelegationReturn struct {
 	Success bool
@@ -1806,7 +1834,11 @@ func (t *CancelUnbondingDelegationReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*CreateValidatorCall)(nil)
+
 const CreateValidatorCallStaticSize = 256
+
+var _ abi.Tuple = (*CreateValidatorCall)(nil)
 
 // CreateValidatorCall represents an ABI tuple
 type CreateValidatorCall struct {
@@ -1966,6 +1998,8 @@ func (t CreateValidatorCall) EncodeWithSelector() ([]byte, error) {
 
 const CreateValidatorReturnStaticSize = 32
 
+var _ abi.Tuple = (*CreateValidatorReturn)(nil)
+
 // CreateValidatorReturn represents an ABI tuple
 type CreateValidatorReturn struct {
 	Success bool
@@ -2016,7 +2050,11 @@ func (t *CreateValidatorReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DelegateCall)(nil)
+
 const DelegateCallStaticSize = 96
+
+var _ abi.Tuple = (*DelegateCall)(nil)
 
 // DelegateCall represents an ABI tuple
 type DelegateCall struct {
@@ -2130,6 +2168,8 @@ func (t DelegateCall) EncodeWithSelector() ([]byte, error) {
 
 const DelegateReturnStaticSize = 32
 
+var _ abi.Tuple = (*DelegateReturn)(nil)
+
 // DelegateReturn represents an ABI tuple
 type DelegateReturn struct {
 	Success bool
@@ -2180,7 +2220,11 @@ func (t *DelegateReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DelegationCall)(nil)
+
 const DelegationCallStaticSize = 64
+
+var _ abi.Tuple = (*DelegationCall)(nil)
 
 // DelegationCall represents an ABI tuple
 type DelegationCall struct {
@@ -2283,6 +2327,8 @@ func (t DelegationCall) EncodeWithSelector() ([]byte, error) {
 
 const DelegationReturnStaticSize = 64
 
+var _ abi.Tuple = (*DelegationReturn)(nil)
+
 // DelegationReturn represents an ABI tuple
 type DelegationReturn struct {
 	Shares  *big.Int
@@ -2362,7 +2408,11 @@ func (t *DelegationReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*EditValidatorCall)(nil)
+
 const EditValidatorCallStaticSize = 128
+
+var _ abi.Tuple = (*EditValidatorCall)(nil)
 
 // EditValidatorCall represents an ABI tuple
 type EditValidatorCall struct {
@@ -2487,6 +2537,8 @@ func (t EditValidatorCall) EncodeWithSelector() ([]byte, error) {
 
 const EditValidatorReturnStaticSize = 32
 
+var _ abi.Tuple = (*EditValidatorReturn)(nil)
+
 // EditValidatorReturn represents an ABI tuple
 type EditValidatorReturn struct {
 	Success bool
@@ -2537,7 +2589,11 @@ func (t *EditValidatorReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*RedelegateCall)(nil)
+
 const RedelegateCallStaticSize = 128
+
+var _ abi.Tuple = (*RedelegateCall)(nil)
 
 // RedelegateCall represents an ABI tuple
 type RedelegateCall struct {
@@ -2675,6 +2731,8 @@ func (t RedelegateCall) EncodeWithSelector() ([]byte, error) {
 
 const RedelegateReturnStaticSize = 32
 
+var _ abi.Tuple = (*RedelegateReturn)(nil)
+
 // RedelegateReturn represents an ABI tuple
 type RedelegateReturn struct {
 	CompletionTime int64
@@ -2725,7 +2783,11 @@ func (t *RedelegateReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*RedelegationCall)(nil)
+
 const RedelegationCallStaticSize = 96
+
+var _ abi.Tuple = (*RedelegationCall)(nil)
 
 // RedelegationCall represents an ABI tuple
 type RedelegationCall struct {
@@ -2852,6 +2914,8 @@ func (t RedelegationCall) EncodeWithSelector() ([]byte, error) {
 
 const RedelegationReturnStaticSize = 32
 
+var _ abi.Tuple = (*RedelegationReturn)(nil)
+
 // RedelegationReturn represents an ABI tuple
 type RedelegationReturn struct {
 	Redelegation RedelegationOutput
@@ -2920,7 +2984,11 @@ func (t *RedelegationReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*RedelegationsCall)(nil)
+
 const RedelegationsCallStaticSize = 128
+
+var _ abi.Tuple = (*RedelegationsCall)(nil)
 
 // RedelegationsCall represents an ABI tuple
 type RedelegationsCall struct {
@@ -3071,6 +3139,8 @@ func (t RedelegationsCall) EncodeWithSelector() ([]byte, error) {
 
 const RedelegationsReturnStaticSize = 64
 
+var _ abi.Tuple = (*RedelegationsReturn)(nil)
+
 // RedelegationsReturn represents an ABI tuple
 type RedelegationsReturn struct {
 	Response     []RedelegationResponse
@@ -3163,7 +3233,11 @@ func (t *RedelegationsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*UnbondingDelegationCall)(nil)
+
 const UnbondingDelegationCallStaticSize = 64
+
+var _ abi.Tuple = (*UnbondingDelegationCall)(nil)
 
 // UnbondingDelegationCall represents an ABI tuple
 type UnbondingDelegationCall struct {
@@ -3266,6 +3340,8 @@ func (t UnbondingDelegationCall) EncodeWithSelector() ([]byte, error) {
 
 const UnbondingDelegationReturnStaticSize = 32
 
+var _ abi.Tuple = (*UnbondingDelegationReturn)(nil)
+
 // UnbondingDelegationReturn represents an ABI tuple
 type UnbondingDelegationReturn struct {
 	UnbondingDelegation UnbondingDelegationOutput
@@ -3334,7 +3410,11 @@ func (t *UnbondingDelegationReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*UndelegateCall)(nil)
+
 const UndelegateCallStaticSize = 96
+
+var _ abi.Tuple = (*UndelegateCall)(nil)
 
 // UndelegateCall represents an ABI tuple
 type UndelegateCall struct {
@@ -3448,6 +3528,8 @@ func (t UndelegateCall) EncodeWithSelector() ([]byte, error) {
 
 const UndelegateReturnStaticSize = 32
 
+var _ abi.Tuple = (*UndelegateReturn)(nil)
+
 // UndelegateReturn represents an ABI tuple
 type UndelegateReturn struct {
 	CompletionTime int64
@@ -3498,7 +3580,11 @@ func (t *UndelegateReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*ValidatorCall)(nil)
+
 const ValidatorCallStaticSize = 32
+
+var _ abi.Tuple = (*ValidatorCall)(nil)
 
 // ValidatorCall represents an ABI tuple
 type ValidatorCall struct {
@@ -3572,6 +3658,8 @@ func (t ValidatorCall) EncodeWithSelector() ([]byte, error) {
 
 const ValidatorReturnStaticSize = 32
 
+var _ abi.Tuple = (*ValidatorReturn)(nil)
+
 // ValidatorReturn represents an ABI tuple
 type ValidatorReturn struct {
 	Validator Validator
@@ -3640,7 +3728,11 @@ func (t *ValidatorReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*ValidatorsCall)(nil)
+
 const ValidatorsCallStaticSize = 64
+
+var _ abi.Tuple = (*ValidatorsCall)(nil)
 
 // ValidatorsCall represents an ABI tuple
 type ValidatorsCall struct {
@@ -3756,6 +3848,8 @@ func (t ValidatorsCall) EncodeWithSelector() ([]byte, error) {
 
 const ValidatorsReturnStaticSize = 64
 
+var _ abi.Tuple = (*ValidatorsReturn)(nil)
+
 // ValidatorsReturn represents an ABI tuple
 type ValidatorsReturn struct {
 	Validators   []Validator
@@ -3865,6 +3959,8 @@ var (
 )
 
 // CancelUnbondingDelegationEvent represents the CancelUnbondingDelegation event
+var _ abi.Event = (*CancelUnbondingDelegationEvent)(nil)
+
 type CancelUnbondingDelegationEvent struct {
 	CancelUnbondingDelegationEventIndexed
 	CancelUnbondingDelegationEventData
@@ -3950,6 +4046,8 @@ func (e *CancelUnbondingDelegationEventIndexed) DecodeTopics(topics []common.Has
 
 const CancelUnbondingDelegationEventDataStaticSize = 64
 
+var _ abi.Tuple = (*CancelUnbondingDelegationEventData)(nil)
+
 // CancelUnbondingDelegationEventData represents an ABI tuple
 type CancelUnbondingDelegationEventData struct {
 	Amount         *big.Int
@@ -4012,6 +4110,8 @@ func (t *CancelUnbondingDelegationEventData) Decode(data []byte) (int, error) {
 }
 
 // CreateValidatorEvent represents the CreateValidator event
+var _ abi.Event = (*CreateValidatorEvent)(nil)
+
 type CreateValidatorEvent struct {
 	CreateValidatorEventIndexed
 	CreateValidatorEventData
@@ -4080,6 +4180,8 @@ func (e *CreateValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const CreateValidatorEventDataStaticSize = 32
 
+var _ abi.Tuple = (*CreateValidatorEventData)(nil)
+
 // CreateValidatorEventData represents an ABI tuple
 type CreateValidatorEventData struct {
 	Value *big.Int
@@ -4131,6 +4233,8 @@ func (t *CreateValidatorEventData) Decode(data []byte) (int, error) {
 }
 
 // DelegateEvent represents the Delegate event
+var _ abi.Event = (*DelegateEvent)(nil)
+
 type DelegateEvent struct {
 	DelegateEventIndexed
 	DelegateEventData
@@ -4216,6 +4320,8 @@ func (e *DelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const DelegateEventDataStaticSize = 64
 
+var _ abi.Tuple = (*DelegateEventData)(nil)
+
 // DelegateEventData represents an ABI tuple
 type DelegateEventData struct {
 	Amount    *big.Int
@@ -4278,6 +4384,8 @@ func (t *DelegateEventData) Decode(data []byte) (int, error) {
 }
 
 // EditValidatorEvent represents the EditValidator event
+var _ abi.Event = (*EditValidatorEvent)(nil)
+
 type EditValidatorEvent struct {
 	EditValidatorEventIndexed
 	EditValidatorEventData
@@ -4348,6 +4456,8 @@ func (e *EditValidatorEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const EditValidatorEventDataStaticSize = 64
 
+var _ abi.Tuple = (*EditValidatorEventData)(nil)
+
 // EditValidatorEventData represents an ABI tuple
 type EditValidatorEventData struct {
 	CommissionRate    *big.Int
@@ -4410,6 +4520,8 @@ func (t *EditValidatorEventData) Decode(data []byte) (int, error) {
 }
 
 // RedelegateEvent represents the Redelegate event
+var _ abi.Event = (*RedelegateEvent)(nil)
+
 type RedelegateEvent struct {
 	RedelegateEventIndexed
 	RedelegateEventData
@@ -4510,6 +4622,8 @@ func (e *RedelegateEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const RedelegateEventDataStaticSize = 64
 
+var _ abi.Tuple = (*RedelegateEventData)(nil)
+
 // RedelegateEventData represents an ABI tuple
 type RedelegateEventData struct {
 	Amount         *big.Int
@@ -4572,6 +4686,8 @@ func (t *RedelegateEventData) Decode(data []byte) (int, error) {
 }
 
 // UnbondEvent represents the Unbond event
+var _ abi.Event = (*UnbondEvent)(nil)
+
 type UnbondEvent struct {
 	UnbondEventIndexed
 	UnbondEventData
@@ -4656,6 +4772,8 @@ func (e *UnbondEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const UnbondEventDataStaticSize = 64
+
+var _ abi.Tuple = (*UnbondEventData)(nil)
 
 // UnbondEventData represents an ABI tuple
 type UnbondEventData struct {

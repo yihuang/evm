@@ -43,6 +43,8 @@ const (
 
 const HeightStaticSize = 64
 
+var _ abi.Tuple = (*Height)(nil)
+
 // Height represents an ABI tuple
 type Height struct {
 	RevisionNumber uint64
@@ -131,6 +133,8 @@ func (t CounterCall) EncodeWithSelector() ([]byte, error) {
 
 const CounterReturnStaticSize = 32
 
+var _ abi.Tuple = (*CounterReturn)(nil)
+
 // CounterReturn represents an ABI tuple
 type CounterReturn struct {
 	Field1 int64
@@ -211,7 +215,11 @@ type DepositReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*IbcTransferAndRevertCall)(nil)
+
 const IbcTransferAndRevertCallStaticSize = 320
+
+var _ abi.Tuple = (*IbcTransferAndRevertCall)(nil)
 
 // IbcTransferAndRevertCall represents an ABI tuple
 type IbcTransferAndRevertCall struct {
@@ -443,6 +451,8 @@ func (t IbcTransferAndRevertCall) EncodeWithSelector() ([]byte, error) {
 
 const IbcTransferAndRevertReturnStaticSize = 32
 
+var _ abi.Tuple = (*IbcTransferAndRevertReturn)(nil)
+
 // IbcTransferAndRevertReturn represents an ABI tuple
 type IbcTransferAndRevertReturn struct {
 	NextSequence uint64
@@ -493,7 +503,11 @@ func (t *IbcTransferAndRevertReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestIbcTransferCall)(nil)
+
 const TestIbcTransferCallStaticSize = 320
+
+var _ abi.Tuple = (*TestIbcTransferCall)(nil)
 
 // TestIbcTransferCall represents an ABI tuple
 type TestIbcTransferCall struct {
@@ -725,6 +739,8 @@ func (t TestIbcTransferCall) EncodeWithSelector() ([]byte, error) {
 
 const TestIbcTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestIbcTransferReturn)(nil)
+
 // TestIbcTransferReturn represents an ABI tuple
 type TestIbcTransferReturn struct {
 	Field1 uint64
@@ -775,7 +791,11 @@ func (t *TestIbcTransferReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestIbcTransferFromContractCall)(nil)
+
 const TestIbcTransferFromContractCallStaticSize = 288
+
+var _ abi.Tuple = (*TestIbcTransferFromContractCall)(nil)
 
 // TestIbcTransferFromContractCall represents an ABI tuple
 type TestIbcTransferFromContractCall struct {
@@ -996,6 +1016,8 @@ func (t TestIbcTransferFromContractCall) EncodeWithSelector() ([]byte, error) {
 
 const TestIbcTransferFromContractReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestIbcTransferFromContractReturn)(nil)
+
 // TestIbcTransferFromContractReturn represents an ABI tuple
 type TestIbcTransferFromContractReturn struct {
 	Field1 uint64
@@ -1046,7 +1068,11 @@ func (t *TestIbcTransferFromContractReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestIbcTransferWithTransferCall)(nil)
+
 const TestIbcTransferWithTransferCallStaticSize = 384
+
+var _ abi.Tuple = (*TestIbcTransferWithTransferCall)(nil)
 
 // TestIbcTransferWithTransferCall represents an ABI tuple
 type TestIbcTransferWithTransferCall struct {
@@ -1300,6 +1326,8 @@ func (t TestIbcTransferWithTransferCall) EncodeWithSelector() ([]byte, error) {
 
 const TestIbcTransferWithTransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TestIbcTransferWithTransferReturn)(nil)
+
 // TestIbcTransferWithTransferReturn represents an ABI tuple
 type TestIbcTransferWithTransferReturn struct {
 	Field1 uint64
@@ -1350,7 +1378,11 @@ func (t *TestIbcTransferWithTransferReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TestRevertIbcTransferCall)(nil)
+
 const TestRevertIbcTransferCallStaticSize = 384
+
+var _ abi.Tuple = (*TestRevertIbcTransferCall)(nil)
 
 // TestRevertIbcTransferCall represents an ABI tuple
 type TestRevertIbcTransferCall struct {
