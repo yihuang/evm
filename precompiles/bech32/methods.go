@@ -61,4 +61,3 @@ func (p Precompile) Bech32ToHex(
 
 	return &Bech32ToHexReturn{Addr: common.BytesToAddress(addressBz)}, nil
 }
-

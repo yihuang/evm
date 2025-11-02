@@ -53,12 +53,12 @@ func TestNewMsgCreateValidator(t *testing.T) {
 		{
 			name: "valid",
 			args: CreateValidatorCall{
-				Description:        description,
-				CommissionRates:    commission,
-				MinSelfDelegation:  minSelfDelegation,
-				ValidatorAddress:   validatorHexAddr,
-				Pubkey:             pubkey,
-				Value:              value,
+				Description:       description,
+				CommissionRates:   commission,
+				MinSelfDelegation: minSelfDelegation,
+				ValidatorAddress:  validatorHexAddr,
+				Pubkey:            pubkey,
+				Value:             value,
 			},
 			wantErr:           false,
 			wantDelegatorAddr: expectedValidatorAddr,

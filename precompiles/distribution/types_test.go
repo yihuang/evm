@@ -34,7 +34,7 @@ func TestNewMsgSetWithdrawAddress(t *testing.T) {
 		{
 			name: "valid with bech32 withdrawer",
 			args: SetWithdrawAddressCall{
-				DelegatorAddress: delegatorAddr,
+				DelegatorAddress:  delegatorAddr,
 				WithdrawerAddress: withdrawerBech32,
 			},
 			wantErr:        false,

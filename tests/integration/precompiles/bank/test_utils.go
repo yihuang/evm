@@ -1,6 +1,9 @@
 package bank
 
 import (
+	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
@@ -61,7 +64,7 @@ const (
 	contractCall
 )
 
-// ContractData is a helper struct to hold the addresses and ABIs for the
+// ContractData is a helper struct to hold the addresses and contract info for the
 // different contract instances that are subject to testing here.
 type ContractData struct {
 	ownerPriv cryptotypes.PrivKey
@@ -69,11 +72,11 @@ type ContractData struct {
 	contractAddr   common.Address
 	contractABI    abi.ABI
 	precompileAddr common.Address
-	precompileABI  abi.ABI
 }
 
 // getTxAndCallArgs is a helper function to return the correct call arguments for a given call type.
-// In case of a direct call to the precompile, the precompile's ABI is used. Otherwise a caller contract is used.
+// In case of a direct call to the precompile, the arguments are encoded using go-abi.
+// Otherwise a caller contract is used with the contract's ABI.
 func getTxAndCallArgs(
 	callType int,
 	contractData ContractData,
@@ -85,8 +88,33 @@ func getTxAndCallArgs(
 
 	switch callType {
 	case directCall:
+		// For direct precompile calls, encode input using go-abi's EncodeWithSelector
+		var input []byte
+		switch methodName {
+		case bank.BalancesMethod:
+			if len(args) != 1 {
+				panic("balances requires 1 argument")
+			}
+			addr := args[0].(common.Address)
+			call := bank.BalancesCall{Account: addr}
+			input, _ = call.EncodeWithSelector()
+		case bank.TotalSupplyMethod:
+			var call bank.TotalSupplyCall
+			input, _ = call.EncodeWithSelector()
+		case bank.SupplyOfMethod:
+			if len(args) != 1 {
+				panic("supplyOf requires 1 argument")
+			}
+			addr := args[0].(common.Address)
+			call := bank.SupplyOfCall{Erc20Address: addr}
+			input, _ = call.EncodeWithSelector()
+		default:
+			panic(fmt.Sprintf("unknown method: %s", methodName))
+		}
 		txArgs.To = &contractData.precompileAddr
-		callArgs.ContractABI = contractData.precompileABI
+		txArgs.Input = input
+		// For direct calls, we don't use ContractABI - input is pre-encoded
+		callArgs.ContractABI = abi.ABI{}
 	case contractCall:
 		txArgs.To = &contractData.contractAddr
 		callArgs.ContractABI = contractData.contractABI
@@ -96,6 +124,36 @@ func getTxAndCallArgs(
 	callArgs.Args = args
 
 	return txArgs, callArgs
+}
+
+// decodeBalancesResult decodes the result from a balances query
+func decodeBalancesResult(data []byte) ([]bank.Balance, error) {
+	var result bank.BalancesReturn
+	_, err := result.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+	return result.Balances, nil
+}
+
+// decodeTotalSupplyResult decodes the result from a totalSupply query
+func decodeTotalSupplyResult(data []byte) ([]bank.Balance, error) {
+	var result bank.TotalSupplyReturn
+	_, err := result.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+	return result.TotalSupply, nil
+}
+
+// decodeSupplyOfResult decodes the result from a supplyOf query
+func decodeSupplyOfResult(data []byte) (*big.Int, error) {
+	var result bank.SupplyOfReturn
+	_, err := result.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+	return result.TotalSupply, nil
 }
 
 func Max(x, y int) int {
