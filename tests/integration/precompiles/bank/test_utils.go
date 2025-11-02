@@ -1,8 +1,6 @@
 package bank
 
 import (
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
@@ -10,7 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cosmos/evm/precompiles/bank"
-	testutiltypes "github.com/cosmos/evm/testutil/types"
 	evmtypes "github.com/cosmos/evm/x/vm/types"
 
 	"cosmossdk.io/math"
@@ -79,50 +76,17 @@ type ContractData struct {
 func getTxAndCallArgs(
 	callType int,
 	contractData ContractData,
-	methodName string,
-	args ...interface{},
-) (evmtypes.EvmTxArgs, testutiltypes.CallArgs) {
+) evmtypes.EvmTxArgs {
 	txArgs := evmtypes.EvmTxArgs{}
-	callArgs := testutiltypes.CallArgs{}
 
 	switch callType {
 	case directCall:
-		// For direct precompile calls, encode input using go-abi's EncodeWithSelector
-		var input []byte
-		switch methodName {
-		case bank.BalancesMethod:
-			if len(args) != 1 {
-				panic("balances requires 1 argument")
-			}
-			addr := args[0].(common.Address)
-			call := bank.BalancesCall{Account: addr}
-			input, _ = call.EncodeWithSelector()
-		case bank.TotalSupplyMethod:
-			var call bank.TotalSupplyCall
-			input, _ = call.EncodeWithSelector()
-		case bank.SupplyOfMethod:
-			if len(args) != 1 {
-				panic("supplyOf requires 1 argument")
-			}
-			addr := args[0].(common.Address)
-			call := bank.SupplyOfCall{Erc20Address: addr}
-			input, _ = call.EncodeWithSelector()
-		default:
-			panic(fmt.Sprintf("unknown method: %s", methodName))
-		}
 		txArgs.To = &contractData.precompileAddr
-		txArgs.Input = input
-		// For direct calls, we don't use ContractABI - input is pre-encoded
-		callArgs.ContractABI = abi.ABI{}
 	case contractCall:
 		txArgs.To = &contractData.contractAddr
-		callArgs.ContractABI = contractData.contractABI
 	}
 
-	callArgs.MethodName = methodName
-	callArgs.Args = args
-
-	return txArgs, callArgs
+	return txArgs
 }
 
 func Max(x, y int) int {

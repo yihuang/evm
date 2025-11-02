@@ -166,8 +166,9 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					Expect(err).ToNot(HaveOccurred(), "error while funding account")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 
-					queryArgs, balancesArgs := getTxAndCallArgs(directCall, contractData, bank2.BalancesMethod, receiver)
-					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					args := &bank2.BalancesCall{Account: receiver}
+					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, args, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
 					var ret bank2.BalancesReturn
@@ -189,7 +190,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					Expect(err).ToNot(HaveOccurred(), "error while funding account")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 
-					queryArgs, balancesArgs := getTxAndCallArgs(directCall, contractData, bank2.BalancesMethod, receiver)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: receiver}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -205,7 +207,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return no balance for new account", func() {
-					queryArgs, balancesArgs := getTxAndCallArgs(directCall, contractData, bank2.BalancesMethod, utiltx.GenerateAddress())
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: utiltx.GenerateAddress()}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -217,7 +220,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should consume the correct amount of gas", func() {
-					queryArgs, balancesArgs := getTxAndCallArgs(directCall, contractData, bank2.BalancesMethod, sender.Addr)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: sender.Addr}
 					res, err := is.factory.ExecuteContractCall(sender.Priv, queryArgs, balancesArgs)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -236,7 +240,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 
 			Context("totalSupply query", func() {
 				It("should return the correct total supply", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(directCall, contractData, bank2.TotalSupplyMethod)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					supplyArgs := &bank2.TotalSupplyCall{}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -251,7 +256,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 
 			Context("supplyOf query", func() {
 				It("should return the supply of Cosmos EVM", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(directCall, contractData, bank2.SupplyOfMethod, is.cosmosEVMAddr)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.cosmosEVMAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -263,7 +269,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return the supply of XMPL", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(directCall, contractData, bank2.SupplyOfMethod, is.xmplAddr)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.xmplAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -275,7 +282,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return a supply of 0 for a non existing token", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(directCall, contractData, bank2.SupplyOfMethod, utiltx.GenerateAddress())
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: utiltx.GenerateAddress()}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -287,7 +295,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should consume the correct amount of gas", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(directCall, contractData, bank2.SupplyOfMethod, is.xmplAddr)
+					queryArgs := getTxAndCallArgs(directCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.xmplAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -312,7 +321,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					Expect(err).ToNot(HaveOccurred(), "error while funding account")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 
-					queryArgs, balancesArgs := getTxAndCallArgs(contractCall, contractData, BalancesFunction, receiver)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: receiver}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -335,7 +345,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					Expect(err).ToNot(HaveOccurred(), "error while funding account")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 
-					queryArgs, balancesArgs := getTxAndCallArgs(contractCall, contractData, BalancesFunction, receiver)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: receiver}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -351,7 +362,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return no balance for new account", func() {
-					queryArgs, balancesArgs := getTxAndCallArgs(contractCall, contractData, BalancesFunction, utiltx.GenerateAddress())
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: utiltx.GenerateAddress()}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -363,7 +375,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should consume the correct amount of gas", func() {
-					queryArgs, balancesArgs := getTxAndCallArgs(contractCall, contractData, BalancesFunction, sender.Addr)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					balancesArgs := &bank2.BalancesCall{Account: sender.Addr}
 					res, err := is.factory.ExecuteContractCall(sender.Priv, queryArgs, balancesArgs)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -382,7 +395,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 
 			Context("totalSupply query", func() {
 				It("should return the correct total supply", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(contractCall, contractData, TotalSupplyOf)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					supplyArgs := &bank2.TotalSupplyCall{}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -397,7 +411,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 
 			Context("supplyOf query", func() {
 				It("should return the supply of Cosmos EVM", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(contractCall, contractData, SupplyOfFunction, is.cosmosEVMAddr)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.cosmosEVMAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -409,7 +424,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return the supply of XMPL", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(contractCall, contractData, SupplyOfFunction, is.xmplAddr)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.xmplAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -421,7 +437,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should return a supply of 0 for a non existing token", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(contractCall, contractData, SupplyOfFunction, utiltx.GenerateAddress())
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: utiltx.GenerateAddress()}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
@@ -433,7 +450,8 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 				})
 
 				It("should consume the correct amount of gas", func() {
-					queryArgs, supplyArgs := getTxAndCallArgs(contractCall, contractData, SupplyOfFunction, is.xmplAddr)
+					queryArgs := getTxAndCallArgs(contractCall, contractData)
+					supplyArgs := &bank2.SupplyOfCall{Erc20Address: is.xmplAddr}
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
