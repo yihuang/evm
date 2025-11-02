@@ -3,7 +3,6 @@ package erc20
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 
@@ -13,7 +12,6 @@ import (
 
 //nolint:dupl // tests are not duplicate between the functions
 func (s *PrecompileTestSuite) TestApprove() {
-	method := s.precompile.Methods[erc20.ApproveMethod]
 	amount := int64(100)
 
 	testcases := []struct {
@@ -68,7 +66,7 @@ func (s *PrecompileTestSuite) TestApprove() {
 			name: "fail - approve uint256 overflow",
 			malleate: func() []interface{} {
 				return []interface{}{
-					s.keyring.GetAddr(1), new(big.Int).Add(abi.MaxUint256, common.Big1),
+					s.keyring.GetAddr(1), new(big.Int).Add(new(big.Int).SetUint64(^uint64(0)), common.Big1),
 				}
 			},
 			errContains: "causes integer overflow",
@@ -224,16 +222,23 @@ func (s *PrecompileTestSuite) TestApprove() {
 			)
 
 			var args []interface{}
+			var call erc20.ApproveCall
 			if tc.malleate != nil {
 				args = tc.malleate()
+				// Create the call struct from args
+				if len(args) == 2 {
+					call = erc20.ApproveCall{
+						Spender: args[0].(common.Address),
+						Amount:  args[1].(*big.Int),
+					}
+				}
 			}
 
 			bz, err := s.precompile.Approve(
 				ctx,
-				contract,
+				call,
 				s.network.GetStateDB(),
-				&method,
-				args,
+				contract,
 			)
 
 			if tc.expPass {
