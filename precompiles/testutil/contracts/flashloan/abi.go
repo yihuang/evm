@@ -40,15 +40,15 @@ var _ abi.Tuple = (*DelegateWithRevertCall)(nil)
 
 // DelegateWithRevertCall represents an ABI tuple
 type DelegateWithRevertCall struct {
-	_Delegator common.Address
-	_Validator string
-	_Amount    *big.Int
+	Delegator common.Address
+	Validator string
+	Amount    *big.Int
 }
 
 // EncodedSize returns the total encoded size of DelegateWithRevertCall
 func (t DelegateWithRevertCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._Validator)
+	dynamicSize += abi.SizeString(t.Validator)
 
 	return DelegateWithRevertCallStaticSize + dynamicSize
 }
@@ -61,23 +61,23 @@ func (value DelegateWithRevertCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _Delegator: address
-	if _, err := abi.EncodeAddress(value._Delegator, buf[0:]); err != nil {
+	// Field Delegator: address
+	if _, err := abi.EncodeAddress(value.Delegator, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Validator: string
+	// Field Validator: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Validator, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Validator, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[64:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -103,25 +103,25 @@ func (t *DelegateWithRevertCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 96
-	// Decode static field _Delegator: address
-	t._Delegator, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field Delegator: address
+	t.Delegator, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Validator
+	// Decode dynamic field Validator
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Validator")
+			return 0, errors.New("invalid offset for dynamic field Validator")
 		}
-		t._Validator, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Validator, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[64:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -134,7 +134,12 @@ func (t DelegateWithRevertCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegateWithRevertCall) GetMethodID() [4]byte {
+func (t DelegateWithRevertCall) GetMethodID() uint32 {
+	return DelegateWithRevertID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegateWithRevertCall) GetMethodSelector() [4]byte {
 	return DelegateWithRevertSelector
 }
 
@@ -161,14 +166,14 @@ var _ abi.Tuple = (*FlashLoanCall)(nil)
 
 // FlashLoanCall represents an ABI tuple
 type FlashLoanCall struct {
-	_Token     common.Address
-	_Validator string
+	Token     common.Address
+	Validator string
 }
 
 // EncodedSize returns the total encoded size of FlashLoanCall
 func (t FlashLoanCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._Validator)
+	dynamicSize += abi.SizeString(t.Validator)
 
 	return FlashLoanCallStaticSize + dynamicSize
 }
@@ -181,16 +186,16 @@ func (value FlashLoanCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _Token: address
-	if _, err := abi.EncodeAddress(value._Token, buf[0:]); err != nil {
+	// Field Token: address
+	if _, err := abi.EncodeAddress(value.Token, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Validator: string
+	// Field Validator: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Validator, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Validator, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -218,18 +223,18 @@ func (t *FlashLoanCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _Token: address
-	t._Token, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field Token: address
+	t.Token, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Validator
+	// Decode dynamic field Validator
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Validator")
+			return 0, errors.New("invalid offset for dynamic field Validator")
 		}
-		t._Validator, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Validator, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -244,7 +249,12 @@ func (t FlashLoanCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t FlashLoanCall) GetMethodID() [4]byte {
+func (t FlashLoanCall) GetMethodID() uint32 {
+	return FlashLoanID
+}
+
+// GetMethodSelector returns the function name
+func (t FlashLoanCall) GetMethodSelector() [4]byte {
 	return FlashLoanSelector
 }
 
@@ -320,14 +330,14 @@ var _ abi.Tuple = (*FlashLoanWithRevertCall)(nil)
 
 // FlashLoanWithRevertCall represents an ABI tuple
 type FlashLoanWithRevertCall struct {
-	_Token     common.Address
-	_Validator string
+	Token     common.Address
+	Validator string
 }
 
 // EncodedSize returns the total encoded size of FlashLoanWithRevertCall
 func (t FlashLoanWithRevertCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._Validator)
+	dynamicSize += abi.SizeString(t.Validator)
 
 	return FlashLoanWithRevertCallStaticSize + dynamicSize
 }
@@ -340,16 +350,16 @@ func (value FlashLoanWithRevertCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _Token: address
-	if _, err := abi.EncodeAddress(value._Token, buf[0:]); err != nil {
+	// Field Token: address
+	if _, err := abi.EncodeAddress(value.Token, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Validator: string
+	// Field Validator: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Validator, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Validator, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -377,18 +387,18 @@ func (t *FlashLoanWithRevertCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _Token: address
-	t._Token, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field Token: address
+	t.Token, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Validator
+	// Decode dynamic field Validator
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Validator")
+			return 0, errors.New("invalid offset for dynamic field Validator")
 		}
-		t._Validator, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Validator, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -403,7 +413,12 @@ func (t FlashLoanWithRevertCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t FlashLoanWithRevertCall) GetMethodID() [4]byte {
+func (t FlashLoanWithRevertCall) GetMethodID() uint32 {
+	return FlashLoanWithRevertID
+}
+
+// GetMethodSelector returns the function name
+func (t FlashLoanWithRevertCall) GetMethodSelector() [4]byte {
 	return FlashLoanWithRevertSelector
 }
 
@@ -471,6 +486,8 @@ func (t *FlashLoanWithRevertReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*OwnerCall)(nil)
+
 // OwnerCall represents the input arguments for owner function
 type OwnerCall struct {
 	abi.EmptyTuple
@@ -482,7 +499,12 @@ func (t OwnerCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t OwnerCall) GetMethodID() [4]byte {
+func (t OwnerCall) GetMethodID() uint32 {
+	return OwnerID
+}
+
+// GetMethodSelector returns the function name
+func (t OwnerCall) GetMethodSelector() [4]byte {
 	return OwnerSelector
 }
 

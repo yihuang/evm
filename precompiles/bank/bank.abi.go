@@ -209,7 +209,12 @@ func (t BalancesCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t BalancesCall) GetMethodID() [4]byte {
+func (t BalancesCall) GetMethodID() uint32 {
+	return BalancesID
+}
+
+// GetMethodSelector returns the function name
+func (t BalancesCall) GetMethodSelector() [4]byte {
 	return BalancesSelector
 }
 
@@ -357,7 +362,12 @@ func (t SupplyOfCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t SupplyOfCall) GetMethodID() [4]byte {
+func (t SupplyOfCall) GetMethodID() uint32 {
+	return SupplyOfID
+}
+
+// GetMethodSelector returns the function name
+func (t SupplyOfCall) GetMethodSelector() [4]byte {
 	return SupplyOfSelector
 }
 
@@ -425,6 +435,8 @@ func (t *SupplyOfReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TotalSupplyCall)(nil)
+
 // TotalSupplyCall represents the input arguments for totalSupply function
 type TotalSupplyCall struct {
 	abi.EmptyTuple
@@ -436,7 +448,12 @@ func (t TotalSupplyCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TotalSupplyCall) GetMethodID() [4]byte {
+func (t TotalSupplyCall) GetMethodID() uint32 {
+	return TotalSupplyID
+}
+
+// GetMethodSelector returns the function name
+func (t TotalSupplyCall) GetMethodSelector() [4]byte {
 	return TotalSupplySelector
 }
 

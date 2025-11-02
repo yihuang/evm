@@ -761,7 +761,12 @@ func (t ClaimRewardsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ClaimRewardsCall) GetMethodID() [4]byte {
+func (t ClaimRewardsCall) GetMethodID() uint32 {
+	return ClaimRewardsID
+}
+
+// GetMethodSelector returns the function name
+func (t ClaimRewardsCall) GetMethodSelector() [4]byte {
 	return ClaimRewardsSelector
 }
 
@@ -829,6 +834,8 @@ func (t *ClaimRewardsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*CommunityPoolCall)(nil)
+
 // CommunityPoolCall represents the input arguments for communityPool function
 type CommunityPoolCall struct {
 	abi.EmptyTuple
@@ -840,7 +847,12 @@ func (t CommunityPoolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CommunityPoolCall) GetMethodID() [4]byte {
+func (t CommunityPoolCall) GetMethodID() uint32 {
+	return CommunityPoolID
+}
+
+// GetMethodSelector returns the function name
+func (t CommunityPoolCall) GetMethodSelector() [4]byte {
 	return CommunityPoolSelector
 }
 
@@ -1017,7 +1029,12 @@ func (t DelegationRewardsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegationRewardsCall) GetMethodID() [4]byte {
+func (t DelegationRewardsCall) GetMethodID() uint32 {
+	return DelegationRewardsID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegationRewardsCall) GetMethodSelector() [4]byte {
 	return DelegationRewardsSelector
 }
 
@@ -1165,7 +1182,12 @@ func (t DelegationTotalRewardsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegationTotalRewardsCall) GetMethodID() [4]byte {
+func (t DelegationTotalRewardsCall) GetMethodID() uint32 {
+	return DelegationTotalRewardsID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegationTotalRewardsCall) GetMethodSelector() [4]byte {
 	return DelegationTotalRewardsSelector
 }
 
@@ -1337,7 +1359,12 @@ func (t DelegatorValidatorsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegatorValidatorsCall) GetMethodID() [4]byte {
+func (t DelegatorValidatorsCall) GetMethodID() uint32 {
+	return DelegatorValidatorsID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegatorValidatorsCall) GetMethodSelector() [4]byte {
 	return DelegatorValidatorsSelector
 }
 
@@ -1485,7 +1512,12 @@ func (t DelegatorWithdrawAddressCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegatorWithdrawAddressCall) GetMethodID() [4]byte {
+func (t DelegatorWithdrawAddressCall) GetMethodID() uint32 {
+	return DelegatorWithdrawAddressID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegatorWithdrawAddressCall) GetMethodSelector() [4]byte {
 	return DelegatorWithdrawAddressSelector
 }
 
@@ -1686,7 +1718,12 @@ func (t DepositValidatorRewardsPoolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DepositValidatorRewardsPoolCall) GetMethodID() [4]byte {
+func (t DepositValidatorRewardsPoolCall) GetMethodID() uint32 {
+	return DepositValidatorRewardsPoolID
+}
+
+// GetMethodSelector returns the function name
+func (t DepositValidatorRewardsPoolCall) GetMethodSelector() [4]byte {
 	return DepositValidatorRewardsPoolSelector
 }
 
@@ -1845,7 +1882,12 @@ func (t FundCommunityPoolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t FundCommunityPoolCall) GetMethodID() [4]byte {
+func (t FundCommunityPoolCall) GetMethodID() uint32 {
+	return FundCommunityPoolID
+}
+
+// GetMethodSelector returns the function name
+func (t FundCommunityPoolCall) GetMethodSelector() [4]byte {
 	return FundCommunityPoolSelector
 }
 
@@ -2004,7 +2046,12 @@ func (t SetWithdrawAddressCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t SetWithdrawAddressCall) GetMethodID() [4]byte {
+func (t SetWithdrawAddressCall) GetMethodID() uint32 {
+	return SetWithdrawAddressID
+}
+
+// GetMethodSelector returns the function name
+func (t SetWithdrawAddressCall) GetMethodSelector() [4]byte {
 	return SetWithdrawAddressSelector
 }
 
@@ -2152,7 +2199,12 @@ func (t ValidatorCommissionCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorCommissionCall) GetMethodID() [4]byte {
+func (t ValidatorCommissionCall) GetMethodID() uint32 {
+	return ValidatorCommissionID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorCommissionCall) GetMethodSelector() [4]byte {
 	return ValidatorCommissionSelector
 }
 
@@ -2318,7 +2370,12 @@ func (t ValidatorDistributionInfoCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorDistributionInfoCall) GetMethodID() [4]byte {
+func (t ValidatorDistributionInfoCall) GetMethodID() uint32 {
+	return ValidatorDistributionInfoID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorDistributionInfoCall) GetMethodSelector() [4]byte {
 	return ValidatorDistributionInfoSelector
 }
 
@@ -2484,7 +2541,12 @@ func (t ValidatorOutstandingRewardsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorOutstandingRewardsCall) GetMethodID() [4]byte {
+func (t ValidatorOutstandingRewardsCall) GetMethodID() uint32 {
+	return ValidatorOutstandingRewardsID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorOutstandingRewardsCall) GetMethodSelector() [4]byte {
 	return ValidatorOutstandingRewardsSelector
 }
 
@@ -2696,7 +2758,12 @@ func (t ValidatorSlashesCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorSlashesCall) GetMethodID() [4]byte {
+func (t ValidatorSlashesCall) GetMethodID() uint32 {
+	return ValidatorSlashesID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorSlashesCall) GetMethodSelector() [4]byte {
 	return ValidatorSlashesSelector
 }
 
@@ -2897,7 +2964,12 @@ func (t WithdrawDelegatorRewardsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t WithdrawDelegatorRewardsCall) GetMethodID() [4]byte {
+func (t WithdrawDelegatorRewardsCall) GetMethodID() uint32 {
+	return WithdrawDelegatorRewardsID
+}
+
+// GetMethodSelector returns the function name
+func (t WithdrawDelegatorRewardsCall) GetMethodSelector() [4]byte {
 	return WithdrawDelegatorRewardsSelector
 }
 
@@ -3063,7 +3135,12 @@ func (t WithdrawValidatorCommissionCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t WithdrawValidatorCommissionCall) GetMethodID() [4]byte {
+func (t WithdrawValidatorCommissionCall) GetMethodID() uint32 {
+	return WithdrawValidatorCommissionID
+}
+
+// GetMethodSelector returns the function name
+func (t WithdrawValidatorCommissionCall) GetMethodSelector() [4]byte {
 	return WithdrawValidatorCommissionSelector
 }
 

@@ -15,7 +15,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 )
 
@@ -33,25 +32,8 @@ type EventVoteWeighted struct {
 	Options    WeightedVoteOptions
 }
 
-// VotesInput defines the input for the Votes query.
-type VotesInput struct {
-	ProposalId uint64 //nolint:revive
-	Pagination query.PageRequest
-}
-
 // WeightedVoteOptions defines a slice of WeightedVoteOption.
 type WeightedVoteOptions []WeightedVoteOption
-
-// DepositInput defines the input for the Deposit query.
-type DepositInput struct {
-	ProposalId uint64 //nolint:revive
-	Depositor  common.Address
-}
-
-// TallyResultOutput defines the output for the TallyResult query.
-type TallyResultOutput struct {
-	TallyResult TallyResultData
-}
 
 // NewMsgSubmitProposal constructs a MsgSubmitProposal.
 func NewMsgSubmitProposal(args SubmitProposalCall, cdc codec.Codec, addrCdc address.Codec) (*govv1.MsgSubmitProposal, common.Address, error) {
@@ -226,12 +208,12 @@ func ParseVotesArgs(args GetVotesCall) (*govv1.QueryVotesRequest, error) {
 	}, nil
 }
 
-func (vo *GetVotesReturn) FromResponse(res *govv1.QueryVotesResponse) (*GetVotesReturn, error) {
+func (vo *GetVotesReturn) FromResponse(res *govv1.QueryVotesResponse) error {
 	vo.Votes = make([]WeightedVote, len(res.Votes))
 	for i, v := range res.Votes {
 		hexAddr, err := utils.HexAddressFromBech32String(v.Voter)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		options := make([]WeightedVoteOption, len(v.Options))
 		for j, opt := range v.Options {
@@ -253,7 +235,7 @@ func (vo *GetVotesReturn) FromResponse(res *govv1.QueryVotesResponse) (*GetVotes
 			Total:   res.Pagination.Total,
 		}
 	}
-	return vo, nil
+	return nil
 }
 
 // ParseVoteArgs parses the arguments for the Votes query.
@@ -268,10 +250,10 @@ func ParseVoteArgs(args GetVoteCall, addrCdc address.Codec) (*govv1.QueryVoteReq
 	}, nil
 }
 
-func (vo *GetVoteReturn) FromResponse(res *govv1.QueryVoteResponse) (*GetVoteReturn, error) {
+func (vo *GetVoteReturn) FromResponse(res *govv1.QueryVoteResponse) error {
 	hexVoter, err := utils.HexAddressFromBech32String(res.Vote.Voter)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	vo.Vote.Voter = hexVoter
 	vo.Vote.Metadata = res.Vote.Metadata
@@ -285,7 +267,7 @@ func (vo *GetVoteReturn) FromResponse(res *govv1.QueryVoteResponse) (*GetVoteRet
 		}
 	}
 	vo.Vote.Options = options
-	return vo, nil
+	return nil
 }
 
 // ParseDepositArgs parses the arguments for the Deposit query.
@@ -315,10 +297,10 @@ func ParseTallyResultArgs(args GetTallyResultCall) (*govv1.QueryTallyResultReque
 	}, nil
 }
 
-func (do *GetDepositReturn) FromResponse(res *govv1.QueryDepositResponse) (*GetDepositReturn, error) {
+func (do *GetDepositReturn) FromResponse(res *govv1.QueryDepositResponse) error {
 	hexDepositor, err := utils.HexAddressFromBech32String(res.Deposit.Depositor)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	coins := make([]cmn.Coin, len(res.Deposit.Amount))
 	for i, c := range res.Deposit.Amount {
@@ -332,15 +314,15 @@ func (do *GetDepositReturn) FromResponse(res *govv1.QueryDepositResponse) (*GetD
 		Depositor:  hexDepositor,
 		Amount:     coins,
 	}
-	return do, nil
+	return nil
 }
 
-func (do *GetDepositsReturn) FromResponse(res *govv1.QueryDepositsResponse) (*GetDepositsReturn, error) {
+func (do *GetDepositsReturn) FromResponse(res *govv1.QueryDepositsResponse) error {
 	do.Deposits = make([]DepositData, len(res.Deposits))
 	for i, d := range res.Deposits {
 		hexDepositor, err := utils.HexAddressFromBech32String(d.Depositor)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		coins := make([]cmn.Coin, len(d.Amount))
 		for j, c := range d.Amount {
@@ -361,36 +343,16 @@ func (do *GetDepositsReturn) FromResponse(res *govv1.QueryDepositsResponse) (*Ge
 			Total:   res.Pagination.Total,
 		}
 	}
-	return do, nil
+	return nil
 }
 
-func (tro *TallyResultOutput) FromResponse(res *govv1.QueryTallyResultResponse) *TallyResultOutput {
+func (tro *GetTallyResultReturn) FromResponse(res *govv1.QueryTallyResultResponse) {
 	tro.TallyResult = TallyResultData{
 		Yes:        res.Tally.YesCount,
 		Abstain:    res.Tally.AbstainCount,
 		No:         res.Tally.NoCount,
 		NoWithVeto: res.Tally.NoWithVetoCount,
 	}
-	return tro
-}
-
-// ProposalOutput defines the output for the Proposal query
-type ProposalOutput struct {
-	Proposal ProposalData
-}
-
-// ProposalsInput defines the input for the Proposals query
-type ProposalsInput struct {
-	ProposalStatus uint32
-	Voter          common.Address
-	Depositor      common.Address
-	Pagination     query.PageRequest
-}
-
-// ProposalsOutput defines the output for the Proposals query
-type ProposalsOutput struct {
-	Proposals    []ProposalData
-	PageResponse query.PageResponse
 }
 
 // ParseProposalArgs parses the arguments for the Proposal query
@@ -428,7 +390,7 @@ func ParseProposalsArgs(args GetProposalsCall, addrCdc address.Codec) (*govv1.Qu
 	}, nil
 }
 
-func (po *ProposalOutput) FromResponse(res *govv1.QueryProposalResponse) (*ProposalOutput, error) {
+func (po *GetProposalReturn) FromResponse(res *govv1.QueryProposalResponse) error {
 	msgs := make([]string, len(res.Proposal.Messages))
 	for i, msg := range res.Proposal.Messages {
 		msgs[i] = msg.TypeUrl
@@ -444,7 +406,7 @@ func (po *ProposalOutput) FromResponse(res *govv1.QueryProposalResponse) (*Propo
 
 	proposer, err := utils.HexAddressFromBech32String(res.Proposal.Proposer)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	po.Proposal = ProposalData{
@@ -472,7 +434,7 @@ func (po *ProposalOutput) FromResponse(res *govv1.QueryProposalResponse) (*Propo
 	if res.Proposal.VotingEndTime != nil {
 		po.Proposal.VotingEndTime = uint64(res.Proposal.VotingEndTime.Unix()) //nolint:gosec // G115
 	}
-	return po, nil
+	return nil
 }
 
 func (po *GetProposalsReturn) FromResponse(res *govv1.QueryProposalsResponse) (*GetProposalsReturn, error) {
@@ -535,25 +497,24 @@ func (po *GetProposalsReturn) FromResponse(res *govv1.QueryProposalsResponse) (*
 	return po, nil
 }
 
-// FromResponse populates the ParamsOutput from a query response
-func (o *Params) FromResponse(res *govv1.QueryParamsResponse) *Params {
-	o.VotingPeriod = res.Params.VotingPeriod.Nanoseconds()
-	o.MinDeposit = cmn.NewCoinsResponse(res.Params.MinDeposit)
-	o.MaxDepositPeriod = res.Params.MaxDepositPeriod.Nanoseconds()
-	o.Quorum = res.Params.Quorum
-	o.Threshold = res.Params.Threshold
-	o.VetoThreshold = res.Params.VetoThreshold
-	o.MinInitialDepositRatio = res.Params.MinInitialDepositRatio
-	o.ProposalCancelRatio = res.Params.ProposalCancelRatio
-	o.ProposalCancelDest = res.Params.ProposalCancelDest
-	o.ExpeditedVotingPeriod = res.Params.ExpeditedVotingPeriod.Nanoseconds()
-	o.ExpeditedThreshold = res.Params.ExpeditedThreshold
-	o.ExpeditedMinDeposit = cmn.NewCoinsResponse(res.Params.ExpeditedMinDeposit)
-	o.BurnVoteQuorum = res.Params.BurnVoteQuorum
-	o.BurnProposalDepositPrevote = res.Params.BurnProposalDepositPrevote
-	o.BurnVoteVeto = res.Params.BurnVoteVeto
-	o.MinDepositRatio = res.Params.MinDepositRatio
-	return o
+// FromResponse populates the GetParamsReturn from a query response
+func (o *GetParamsReturn) FromResponse(res *govv1.QueryParamsResponse) {
+	o.Params.VotingPeriod = res.Params.VotingPeriod.Nanoseconds()
+	o.Params.MinDeposit = cmn.NewCoinsResponse(res.Params.MinDeposit)
+	o.Params.MaxDepositPeriod = res.Params.MaxDepositPeriod.Nanoseconds()
+	o.Params.Quorum = res.Params.Quorum
+	o.Params.Threshold = res.Params.Threshold
+	o.Params.VetoThreshold = res.Params.VetoThreshold
+	o.Params.MinInitialDepositRatio = res.Params.MinInitialDepositRatio
+	o.Params.ProposalCancelRatio = res.Params.ProposalCancelRatio
+	o.Params.ProposalCancelDest = res.Params.ProposalCancelDest
+	o.Params.ExpeditedVotingPeriod = res.Params.ExpeditedVotingPeriod.Nanoseconds()
+	o.Params.ExpeditedThreshold = res.Params.ExpeditedThreshold
+	o.Params.ExpeditedMinDeposit = cmn.NewCoinsResponse(res.Params.ExpeditedMinDeposit)
+	o.Params.BurnVoteQuorum = res.Params.BurnVoteQuorum
+	o.Params.BurnProposalDepositPrevote = res.Params.BurnProposalDepositPrevote
+	o.Params.BurnVoteVeto = res.Params.BurnVoteVeto
+	o.Params.MinDepositRatio = res.Params.MinDepositRatio
 }
 
 // BuildQueryParamsRequest returns the structure for the governance parameters query.

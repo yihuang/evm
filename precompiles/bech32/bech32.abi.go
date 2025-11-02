@@ -105,7 +105,12 @@ func (t Bech32ToHexCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t Bech32ToHexCall) GetMethodID() [4]byte {
+func (t Bech32ToHexCall) GetMethodID() uint32 {
+	return Bech32ToHexID
+}
+
+// GetMethodSelector returns the function name
+func (t Bech32ToHexCall) GetMethodSelector() [4]byte {
 	return Bech32ToHexSelector
 }
 
@@ -264,7 +269,12 @@ func (t HexToBech32Call) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t HexToBech32Call) GetMethodID() [4]byte {
+func (t HexToBech32Call) GetMethodID() uint32 {
+	return HexToBech32ID
+}
+
+// GetMethodSelector returns the function name
+func (t HexToBech32Call) GetMethodSelector() [4]byte {
 	return HexToBech32Selector
 }
 

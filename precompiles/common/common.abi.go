@@ -963,7 +963,12 @@ func (t DummyCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DummyCall) GetMethodID() [4]byte {
+func (t DummyCall) GetMethodID() uint32 {
+	return DummyID
+}
+
+// GetMethodSelector returns the function name
+func (t DummyCall) GetMethodSelector() [4]byte {
 	return DummySelector
 }
 

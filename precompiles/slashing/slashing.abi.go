@@ -376,6 +376,8 @@ func DecodeSigningInfoSlice(data []byte) ([]SigningInfo, int, error) {
 	return result, offset + 32, nil
 }
 
+var _ abi.Method = (*GetParamsCall)(nil)
+
 // GetParamsCall represents the input arguments for getParams function
 type GetParamsCall struct {
 	abi.EmptyTuple
@@ -387,7 +389,12 @@ func (t GetParamsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetParamsCall) GetMethodID() [4]byte {
+func (t GetParamsCall) GetMethodID() uint32 {
+	return GetParamsID
+}
+
+// GetMethodSelector returns the function name
+func (t GetParamsCall) GetMethodSelector() [4]byte {
 	return GetParamsSelector
 }
 
@@ -517,7 +524,12 @@ func (t GetSigningInfoCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetSigningInfoCall) GetMethodID() [4]byte {
+func (t GetSigningInfoCall) GetMethodID() uint32 {
+	return GetSigningInfoID
+}
+
+// GetMethodSelector returns the function name
+func (t GetSigningInfoCall) GetMethodSelector() [4]byte {
 	return GetSigningInfoSelector
 }
 
@@ -665,7 +677,12 @@ func (t GetSigningInfosCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetSigningInfosCall) GetMethodID() [4]byte {
+func (t GetSigningInfosCall) GetMethodID() uint32 {
+	return GetSigningInfosID
+}
+
+// GetMethodSelector returns the function name
+func (t GetSigningInfosCall) GetMethodSelector() [4]byte {
 	return GetSigningInfosSelector
 }
 
@@ -837,7 +854,12 @@ func (t UnjailCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t UnjailCall) GetMethodID() [4]byte {
+func (t UnjailCall) GetMethodID() uint32 {
+	return UnjailID
+}
+
+// GetMethodSelector returns the function name
+func (t UnjailCall) GetMethodSelector() [4]byte {
 	return UnjailSelector
 }
 

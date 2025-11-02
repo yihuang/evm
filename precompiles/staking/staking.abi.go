@@ -1766,7 +1766,12 @@ func (t CancelUnbondingDelegationCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CancelUnbondingDelegationCall) GetMethodID() [4]byte {
+func (t CancelUnbondingDelegationCall) GetMethodID() uint32 {
+	return CancelUnbondingDelegationID
+}
+
+// GetMethodSelector returns the function name
+func (t CancelUnbondingDelegationCall) GetMethodSelector() [4]byte {
 	return CancelUnbondingDelegationSelector
 }
 
@@ -1982,7 +1987,12 @@ func (t CreateValidatorCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CreateValidatorCall) GetMethodID() [4]byte {
+func (t CreateValidatorCall) GetMethodID() uint32 {
+	return CreateValidatorID
+}
+
+// GetMethodSelector returns the function name
+func (t CreateValidatorCall) GetMethodSelector() [4]byte {
 	return CreateValidatorSelector
 }
 
@@ -2152,7 +2162,12 @@ func (t DelegateCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegateCall) GetMethodID() [4]byte {
+func (t DelegateCall) GetMethodID() uint32 {
+	return DelegateID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegateCall) GetMethodSelector() [4]byte {
 	return DelegateSelector
 }
 
@@ -2311,7 +2326,12 @@ func (t DelegationCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegationCall) GetMethodID() [4]byte {
+func (t DelegationCall) GetMethodID() uint32 {
+	return DelegationID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegationCall) GetMethodSelector() [4]byte {
 	return DelegationSelector
 }
 
@@ -2521,7 +2541,12 @@ func (t EditValidatorCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t EditValidatorCall) GetMethodID() [4]byte {
+func (t EditValidatorCall) GetMethodID() uint32 {
+	return EditValidatorID
+}
+
+// GetMethodSelector returns the function name
+func (t EditValidatorCall) GetMethodSelector() [4]byte {
 	return EditValidatorSelector
 }
 
@@ -2715,7 +2740,12 @@ func (t RedelegateCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t RedelegateCall) GetMethodID() [4]byte {
+func (t RedelegateCall) GetMethodID() uint32 {
+	return RedelegateID
+}
+
+// GetMethodSelector returns the function name
+func (t RedelegateCall) GetMethodSelector() [4]byte {
 	return RedelegateSelector
 }
 
@@ -2898,7 +2928,12 @@ func (t RedelegationCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t RedelegationCall) GetMethodID() [4]byte {
+func (t RedelegationCall) GetMethodID() uint32 {
+	return RedelegationID
+}
+
+// GetMethodSelector returns the function name
+func (t RedelegationCall) GetMethodSelector() [4]byte {
 	return RedelegationSelector
 }
 
@@ -3123,7 +3158,12 @@ func (t RedelegationsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t RedelegationsCall) GetMethodID() [4]byte {
+func (t RedelegationsCall) GetMethodID() uint32 {
+	return RedelegationsID
+}
+
+// GetMethodSelector returns the function name
+func (t RedelegationsCall) GetMethodSelector() [4]byte {
 	return RedelegationsSelector
 }
 
@@ -3324,7 +3364,12 @@ func (t UnbondingDelegationCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t UnbondingDelegationCall) GetMethodID() [4]byte {
+func (t UnbondingDelegationCall) GetMethodID() uint32 {
+	return UnbondingDelegationID
+}
+
+// GetMethodSelector returns the function name
+func (t UnbondingDelegationCall) GetMethodSelector() [4]byte {
 	return UnbondingDelegationSelector
 }
 
@@ -3512,7 +3557,12 @@ func (t UndelegateCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t UndelegateCall) GetMethodID() [4]byte {
+func (t UndelegateCall) GetMethodID() uint32 {
+	return UndelegateID
+}
+
+// GetMethodSelector returns the function name
+func (t UndelegateCall) GetMethodSelector() [4]byte {
 	return UndelegateSelector
 }
 
@@ -3642,7 +3692,12 @@ func (t ValidatorCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorCall) GetMethodID() [4]byte {
+func (t ValidatorCall) GetMethodID() uint32 {
+	return ValidatorID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorCall) GetMethodSelector() [4]byte {
 	return ValidatorSelector
 }
 
@@ -3832,7 +3887,12 @@ func (t ValidatorsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ValidatorsCall) GetMethodID() [4]byte {
+func (t ValidatorsCall) GetMethodID() uint32 {
+	return ValidatorsID
+}
+
+// GetMethodSelector returns the function name
+func (t ValidatorsCall) GetMethodSelector() [4]byte {
 	return ValidatorsSelector
 }
 

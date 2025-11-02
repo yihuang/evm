@@ -443,7 +443,12 @@ func (t DenomCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DenomCall) GetMethodID() [4]byte {
+func (t DenomCall) GetMethodID() uint32 {
+	return DenomID
+}
+
+// GetMethodSelector returns the function name
+func (t DenomCall) GetMethodSelector() [4]byte {
 	return DenomSelector
 }
 
@@ -609,7 +614,12 @@ func (t DenomHashCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DenomHashCall) GetMethodID() [4]byte {
+func (t DenomHashCall) GetMethodID() uint32 {
+	return DenomHashID
+}
+
+// GetMethodSelector returns the function name
+func (t DenomHashCall) GetMethodSelector() [4]byte {
 	return DenomHashSelector
 }
 
@@ -775,7 +785,12 @@ func (t DenomsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DenomsCall) GetMethodID() [4]byte {
+func (t DenomsCall) GetMethodID() uint32 {
+	return DenomsID
+}
+
+// GetMethodSelector returns the function name
+func (t DenomsCall) GetMethodSelector() [4]byte {
 	return DenomsSelector
 }
 
@@ -1105,7 +1120,12 @@ func (t TransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TransferCall) GetMethodID() [4]byte {
+func (t TransferCall) GetMethodID() uint32 {
+	return TransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TransferCall) GetMethodSelector() [4]byte {
 	return TransferSelector
 }
 

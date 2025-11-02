@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/big"
 
+	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/yihuang/go-abi"
 )
@@ -69,89 +69,6 @@ const (
 	TestTransferCancelFundID                     = 258106875
 )
 
-const CoinStaticSize = 64
-
-var _ abi.Tuple = (*Coin)(nil)
-
-// Coin represents an ABI tuple
-type Coin struct {
-	Denom  string
-	Amount *big.Int
-}
-
-// EncodedSize returns the total encoded size of Coin
-func (t Coin) EncodedSize() int {
-	dynamicSize := 0
-	dynamicSize += abi.SizeString(t.Denom)
-
-	return CoinStaticSize + dynamicSize
-}
-
-// EncodeTo encodes Coin to ABI bytes in the provided buffer
-func (value Coin) EncodeTo(buf []byte) (int, error) {
-	// Encode tuple fields
-	dynamicOffset := CoinStaticSize // Start dynamic data after static section
-	var (
-		err error
-		n   int
-	)
-	// Field Denom: string
-	// Encode offset pointer
-	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
-	// Encode dynamic data
-	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
-	if err != nil {
-		return 0, err
-	}
-	dynamicOffset += n
-
-	// Field Amount: uint256
-	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
-		return 0, err
-	}
-
-	return dynamicOffset, nil
-}
-
-// Encode encodes Coin to ABI bytes
-func (value Coin) Encode() ([]byte, error) {
-	buf := make([]byte, value.EncodedSize())
-	if _, err := value.EncodeTo(buf); err != nil {
-		return nil, err
-	}
-	return buf, nil
-}
-
-// Decode decodes Coin from ABI bytes in the provided buffer
-func (t *Coin) Decode(data []byte) (int, error) {
-	if len(data) < 64 {
-		return 0, io.ErrUnexpectedEOF
-	}
-	var (
-		err error
-		n   int
-	)
-	dynamicOffset := 64
-	// Decode dynamic field Denom
-	{
-		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
-		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field Denom")
-		}
-		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
-		if err != nil {
-			return 0, err
-		}
-		dynamicOffset += n
-	}
-	// Decode static field Amount: uint256
-	t.Amount, _, err = abi.DecodeUint256(data[32:])
-	if err != nil {
-		return 0, err
-	}
-	return dynamicOffset, nil
-}
-
 const ParamsStaticSize = 512
 
 var _ abi.Tuple = (*Params)(nil)
@@ -159,7 +76,7 @@ var _ abi.Tuple = (*Params)(nil)
 // Params represents an ABI tuple
 type Params struct {
 	VotingPeriod               int64
-	MinDeposit                 []Coin
+	MinDeposit                 []cmn.Coin
 	MaxDepositPeriod           int64
 	Quorum                     string
 	Threshold                  string
@@ -169,7 +86,7 @@ type Params struct {
 	ProposalCancelDest         string
 	ExpeditedVotingPeriod      int64
 	ExpeditedThreshold         string
-	ExpeditedMinDeposit        []Coin
+	ExpeditedMinDeposit        []cmn.Coin
 	BurnVoteQuorum             bool
 	BurnProposalDepositPrevote bool
 	BurnVoteVeto               bool
@@ -507,7 +424,7 @@ func (t *Params) Decode(data []byte) (int, error) {
 }
 
 // EncodeCoinSlice encodes (string,uint256)[] to ABI bytes
-func EncodeCoinSlice(value []Coin, buf []byte) (int, error) {
+func EncodeCoinSlice(value []cmn.Coin, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -532,7 +449,7 @@ func EncodeCoinSlice(value []Coin, buf []byte) (int, error) {
 }
 
 // SizeCoinSlice returns the encoded size of (string,uint256)[]
-func SizeCoinSlice(value []Coin) int {
+func SizeCoinSlice(value []cmn.Coin) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -541,7 +458,7 @@ func SizeCoinSlice(value []Coin) int {
 }
 
 // DecodeCoinSlice decodes (string,uint256)[] from ABI bytes
-func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
+func DecodeCoinSlice(data []byte) ([]cmn.Coin, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -557,7 +474,7 @@ func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 		offset int
 	)
 	// Decode elements with dynamic types
-	result := make([]Coin, length)
+	result := make([]cmn.Coin, length)
 	dynamicOffset := length * 32
 	for i := 0; i < length; i++ {
 		offset += 32
@@ -574,6 +491,8 @@ func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*CounterCall)(nil)
+
 // CounterCall represents the input arguments for counter function
 type CounterCall struct {
 	abi.EmptyTuple
@@ -585,7 +504,12 @@ func (t CounterCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CounterCall) GetMethodID() [4]byte {
+func (t CounterCall) GetMethodID() uint32 {
+	return CounterID
+}
+
+// GetMethodSelector returns the function name
+func (t CounterCall) GetMethodSelector() [4]byte {
 	return CounterSelector
 }
 
@@ -653,6 +577,8 @@ func (t *CounterReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DepositCall)(nil)
+
 // DepositCall represents the input arguments for deposit function
 type DepositCall struct {
 	abi.EmptyTuple
@@ -664,7 +590,12 @@ func (t DepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DepositCall) GetMethodID() [4]byte {
+func (t DepositCall) GetMethodID() uint32 {
+	return DepositID
+}
+
+// GetMethodSelector returns the function name
+func (t DepositCall) GetMethodSelector() [4]byte {
 	return DepositSelector
 }
 
@@ -683,6 +614,8 @@ type DepositReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*GetParamsCall)(nil)
+
 // GetParamsCall represents the input arguments for getParams function
 type GetParamsCall struct {
 	abi.EmptyTuple
@@ -694,7 +627,12 @@ func (t GetParamsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetParamsCall) GetMethodID() [4]byte {
+func (t GetParamsCall) GetMethodID() uint32 {
+	return GetParamsID
+}
+
+// GetMethodSelector returns the function name
+func (t GetParamsCall) GetMethodSelector() [4]byte {
 	return GetParamsSelector
 }
 
@@ -788,10 +726,10 @@ var _ abi.Tuple = (*TestCancelFromContractWithTransferCall)(nil)
 
 // TestCancelFromContractWithTransferCall represents an ABI tuple
 type TestCancelFromContractWithTransferCall struct {
-	_RandomAddr common.Address
-	_ProposalId uint64
-	_Before     bool
-	_After      bool
+	RandomAddr common.Address
+	ProposalId uint64
+	Before     bool
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of TestCancelFromContractWithTransferCall
@@ -805,23 +743,23 @@ func (t TestCancelFromContractWithTransferCall) EncodedSize() int {
 func (value TestCancelFromContractWithTransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TestCancelFromContractWithTransferCallStaticSize // Start dynamic data after static section
-	// Field _RandomAddr: address
-	if _, err := abi.EncodeAddress(value._RandomAddr, buf[0:]); err != nil {
+	// Field RandomAddr: address
+	if _, err := abi.EncodeAddress(value.RandomAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[32:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -846,23 +784,23 @@ func (t *TestCancelFromContractWithTransferCall) Decode(data []byte) (int, error
 		err error
 	)
 	dynamicOffset := 128
-	// Decode static field _RandomAddr: address
-	t._RandomAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field RandomAddr: address
+	t.RandomAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[32:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -875,7 +813,12 @@ func (t TestCancelFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestCancelFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestCancelFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestCancelFromContractWithTransferSelector
 }
 
@@ -951,7 +894,7 @@ var _ abi.Tuple = (*TestCancelProposalFromContractCall)(nil)
 
 // TestCancelProposalFromContractCall represents an ABI tuple
 type TestCancelProposalFromContractCall struct {
-	_ProposalId uint64
+	ProposalId uint64
 }
 
 // EncodedSize returns the total encoded size of TestCancelProposalFromContractCall
@@ -965,8 +908,8 @@ func (t TestCancelProposalFromContractCall) EncodedSize() int {
 func (value TestCancelProposalFromContractCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TestCancelProposalFromContractCallStaticSize // Start dynamic data after static section
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[0:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -991,8 +934,8 @@ func (t *TestCancelProposalFromContractCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 32
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[0:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1005,7 +948,12 @@ func (t TestCancelProposalFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelProposalFromContractCall) GetMethodID() [4]byte {
+func (t TestCancelProposalFromContractCall) GetMethodID() uint32 {
+	return TestCancelProposalFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelProposalFromContractCall) GetMethodSelector() [4]byte {
 	return TestCancelProposalFromContractSelector
 }
 
@@ -1081,9 +1029,9 @@ var _ abi.Tuple = (*TestCancelWithTransferCall)(nil)
 
 // TestCancelWithTransferCall represents an ABI tuple
 type TestCancelWithTransferCall struct {
-	_ProposalId uint64
-	_Before     bool
-	_After      bool
+	ProposalId uint64
+	Before     bool
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of TestCancelWithTransferCall
@@ -1097,18 +1045,18 @@ func (t TestCancelWithTransferCall) EncodedSize() int {
 func (value TestCancelWithTransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TestCancelWithTransferCallStaticSize // Start dynamic data after static section
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[0:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[32:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[64:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -1133,18 +1081,18 @@ func (t *TestCancelWithTransferCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 96
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[0:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[32:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[64:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -1157,7 +1105,12 @@ func (t TestCancelWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelWithTransferCall) GetMethodID() [4]byte {
+func (t TestCancelWithTransferCall) GetMethodID() uint32 {
+	return TestCancelWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelWithTransferCall) GetMethodSelector() [4]byte {
 	return TestCancelWithTransferSelector
 }
 
@@ -1233,15 +1186,15 @@ var _ abi.Tuple = (*TestDepositCall)(nil)
 
 // TestDepositCall represents an ABI tuple
 type TestDepositCall struct {
-	_DepositorAddr common.Address
-	_ProposalId    uint64
-	_Deposit       []Coin
+	DepositorAddr common.Address
+	ProposalId    uint64
+	Deposit       []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestDepositCall
 func (t TestDepositCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestDepositCallStaticSize + dynamicSize
 }
@@ -1254,21 +1207,21 @@ func (value TestDepositCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _DepositorAddr: address
-	if _, err := abi.EncodeAddress(value._DepositorAddr, buf[0:]); err != nil {
+	// Field DepositorAddr: address
+	if _, err := abi.EncodeAddress(value.DepositorAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[32:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1296,23 +1249,23 @@ func (t *TestDepositCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 96
-	// Decode static field _DepositorAddr: address
-	t._DepositorAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DepositorAddr: address
+	t.DepositorAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[32:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1327,7 +1280,12 @@ func (t TestDepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositCall) GetMethodID() [4]byte {
+func (t TestDepositCall) GetMethodID() uint32 {
+	return TestDepositID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositCall) GetMethodSelector() [4]byte {
 	return TestDepositSelector
 }
 
@@ -1403,14 +1361,14 @@ var _ abi.Tuple = (*TestDepositFromContractCall)(nil)
 
 // TestDepositFromContractCall represents an ABI tuple
 type TestDepositFromContractCall struct {
-	_ProposalId uint64
-	_Deposit    []Coin
+	ProposalId uint64
+	Deposit    []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestDepositFromContractCall
 func (t TestDepositFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestDepositFromContractCallStaticSize + dynamicSize
 }
@@ -1423,16 +1381,16 @@ func (value TestDepositFromContractCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[0:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1460,18 +1418,18 @@ func (t *TestDepositFromContractCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[0:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1486,7 +1444,12 @@ func (t TestDepositFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositFromContractCall) GetMethodID() [4]byte {
+func (t TestDepositFromContractCall) GetMethodID() uint32 {
+	return TestDepositFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositFromContractCall) GetMethodSelector() [4]byte {
 	return TestDepositFromContractSelector
 }
 
@@ -1562,17 +1525,17 @@ var _ abi.Tuple = (*TestDepositFromContractWithTransferCall)(nil)
 
 // TestDepositFromContractWithTransferCall represents an ABI tuple
 type TestDepositFromContractWithTransferCall struct {
-	_RandomAddr common.Address
-	_ProposalId uint64
-	_Deposit    []Coin
-	_Before     bool
-	_After      bool
+	RandomAddr common.Address
+	ProposalId uint64
+	Deposit    []cmn.Coin
+	Before     bool
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of TestDepositFromContractWithTransferCall
 func (t TestDepositFromContractWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestDepositFromContractWithTransferCallStaticSize + dynamicSize
 }
@@ -1585,33 +1548,33 @@ func (value TestDepositFromContractWithTransferCall) EncodeTo(buf []byte) (int, 
 		err error
 		n   int
 	)
-	// Field _RandomAddr: address
-	if _, err := abi.EncodeAddress(value._RandomAddr, buf[0:]); err != nil {
+	// Field RandomAddr: address
+	if _, err := abi.EncodeAddress(value.RandomAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[32:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[96:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[128:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -1637,35 +1600,35 @@ func (t *TestDepositFromContractWithTransferCall) Decode(data []byte) (int, erro
 		n   int
 	)
 	dynamicOffset := 160
-	// Decode static field _RandomAddr: address
-	t._RandomAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field RandomAddr: address
+	t.RandomAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[32:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[96:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[128:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -1678,7 +1641,12 @@ func (t TestDepositFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestDepositFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestDepositFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestDepositFromContractWithTransferSelector
 }
 
@@ -1754,16 +1722,16 @@ var _ abi.Tuple = (*TestDepositWithTransferCall)(nil)
 
 // TestDepositWithTransferCall represents an ABI tuple
 type TestDepositWithTransferCall struct {
-	_ProposalId uint64
-	_Deposit    []Coin
-	_Before     bool
-	_After      bool
+	ProposalId uint64
+	Deposit    []cmn.Coin
+	Before     bool
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of TestDepositWithTransferCall
 func (t TestDepositWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestDepositWithTransferCallStaticSize + dynamicSize
 }
@@ -1776,28 +1744,28 @@ func (value TestDepositWithTransferCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[0:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -1823,30 +1791,30 @@ func (t *TestDepositWithTransferCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 128
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[0:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -1859,7 +1827,12 @@ func (t TestDepositWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositWithTransferCall) GetMethodID() [4]byte {
+func (t TestDepositWithTransferCall) GetMethodID() uint32 {
+	return TestDepositWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositWithTransferCall) GetMethodSelector() [4]byte {
 	return TestDepositWithTransferSelector
 }
 
@@ -1937,7 +1910,7 @@ var _ abi.Tuple = (*TestFundCommunityPoolCall)(nil)
 type TestFundCommunityPoolCall struct {
 	Depositor        common.Address
 	ValidatorAddress string
-	Amount           []Coin
+	Amount           []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestFundCommunityPoolCall
@@ -2042,7 +2015,12 @@ func (t TestFundCommunityPoolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestFundCommunityPoolCall) GetMethodID() [4]byte {
+func (t TestFundCommunityPoolCall) GetMethodID() uint32 {
+	return TestFundCommunityPoolID
+}
+
+// GetMethodSelector returns the function name
+func (t TestFundCommunityPoolCall) GetMethodSelector() [4]byte {
 	return TestFundCommunityPoolSelector
 }
 
@@ -2118,16 +2096,16 @@ var _ abi.Tuple = (*TestSubmitProposalCall)(nil)
 
 // TestSubmitProposalCall represents an ABI tuple
 type TestSubmitProposalCall struct {
-	_ProposerAddr common.Address
-	_JsonProposal []byte
-	_Deposit      []Coin
+	ProposerAddr common.Address
+	JsonProposal []byte
+	Deposit      []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestSubmitProposalCall
 func (t TestSubmitProposalCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeBytes(t._JsonProposal)
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += abi.SizeBytes(t.JsonProposal)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestSubmitProposalCallStaticSize + dynamicSize
 }
@@ -2140,26 +2118,26 @@ func (value TestSubmitProposalCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ProposerAddr: address
-	if _, err := abi.EncodeAddress(value._ProposerAddr, buf[0:]); err != nil {
+	// Field ProposerAddr: address
+	if _, err := abi.EncodeAddress(value.ProposerAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _JsonProposal: bytes
+	// Field JsonProposal: bytes
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeBytes(value._JsonProposal, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.JsonProposal, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2187,30 +2165,30 @@ func (t *TestSubmitProposalCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 96
-	// Decode static field _ProposerAddr: address
-	t._ProposerAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field ProposerAddr: address
+	t.ProposerAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _JsonProposal
+	// Decode dynamic field JsonProposal
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _JsonProposal")
+			return 0, errors.New("invalid offset for dynamic field JsonProposal")
 		}
-		t._JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
+		t.JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2225,7 +2203,12 @@ func (t TestSubmitProposalCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalCall) GetMethodID() uint32 {
+	return TestSubmitProposalID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalSelector
 }
 
@@ -2301,15 +2284,15 @@ var _ abi.Tuple = (*TestSubmitProposalFromContractCall)(nil)
 
 // TestSubmitProposalFromContractCall represents an ABI tuple
 type TestSubmitProposalFromContractCall struct {
-	_JsonProposal []byte
-	_Deposit      []Coin
+	JsonProposal []byte
+	Deposit      []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestSubmitProposalFromContractCall
 func (t TestSubmitProposalFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeBytes(t._JsonProposal)
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += abi.SizeBytes(t.JsonProposal)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestSubmitProposalFromContractCallStaticSize + dynamicSize
 }
@@ -2322,21 +2305,21 @@ func (value TestSubmitProposalFromContractCall) EncodeTo(buf []byte) (int, error
 		err error
 		n   int
 	)
-	// Field _JsonProposal: bytes
+	// Field JsonProposal: bytes
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeBytes(value._JsonProposal, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.JsonProposal, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2364,25 +2347,25 @@ func (t *TestSubmitProposalFromContractCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode dynamic field _JsonProposal
+	// Decode dynamic field JsonProposal
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _JsonProposal")
+			return 0, errors.New("invalid offset for dynamic field JsonProposal")
 		}
-		t._JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
+		t.JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2397,7 +2380,12 @@ func (t TestSubmitProposalFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalFromContractCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalFromContractCall) GetMethodID() uint32 {
+	return TestSubmitProposalFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalFromContractCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalFromContractSelector
 }
 
@@ -2473,18 +2461,18 @@ var _ abi.Tuple = (*TestSubmitProposalFromContractWithTransferCall)(nil)
 
 // TestSubmitProposalFromContractWithTransferCall represents an ABI tuple
 type TestSubmitProposalFromContractWithTransferCall struct {
-	_RandomAddr   common.Address
-	_JsonProposal []byte
-	_Deposit      []Coin
-	_Before       bool
-	_After        bool
+	RandomAddr   common.Address
+	JsonProposal []byte
+	Deposit      []cmn.Coin
+	Before       bool
+	After        bool
 }
 
 // EncodedSize returns the total encoded size of TestSubmitProposalFromContractWithTransferCall
 func (t TestSubmitProposalFromContractWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeBytes(t._JsonProposal)
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += abi.SizeBytes(t.JsonProposal)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestSubmitProposalFromContractWithTransferCallStaticSize + dynamicSize
 }
@@ -2497,38 +2485,38 @@ func (value TestSubmitProposalFromContractWithTransferCall) EncodeTo(buf []byte)
 		err error
 		n   int
 	)
-	// Field _RandomAddr: address
-	if _, err := abi.EncodeAddress(value._RandomAddr, buf[0:]); err != nil {
+	// Field RandomAddr: address
+	if _, err := abi.EncodeAddress(value.RandomAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _JsonProposal: bytes
+	// Field JsonProposal: bytes
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeBytes(value._JsonProposal, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.JsonProposal, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[96:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[128:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[128:]); err != nil {
 		return 0, err
 	}
 
@@ -2554,42 +2542,42 @@ func (t *TestSubmitProposalFromContractWithTransferCall) Decode(data []byte) (in
 		n   int
 	)
 	dynamicOffset := 160
-	// Decode static field _RandomAddr: address
-	t._RandomAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field RandomAddr: address
+	t.RandomAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _JsonProposal
+	// Decode dynamic field JsonProposal
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _JsonProposal")
+			return 0, errors.New("invalid offset for dynamic field JsonProposal")
 		}
-		t._JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
+		t.JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[96:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[128:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[128:])
 	if err != nil {
 		return 0, err
 	}
@@ -2602,7 +2590,12 @@ func (t TestSubmitProposalFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestSubmitProposalFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalFromContractWithTransferSelector
 }
 
@@ -2678,17 +2671,17 @@ var _ abi.Tuple = (*TestSubmitProposalWithTransferCall)(nil)
 
 // TestSubmitProposalWithTransferCall represents an ABI tuple
 type TestSubmitProposalWithTransferCall struct {
-	_JsonProposal []byte
-	_Deposit      []Coin
-	_Before       bool
-	_After        bool
+	JsonProposal []byte
+	Deposit      []cmn.Coin
+	Before       bool
+	After        bool
 }
 
 // EncodedSize returns the total encoded size of TestSubmitProposalWithTransferCall
 func (t TestSubmitProposalWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeBytes(t._JsonProposal)
-	dynamicSize += SizeCoinSlice(t._Deposit)
+	dynamicSize += abi.SizeBytes(t.JsonProposal)
+	dynamicSize += SizeCoinSlice(t.Deposit)
 
 	return TestSubmitProposalWithTransferCallStaticSize + dynamicSize
 }
@@ -2701,33 +2694,33 @@ func (value TestSubmitProposalWithTransferCall) EncodeTo(buf []byte) (int, error
 		err error
 		n   int
 	)
-	// Field _JsonProposal: bytes
+	// Field JsonProposal: bytes
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeBytes(value._JsonProposal, buf[dynamicOffset:])
+	n, err = abi.EncodeBytes(value.JsonProposal, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Deposit: (string,uint256)[]
+	// Field Deposit: (string,uint256)[]
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = EncodeCoinSlice(value._Deposit, buf[dynamicOffset:])
+	n, err = EncodeCoinSlice(value.Deposit, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -2753,37 +2746,37 @@ func (t *TestSubmitProposalWithTransferCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 128
-	// Decode dynamic field _JsonProposal
+	// Decode dynamic field JsonProposal
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _JsonProposal")
+			return 0, errors.New("invalid offset for dynamic field JsonProposal")
 		}
-		t._JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
+		t.JsonProposal, n, err = abi.DecodeBytes(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Deposit
+	// Decode dynamic field Deposit
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Deposit")
+			return 0, errors.New("invalid offset for dynamic field Deposit")
 		}
-		t._Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
+		t.Deposit, n, err = DecodeCoinSlice(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -2796,7 +2789,12 @@ func (t TestSubmitProposalWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalWithTransferCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalWithTransferCall) GetMethodID() uint32 {
+	return TestSubmitProposalWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalWithTransferCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalWithTransferSelector
 }
 
@@ -2873,7 +2871,7 @@ var _ abi.Tuple = (*TestTransferCancelFundCall)(nil)
 // TestTransferCancelFundCall represents an ABI tuple
 type TestTransferCancelFundCall struct {
 	Depositor        common.Address
-	_ProposalId      uint64
+	ProposalId       uint64
 	Denom            []byte
 	ValidatorAddress string
 }
@@ -2900,8 +2898,8 @@ func (value TestTransferCancelFundCall) EncodeTo(buf []byte) (int, error) {
 		return 0, err
 	}
 
-	// Field _ProposalId: uint64
-	if _, err := abi.EncodeUint64(value._ProposalId, buf[32:]); err != nil {
+	// Field ProposalId: uint64
+	if _, err := abi.EncodeUint64(value.ProposalId, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -2952,8 +2950,8 @@ func (t *TestTransferCancelFundCall) Decode(data []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _ProposalId: uint64
-	t._ProposalId, _, err = abi.DecodeUint64(data[32:])
+	// Decode static field ProposalId: uint64
+	t.ProposalId, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -2990,7 +2988,12 @@ func (t TestTransferCancelFundCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestTransferCancelFundCall) GetMethodID() [4]byte {
+func (t TestTransferCancelFundCall) GetMethodID() uint32 {
+	return TestTransferCancelFundID
+}
+
+// GetMethodSelector returns the function name
+func (t TestTransferCancelFundCall) GetMethodSelector() [4]byte {
 	return TestTransferCancelFundSelector
 }
 
