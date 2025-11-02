@@ -127,7 +127,12 @@ func (t AllowanceCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t AllowanceCall) GetMethodID() [4]byte {
+func (t AllowanceCall) GetMethodID() uint32 {
+	return AllowanceID
+}
+
+// GetMethodSelector returns the function name
+func (t AllowanceCall) GetMethodSelector() [4]byte {
 	return AllowanceSelector
 }
 
@@ -268,7 +273,12 @@ func (t ApproveCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t ApproveCall) GetMethodID() [4]byte {
+func (t ApproveCall) GetMethodID() uint32 {
+	return ApproveID
+}
+
+// GetMethodSelector returns the function name
+func (t ApproveCall) GetMethodSelector() [4]byte {
 	return ApproveSelector
 }
 
@@ -398,7 +408,12 @@ func (t BalanceOfCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t BalanceOfCall) GetMethodID() [4]byte {
+func (t BalanceOfCall) GetMethodID() uint32 {
+	return BalanceOfID
+}
+
+// GetMethodSelector returns the function name
+func (t BalanceOfCall) GetMethodSelector() [4]byte {
 	return BalanceOfSelector
 }
 
@@ -466,6 +481,8 @@ func (t *BalanceOfReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DecimalsCall)(nil)
+
 // DecimalsCall represents the input arguments for decimals function
 type DecimalsCall struct {
 	abi.EmptyTuple
@@ -477,7 +494,12 @@ func (t DecimalsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DecimalsCall) GetMethodID() [4]byte {
+func (t DecimalsCall) GetMethodID() uint32 {
+	return DecimalsID
+}
+
+// GetMethodSelector returns the function name
+func (t DecimalsCall) GetMethodSelector() [4]byte {
 	return DecimalsSelector
 }
 
@@ -545,6 +567,8 @@ func (t *DecimalsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DepositCall)(nil)
+
 // DepositCall represents the input arguments for deposit function
 type DepositCall struct {
 	abi.EmptyTuple
@@ -556,7 +580,12 @@ func (t DepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DepositCall) GetMethodID() [4]byte {
+func (t DepositCall) GetMethodID() uint32 {
+	return DepositID
+}
+
+// GetMethodSelector returns the function name
+func (t DepositCall) GetMethodSelector() [4]byte {
 	return DepositSelector
 }
 
@@ -575,6 +604,8 @@ type DepositReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*NameCall)(nil)
+
 // NameCall represents the input arguments for name function
 type NameCall struct {
 	abi.EmptyTuple
@@ -586,7 +617,12 @@ func (t NameCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t NameCall) GetMethodID() [4]byte {
+func (t NameCall) GetMethodID() uint32 {
+	return NameID
+}
+
+// GetMethodSelector returns the function name
+func (t NameCall) GetMethodSelector() [4]byte {
 	return NameSelector
 }
 
@@ -672,6 +708,8 @@ func (t *NameReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*SymbolCall)(nil)
+
 // SymbolCall represents the input arguments for symbol function
 type SymbolCall struct {
 	abi.EmptyTuple
@@ -683,7 +721,12 @@ func (t SymbolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t SymbolCall) GetMethodID() [4]byte {
+func (t SymbolCall) GetMethodID() uint32 {
+	return SymbolID
+}
+
+// GetMethodSelector returns the function name
+func (t SymbolCall) GetMethodSelector() [4]byte {
 	return SymbolSelector
 }
 
@@ -769,6 +812,8 @@ func (t *SymbolReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TotalSupplyCall)(nil)
+
 // TotalSupplyCall represents the input arguments for totalSupply function
 type TotalSupplyCall struct {
 	abi.EmptyTuple
@@ -780,7 +825,12 @@ func (t TotalSupplyCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TotalSupplyCall) GetMethodID() [4]byte {
+func (t TotalSupplyCall) GetMethodID() uint32 {
+	return TotalSupplyID
+}
+
+// GetMethodSelector returns the function name
+func (t TotalSupplyCall) GetMethodSelector() [4]byte {
 	return TotalSupplySelector
 }
 
@@ -921,7 +971,12 @@ func (t TransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TransferCall) GetMethodID() [4]byte {
+func (t TransferCall) GetMethodID() uint32 {
+	return TransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TransferCall) GetMethodSelector() [4]byte {
 	return TransferSelector
 }
 
@@ -1073,7 +1128,12 @@ func (t TransferFromCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TransferFromCall) GetMethodID() [4]byte {
+func (t TransferFromCall) GetMethodID() uint32 {
+	return TransferFromID
+}
+
+// GetMethodSelector returns the function name
+func (t TransferFromCall) GetMethodSelector() [4]byte {
 	return TransferFromSelector
 }
 
@@ -1203,7 +1263,12 @@ func (t WithdrawCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t WithdrawCall) GetMethodID() [4]byte {
+func (t WithdrawCall) GetMethodID() uint32 {
+	return WithdrawID
+}
+
+// GetMethodSelector returns the function name
+func (t WithdrawCall) GetMethodSelector() [4]byte {
 	return WithdrawSelector
 }
 

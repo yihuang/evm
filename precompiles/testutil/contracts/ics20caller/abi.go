@@ -106,6 +106,8 @@ func (t *Height) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*CounterCall)(nil)
+
 // CounterCall represents the input arguments for counter function
 type CounterCall struct {
 	abi.EmptyTuple
@@ -117,7 +119,12 @@ func (t CounterCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CounterCall) GetMethodID() [4]byte {
+func (t CounterCall) GetMethodID() uint32 {
+	return CounterID
+}
+
+// GetMethodSelector returns the function name
+func (t CounterCall) GetMethodSelector() [4]byte {
 	return CounterSelector
 }
 
@@ -185,6 +192,8 @@ func (t *CounterReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DepositCall)(nil)
+
 // DepositCall represents the input arguments for deposit function
 type DepositCall struct {
 	abi.EmptyTuple
@@ -196,7 +205,12 @@ func (t DepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DepositCall) GetMethodID() [4]byte {
+func (t DepositCall) GetMethodID() uint32 {
+	return DepositID
+}
+
+// GetMethodSelector returns the function name
+func (t DepositCall) GetMethodSelector() [4]byte {
 	return DepositSelector
 }
 
@@ -435,7 +449,12 @@ func (t IbcTransferAndRevertCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t IbcTransferAndRevertCall) GetMethodID() [4]byte {
+func (t IbcTransferAndRevertCall) GetMethodID() uint32 {
+	return IbcTransferAndRevertID
+}
+
+// GetMethodSelector returns the function name
+func (t IbcTransferAndRevertCall) GetMethodSelector() [4]byte {
 	return IbcTransferAndRevertSelector
 }
 
@@ -723,7 +742,12 @@ func (t TestIbcTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestIbcTransferCall) GetMethodID() [4]byte {
+func (t TestIbcTransferCall) GetMethodID() uint32 {
+	return TestIbcTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestIbcTransferCall) GetMethodSelector() [4]byte {
 	return TestIbcTransferSelector
 }
 
@@ -1000,7 +1024,12 @@ func (t TestIbcTransferFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestIbcTransferFromContractCall) GetMethodID() [4]byte {
+func (t TestIbcTransferFromContractCall) GetMethodID() uint32 {
+	return TestIbcTransferFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestIbcTransferFromContractCall) GetMethodSelector() [4]byte {
 	return TestIbcTransferFromContractSelector
 }
 
@@ -1310,7 +1339,12 @@ func (t TestIbcTransferWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestIbcTransferWithTransferCall) GetMethodID() [4]byte {
+func (t TestIbcTransferWithTransferCall) GetMethodID() uint32 {
+	return TestIbcTransferWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestIbcTransferWithTransferCall) GetMethodSelector() [4]byte {
 	return TestIbcTransferWithTransferSelector
 }
 
@@ -1620,7 +1654,12 @@ func (t TestRevertIbcTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestRevertIbcTransferCall) GetMethodID() [4]byte {
+func (t TestRevertIbcTransferCall) GetMethodID() uint32 {
+	return TestRevertIbcTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestRevertIbcTransferCall) GetMethodSelector() [4]byte {
 	return TestRevertIbcTransferSelector
 }
 

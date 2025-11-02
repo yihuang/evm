@@ -187,7 +187,12 @@ func (t OnPacketAcknowledgementCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t OnPacketAcknowledgementCall) GetMethodID() [4]byte {
+func (t OnPacketAcknowledgementCall) GetMethodID() uint32 {
+	return OnPacketAcknowledgementID
+}
+
+// GetMethodSelector returns the function name
+func (t OnPacketAcknowledgementCall) GetMethodSelector() [4]byte {
 	return OnPacketAcknowledgementSelector
 }
 
@@ -345,7 +350,12 @@ func (t OnPacketTimeoutCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t OnPacketTimeoutCall) GetMethodID() [4]byte {
+func (t OnPacketTimeoutCall) GetMethodID() uint32 {
+	return OnPacketTimeoutID
+}
+
+// GetMethodSelector returns the function name
+func (t OnPacketTimeoutCall) GetMethodSelector() [4]byte {
 	return OnPacketTimeoutSelector
 }
 

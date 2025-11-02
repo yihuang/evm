@@ -134,7 +134,12 @@ func (t DelegateWithRevertCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DelegateWithRevertCall) GetMethodID() [4]byte {
+func (t DelegateWithRevertCall) GetMethodID() uint32 {
+	return DelegateWithRevertID
+}
+
+// GetMethodSelector returns the function name
+func (t DelegateWithRevertCall) GetMethodSelector() [4]byte {
 	return DelegateWithRevertSelector
 }
 
@@ -244,7 +249,12 @@ func (t FlashLoanCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t FlashLoanCall) GetMethodID() [4]byte {
+func (t FlashLoanCall) GetMethodID() uint32 {
+	return FlashLoanID
+}
+
+// GetMethodSelector returns the function name
+func (t FlashLoanCall) GetMethodSelector() [4]byte {
 	return FlashLoanSelector
 }
 
@@ -403,7 +413,12 @@ func (t FlashLoanWithRevertCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t FlashLoanWithRevertCall) GetMethodID() [4]byte {
+func (t FlashLoanWithRevertCall) GetMethodID() uint32 {
+	return FlashLoanWithRevertID
+}
+
+// GetMethodSelector returns the function name
+func (t FlashLoanWithRevertCall) GetMethodSelector() [4]byte {
 	return FlashLoanWithRevertSelector
 }
 
@@ -471,6 +486,8 @@ func (t *FlashLoanWithRevertReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*OwnerCall)(nil)
+
 // OwnerCall represents the input arguments for owner function
 type OwnerCall struct {
 	abi.EmptyTuple
@@ -482,7 +499,12 @@ func (t OwnerCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t OwnerCall) GetMethodID() [4]byte {
+func (t OwnerCall) GetMethodID() uint32 {
+	return OwnerID
+}
+
+// GetMethodSelector returns the function name
+func (t OwnerCall) GetMethodSelector() [4]byte {
 	return OwnerSelector
 }
 

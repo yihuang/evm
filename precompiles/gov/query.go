@@ -40,7 +40,11 @@ func (p *Precompile) GetVotes(
 		return nil, err
 	}
 
-	return new(GetVotesReturn).FromResponse(res)
+	var out GetVotesReturn
+	if err := out.FromResponse(res); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetVote implements the query logic for getting votes for a proposal.
@@ -58,7 +62,11 @@ func (p *Precompile) GetVote(
 		return nil, err
 	}
 
-	return new(GetVoteReturn).FromResponse(res)
+	var out GetVoteReturn
+	if err := out.FromResponse(res); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetDeposit implements the query logic for getting a deposit for a proposal.
@@ -76,7 +84,11 @@ func (p *Precompile) GetDeposit(
 		return nil, err
 	}
 
-	return new(GetDepositReturn).FromResponse(res)
+	var out GetDepositReturn
+	if err := out.FromResponse(res); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetDeposits implements the query logic for getting all deposits for a proposal.
@@ -94,7 +106,11 @@ func (p *Precompile) GetDeposits(
 		return nil, err
 	}
 
-	return new(GetDepositsReturn).FromResponse(res)
+	var out GetDepositsReturn
+	if err := out.FromResponse(res); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 // GetTallyResult implements the query logic for getting the tally result of a proposal.
@@ -112,8 +128,9 @@ func (p *Precompile) GetTallyResult(
 		return nil, err
 	}
 
-	output := new(TallyResultOutput).FromResponse(res)
-	return &GetTallyResultReturn{TallyResult: output.TallyResult}, nil
+	var out GetTallyResultReturn
+	out.FromResponse(res)
+	return &out, nil
 }
 
 // GetProposal implements the query logic for getting a proposal
@@ -131,11 +148,11 @@ func (p *Precompile) GetProposal(
 		return nil, err
 	}
 
-	output, err := new(ProposalOutput).FromResponse(res)
-	if err != nil {
+	var out GetProposalReturn
+	if err := out.FromResponse(res); err != nil {
 		return nil, err
 	}
-	return &GetProposalReturn{Proposal: output.Proposal}, nil
+	return &out, nil
 }
 
 // GetProposals implements the query logic for getting proposals
@@ -176,8 +193,9 @@ func (p *Precompile) GetParams(
 		return nil, err
 	}
 
-	output := new(Params).FromResponse(res)
-	return &GetParamsReturn{*output}, nil
+	var out GetParamsReturn
+	out.FromResponse(res)
+	return &out, nil
 }
 
 // GetConstitution implements the query logic for getting the constitution

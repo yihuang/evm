@@ -77,12 +77,8 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			s.SetupTest()
 
 			// set the default call arguments
-			callArgs = testutiltypes.CallArgs{
-				ContractABI: s.precompile.ABI,
-			}
-			defaultLogCheck = testutil.LogCheckArgs{
-				ABIEvents: s.precompile.Events,
-			}
+			callArgs = testutiltypes.CallArgs{}
+			defaultLogCheck = testutil.LogCheckArgs{}
 			passCheck = defaultLogCheck.WithExpPass(true)
 			outOfGasCheck = defaultLogCheck.WithErrContains(vm.ErrOutOfGas.Error())
 
@@ -106,12 +102,14 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 		Describe("Execute SubmitProposal transaction", func() {
 			const method = gov.SubmitProposalMethod
 
-			BeforeEach(func() { callArgs.MethodName = method })
-
 			It("fails with low gas", func() {
 				txArgs.GasLimit = 37_790 // meed the requirement of floor data gas cost
 				jsonBlob := minimalBankSendProposalJSON(proposerAccAddr, s.network.GetBaseDenom(), "50")
-				callArgs.Args = []interface{}{proposerAddr, jsonBlob, minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
+				callArgs.Method = &gov.SubmitProposalCall{
+					Proposer:     proposerAddr,
+					JsonProposal: jsonBlob,
+					Deposit:      minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1)),
+				}
 
 				_, _, err := s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, outOfGasCheck)
 				Expect(err).To(BeNil())
@@ -119,26 +117,30 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 			It("creates a proposal and emits event", func() {
 				jsonBlob := minimalBankSendProposalJSON(proposerAccAddr, s.network.GetBaseDenom(), "1")
-				callArgs.Args = []interface{}{proposerAddr, jsonBlob, minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
-				eventCheck := passCheck.WithExpEvents(gov.EventTypeSubmitProposal)
+				callArgs.Method = &gov.SubmitProposalCall{
+					Proposer: proposerAddr, JsonProposal: jsonBlob, Deposit: minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1)),
+				}
+				eventCheck := passCheck.WithExpEvents(&gov.SubmitProposalEvent{})
 
 				_, ethRes, err := s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, eventCheck)
 				Expect(err).To(BeNil())
 
 				// unpack return → proposalId
-				var out uint64
-				err = s.precompile.UnpackIntoInterface(&out, method, ethRes.Ret)
+				var out gov.SubmitProposalReturn
+				_, err = out.Decode(ethRes.Ret)
 				Expect(err).To(BeNil())
 				Expect(out).To(BeNumerically(">", 0))
 
 				// ensure proposal exists on-chain
-				prop, err := s.network.App.GetGovKeeper().Proposals.Get(s.network.GetContext(), out)
+				prop, err := s.network.App.GetGovKeeper().Proposals.Get(s.network.GetContext(), out.ProposalId)
 				Expect(err).To(BeNil())
 				Expect(prop.Proposer).To(Equal(sdk.AccAddress(proposerAddr.Bytes()).String()))
 			})
 
 			It("fails with invalid JSON", func() {
-				callArgs.Args = []interface{}{proposerAddr, []byte("{invalid}"), minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
+				callArgs.Method = &gov.SubmitProposalCall{
+					Proposer: proposerAddr, JsonProposal: []byte("{invalid}"), Deposit: minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1)),
+				}
 				errCheck := defaultLogCheck.WithErrContains("invalid proposal JSON")
 				_, _, err := s.factory.CallContractAndCheckLogs(
 					proposerKey, txArgs, callArgs, errCheck)
@@ -148,7 +150,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			It("fails with invalid deposit denom", func() {
 				jsonBlob := minimalBankSendProposalJSON(proposerAccAddr, s.network.GetBaseDenom(), "1")
 				invalidDep := []cmn.Coin{{Denom: "bad", Amount: big.NewInt(1)}}
-				callArgs.Args = []interface{}{proposerAddr, jsonBlob, invalidDep}
+				callArgs.Method = &gov.SubmitProposalCall{Proposer: proposerAddr, JsonProposal: jsonBlob, Deposit: invalidDep}
 				errCheck := defaultLogCheck.WithErrContains("invalid deposit denom")
 				_, _, err := s.factory.CallContractAndCheckLogs(
 					proposerKey, txArgs, callArgs, errCheck)
@@ -159,10 +161,9 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 		Describe("Execute Deposit transaction", func() {
 			const method = gov.DepositMethod
 
-			BeforeEach(func() { callArgs.MethodName = method })
-
 			It("fails with wrong proposal id", func() {
-				callArgs.Args = []interface{}{proposerAddr, uint64(999), minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
+				callArgs.Method = &gov.DepositCall{
+					Depositor: proposerAddr, ProposalId: uint64(999), Amount: minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
 				errCheck := defaultLogCheck.WithErrContains("not found")
 				_, _, err := s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, errCheck)
 				Expect(err).To(BeNil())
@@ -170,19 +171,19 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 			It("deposits successfully and emits event", func() {
 				jsonBlob := minimalBankSendProposalJSON(proposerAccAddr, s.network.GetBaseDenom(), "1")
-				eventCheck := passCheck.WithExpEvents(gov.EventTypeSubmitProposal)
+				eventCheck := passCheck.WithExpEvents(&gov.SubmitProposalEvent{})
 				callArgs.MethodName = gov.SubmitProposalMethod
 				minDeposit := minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))
-				callArgs.Args = []interface{}{proposerAddr, jsonBlob, minDeposit}
+				callArgs.Method = &gov.SubmitProposalCall{Proposer: proposerAddr, JsonProposal: jsonBlob, Deposit: minDeposit}
 				_, evmRes, err := s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, eventCheck)
 				Expect(err).To(BeNil())
-				var propID uint64
-				err = s.precompile.UnpackIntoInterface(&propID, gov.SubmitProposalMethod, evmRes.Ret)
+				var propOut gov.SubmitProposalReturn
+				_, err = propOut.Decode(evmRes.Ret)
 				Expect(err).To(BeNil())
 				Expect(s.network.NextBlock()).To(BeNil())
 
 				// get proposal by propID
-				prop, err := s.network.App.GetGovKeeper().Proposals.Get(s.network.GetContext(), propID)
+				prop, err := s.network.App.GetGovKeeper().Proposals.Get(s.network.GetContext(), propOut.ProposalId)
 				Expect(err).To(BeNil())
 				Expect(prop.Status).To(Equal(govv1.StatusDepositPeriod))
 				Expect(prop.Proposer).To(Equal(sdk.AccAddress(proposerAddr.Bytes()).String()))
@@ -193,9 +194,8 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				Expect(td[0].Denom).To(Equal(minDepositCoins[0].Denom))
 				Expect(td[0].Amount.String()).To(Equal(minDepositCoins[0].Amount.String()))
 
-				callArgs.MethodName = gov.DepositMethod
-				callArgs.Args = []interface{}{proposerAddr, propID, minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
-				eventCheck = passCheck.WithExpEvents(gov.EventTypeDeposit)
+				callArgs.Method = &gov.DepositCall{Depositor: proposerAddr, ProposalId: propID, Deposit: minimalDeposit(s.network.GetBaseDenom(), big.NewInt(1))}
+				eventCheck = passCheck.WithExpEvents(&gov.DepositEvent{})
 				_, _, err = s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, eventCheck)
 				Expect(err).To(BeNil())
 				Expect(s.network.NextBlock()).To(BeNil())
@@ -204,7 +204,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 				// verify via query
 				callArgs.MethodName = gov.GetProposalMethod
-				callArgs.Args = []interface{}{propID}
+				callArgs.Method = &gov.GetProposalCall{ProposalId: propOut.ProposalId}
 				_, ethRes, err := s.factory.CallContractAndCheckLogs(proposerKey, txArgs, callArgs, passCheck)
 				Expect(err).To(BeNil())
 

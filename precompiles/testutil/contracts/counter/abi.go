@@ -27,6 +27,8 @@ const (
 	SubtractID   = 1844361955
 )
 
+var _ abi.Method = (*AddCall)(nil)
+
 // AddCall represents the input arguments for add function
 type AddCall struct {
 	abi.EmptyTuple
@@ -38,7 +40,12 @@ func (t AddCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t AddCall) GetMethodID() [4]byte {
+func (t AddCall) GetMethodID() uint32 {
+	return AddID
+}
+
+// GetMethodSelector returns the function name
+func (t AddCall) GetMethodSelector() [4]byte {
 	return AddSelector
 }
 
@@ -57,6 +64,8 @@ type AddReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*GetCounterCall)(nil)
+
 // GetCounterCall represents the input arguments for getCounter function
 type GetCounterCall struct {
 	abi.EmptyTuple
@@ -68,7 +77,12 @@ func (t GetCounterCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetCounterCall) GetMethodID() [4]byte {
+func (t GetCounterCall) GetMethodID() uint32 {
+	return GetCounterID
+}
+
+// GetMethodSelector returns the function name
+func (t GetCounterCall) GetMethodSelector() [4]byte {
 	return GetCounterSelector
 }
 
@@ -136,6 +150,8 @@ func (t *GetCounterReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*SubtractCall)(nil)
+
 // SubtractCall represents the input arguments for subtract function
 type SubtractCall struct {
 	abi.EmptyTuple
@@ -147,7 +163,12 @@ func (t SubtractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t SubtractCall) GetMethodID() [4]byte {
+func (t SubtractCall) GetMethodID() uint32 {
+	return SubtractID
+}
+
+// GetMethodSelector returns the function name
+func (t SubtractCall) GetMethodSelector() [4]byte {
 	return SubtractSelector
 }
 
@@ -204,7 +225,9 @@ func (e AddedEvent) GetEventID() common.Hash {
 	return AddedEventTopic
 }
 
-type AddedEventIndexed abi.EmptyIndexed
+type AddedEventIndexed struct {
+	abi.EmptyIndexed
+}
 
 const AddedEventDataStaticSize = 32
 
@@ -290,7 +313,9 @@ func (e ChangedEvent) GetEventID() common.Hash {
 	return ChangedEventTopic
 }
 
-type ChangedEventIndexed abi.EmptyIndexed
+type ChangedEventIndexed struct {
+	abi.EmptyIndexed
+}
 
 const ChangedEventDataStaticSize = 32
 

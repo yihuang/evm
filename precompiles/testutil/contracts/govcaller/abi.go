@@ -574,6 +574,8 @@ func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*CounterCall)(nil)
+
 // CounterCall represents the input arguments for counter function
 type CounterCall struct {
 	abi.EmptyTuple
@@ -585,7 +587,12 @@ func (t CounterCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t CounterCall) GetMethodID() [4]byte {
+func (t CounterCall) GetMethodID() uint32 {
+	return CounterID
+}
+
+// GetMethodSelector returns the function name
+func (t CounterCall) GetMethodSelector() [4]byte {
 	return CounterSelector
 }
 
@@ -653,6 +660,8 @@ func (t *CounterReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DepositCall)(nil)
+
 // DepositCall represents the input arguments for deposit function
 type DepositCall struct {
 	abi.EmptyTuple
@@ -664,7 +673,12 @@ func (t DepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t DepositCall) GetMethodID() [4]byte {
+func (t DepositCall) GetMethodID() uint32 {
+	return DepositID
+}
+
+// GetMethodSelector returns the function name
+func (t DepositCall) GetMethodSelector() [4]byte {
 	return DepositSelector
 }
 
@@ -683,6 +697,8 @@ type DepositReturn struct {
 	abi.EmptyTuple
 }
 
+var _ abi.Method = (*GetParamsCall)(nil)
+
 // GetParamsCall represents the input arguments for getParams function
 type GetParamsCall struct {
 	abi.EmptyTuple
@@ -694,7 +710,12 @@ func (t GetParamsCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t GetParamsCall) GetMethodID() [4]byte {
+func (t GetParamsCall) GetMethodID() uint32 {
+	return GetParamsID
+}
+
+// GetMethodSelector returns the function name
+func (t GetParamsCall) GetMethodSelector() [4]byte {
 	return GetParamsSelector
 }
 
@@ -875,7 +896,12 @@ func (t TestCancelFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestCancelFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestCancelFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestCancelFromContractWithTransferSelector
 }
 
@@ -1005,7 +1031,12 @@ func (t TestCancelProposalFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelProposalFromContractCall) GetMethodID() [4]byte {
+func (t TestCancelProposalFromContractCall) GetMethodID() uint32 {
+	return TestCancelProposalFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelProposalFromContractCall) GetMethodSelector() [4]byte {
 	return TestCancelProposalFromContractSelector
 }
 
@@ -1157,7 +1188,12 @@ func (t TestCancelWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestCancelWithTransferCall) GetMethodID() [4]byte {
+func (t TestCancelWithTransferCall) GetMethodID() uint32 {
+	return TestCancelWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestCancelWithTransferCall) GetMethodSelector() [4]byte {
 	return TestCancelWithTransferSelector
 }
 
@@ -1327,7 +1363,12 @@ func (t TestDepositCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositCall) GetMethodID() [4]byte {
+func (t TestDepositCall) GetMethodID() uint32 {
+	return TestDepositID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositCall) GetMethodSelector() [4]byte {
 	return TestDepositSelector
 }
 
@@ -1486,7 +1527,12 @@ func (t TestDepositFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositFromContractCall) GetMethodID() [4]byte {
+func (t TestDepositFromContractCall) GetMethodID() uint32 {
+	return TestDepositFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositFromContractCall) GetMethodSelector() [4]byte {
 	return TestDepositFromContractSelector
 }
 
@@ -1678,7 +1724,12 @@ func (t TestDepositFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestDepositFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestDepositFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestDepositFromContractWithTransferSelector
 }
 
@@ -1859,7 +1910,12 @@ func (t TestDepositWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestDepositWithTransferCall) GetMethodID() [4]byte {
+func (t TestDepositWithTransferCall) GetMethodID() uint32 {
+	return TestDepositWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestDepositWithTransferCall) GetMethodSelector() [4]byte {
 	return TestDepositWithTransferSelector
 }
 
@@ -2042,7 +2098,12 @@ func (t TestFundCommunityPoolCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestFundCommunityPoolCall) GetMethodID() [4]byte {
+func (t TestFundCommunityPoolCall) GetMethodID() uint32 {
+	return TestFundCommunityPoolID
+}
+
+// GetMethodSelector returns the function name
+func (t TestFundCommunityPoolCall) GetMethodSelector() [4]byte {
 	return TestFundCommunityPoolSelector
 }
 
@@ -2225,7 +2286,12 @@ func (t TestSubmitProposalCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalCall) GetMethodID() uint32 {
+	return TestSubmitProposalID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalSelector
 }
 
@@ -2397,7 +2463,12 @@ func (t TestSubmitProposalFromContractCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalFromContractCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalFromContractCall) GetMethodID() uint32 {
+	return TestSubmitProposalFromContractID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalFromContractCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalFromContractSelector
 }
 
@@ -2602,7 +2673,12 @@ func (t TestSubmitProposalFromContractWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalFromContractWithTransferCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalFromContractWithTransferCall) GetMethodID() uint32 {
+	return TestSubmitProposalFromContractWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalFromContractWithTransferCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalFromContractWithTransferSelector
 }
 
@@ -2796,7 +2872,12 @@ func (t TestSubmitProposalWithTransferCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestSubmitProposalWithTransferCall) GetMethodID() [4]byte {
+func (t TestSubmitProposalWithTransferCall) GetMethodID() uint32 {
+	return TestSubmitProposalWithTransferID
+}
+
+// GetMethodSelector returns the function name
+func (t TestSubmitProposalWithTransferCall) GetMethodSelector() [4]byte {
 	return TestSubmitProposalWithTransferSelector
 }
 
@@ -2990,7 +3071,12 @@ func (t TestTransferCancelFundCall) GetMethodName() string {
 }
 
 // GetMethodID returns the function name
-func (t TestTransferCancelFundCall) GetMethodID() [4]byte {
+func (t TestTransferCancelFundCall) GetMethodID() uint32 {
+	return TestTransferCancelFundID
+}
+
+// GetMethodSelector returns the function name
+func (t TestTransferCancelFundCall) GetMethodSelector() [4]byte {
 	return TestTransferCancelFundSelector
 }
 

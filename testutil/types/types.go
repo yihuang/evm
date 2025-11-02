@@ -33,8 +33,6 @@ type CallArgs struct {
 	ContractABI ethabi.ABI
 	// MethodName is the name of the method to call.
 	MethodName string
-	// Args are the arguments to pass to the method.
-	Args []interface{}
 
 	Method abi.Method
 }
