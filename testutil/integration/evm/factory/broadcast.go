@@ -47,7 +47,7 @@ func (tf *IntegrationTxFactory) ExecuteEthTx(
 
 // ExecuteContractCall executes a contract call with the provided private key.
 func (tf *IntegrationTxFactory) ExecuteContractCall(privKey cryptotypes.PrivKey, txArgs evmtypes.EvmTxArgs, callArgs testutiltypes.CallArgs) (abcitypes.ExecTxResult, error) {
-	input, err := GenerateContractCallArgs(callArgs)
+	input, err := GenerateContractCallArgs(callArgs.Method)
 	if err != nil {
 		return abcitypes.ExecTxResult{}, errorsmod.Wrap(err, "failed to generate contract call args")
 	}
@@ -110,7 +110,7 @@ func (tf *IntegrationTxFactory) QueryContract(
 	callArgs testutiltypes.CallArgs,
 	gasCap uint64,
 ) (*evmtypes.MsgEthereumTxResponse, error) {
-	input, err := GenerateContractCallArgs(callArgs)
+	input, err := GenerateContractCallArgs(callArgs.Method)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to generate contract call args")
 	}
