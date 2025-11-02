@@ -35,6 +35,8 @@ const (
 
 const PageResponseStaticSize = 64
 
+var _ abi.Tuple = (*PageResponse)(nil)
+
 // PageResponse represents an ABI tuple
 type PageResponse struct {
 	NextKey []byte
@@ -115,6 +117,8 @@ func (t *PageResponse) Decode(data []byte) (int, error) {
 }
 
 const ParamsStaticSize = 256
+
+var _ abi.Tuple = (*Params)(nil)
 
 // Params represents an ABI tuple
 type Params struct {
@@ -211,6 +215,8 @@ func (t *Params) Decode(data []byte) (int, error) {
 }
 
 const SigningInfoStaticSize = 192
+
+var _ abi.Tuple = (*SigningInfo)(nil)
 
 // SigningInfo represents an ABI tuple
 type SigningInfo struct {
@@ -397,6 +403,8 @@ func (t GetParamsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetParamsReturnStaticSize = 256
 
+var _ abi.Tuple = (*GetParamsReturn)(nil)
+
 // GetParamsReturn represents an ABI tuple
 type GetParamsReturn struct {
 	Params Params
@@ -447,7 +455,11 @@ func (t *GetParamsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetSigningInfoCall)(nil)
+
 const GetSigningInfoCallStaticSize = 32
+
+var _ abi.Tuple = (*GetSigningInfoCall)(nil)
 
 // GetSigningInfoCall represents an ABI tuple
 type GetSigningInfoCall struct {
@@ -521,6 +533,8 @@ func (t GetSigningInfoCall) EncodeWithSelector() ([]byte, error) {
 
 const GetSigningInfoReturnStaticSize = 192
 
+var _ abi.Tuple = (*GetSigningInfoReturn)(nil)
+
 // GetSigningInfoReturn represents an ABI tuple
 type GetSigningInfoReturn struct {
 	SigningInfo SigningInfo
@@ -571,7 +585,11 @@ func (t *GetSigningInfoReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetSigningInfosCall)(nil)
+
 const GetSigningInfosCallStaticSize = 32
+
+var _ abi.Tuple = (*GetSigningInfosCall)(nil)
 
 // GetSigningInfosCall represents an ABI tuple
 type GetSigningInfosCall struct {
@@ -662,6 +680,8 @@ func (t GetSigningInfosCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const GetSigningInfosReturnStaticSize = 64
+
+var _ abi.Tuple = (*GetSigningInfosReturn)(nil)
 
 // GetSigningInfosReturn represents an ABI tuple
 type GetSigningInfosReturn struct {
@@ -755,7 +775,11 @@ func (t *GetSigningInfosReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*UnjailCall)(nil)
+
 const UnjailCallStaticSize = 32
+
+var _ abi.Tuple = (*UnjailCall)(nil)
 
 // UnjailCall represents an ABI tuple
 type UnjailCall struct {
@@ -829,6 +853,8 @@ func (t UnjailCall) EncodeWithSelector() ([]byte, error) {
 
 const UnjailReturnStaticSize = 32
 
+var _ abi.Tuple = (*UnjailReturn)(nil)
+
 // UnjailReturn represents an ABI tuple
 type UnjailReturn struct {
 	Success bool
@@ -886,6 +912,8 @@ var (
 )
 
 // ValidatorUnjailedEvent represents the ValidatorUnjailed event
+var _ abi.Event = (*ValidatorUnjailedEvent)(nil)
+
 type ValidatorUnjailedEvent struct {
 	ValidatorUnjailedEventIndexed
 	ValidatorUnjailedEventData

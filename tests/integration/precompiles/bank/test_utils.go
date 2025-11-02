@@ -2,7 +2,6 @@ package bank
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -124,36 +123,6 @@ func getTxAndCallArgs(
 	callArgs.Args = args
 
 	return txArgs, callArgs
-}
-
-// decodeBalancesResult decodes the result from a balances query
-func decodeBalancesResult(data []byte) ([]bank.Balance, error) {
-	var result bank.BalancesReturn
-	_, err := result.Decode(data)
-	if err != nil {
-		return nil, err
-	}
-	return result.Balances, nil
-}
-
-// decodeTotalSupplyResult decodes the result from a totalSupply query
-func decodeTotalSupplyResult(data []byte) ([]bank.Balance, error) {
-	var result bank.TotalSupplyReturn
-	_, err := result.Decode(data)
-	if err != nil {
-		return nil, err
-	}
-	return result.TotalSupply, nil
-}
-
-// decodeSupplyOfResult decodes the result from a supplyOf query
-func decodeSupplyOfResult(data []byte) (*big.Int, error) {
-	var result bank.SupplyOfReturn
-	_, err := result.Decode(data)
-	if err != nil {
-		return nil, err
-	}
-	return result.TotalSupply, nil
 }
 
 func Max(x, y int) int {

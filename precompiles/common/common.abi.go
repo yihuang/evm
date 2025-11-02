@@ -25,6 +25,8 @@ const (
 
 const CoinStaticSize = 64
 
+var _ abi.Tuple = (*Coin)(nil)
+
 // Coin represents an ABI tuple
 type Coin struct {
 	Denom  string
@@ -106,6 +108,8 @@ func (t *Coin) Decode(data []byte) (int, error) {
 
 const DecStaticSize = 64
 
+var _ abi.Tuple = (*Dec)(nil)
+
 // Dec represents an ABI tuple
 type Dec struct {
 	Value     *big.Int
@@ -168,6 +172,8 @@ func (t *Dec) Decode(data []byte) (int, error) {
 }
 
 const DecCoinStaticSize = 96
+
+var _ abi.Tuple = (*DecCoin)(nil)
 
 // DecCoin represents an ABI tuple
 type DecCoin struct {
@@ -261,6 +267,8 @@ func (t *DecCoin) Decode(data []byte) (int, error) {
 
 const HeightStaticSize = 64
 
+var _ abi.Tuple = (*Height)(nil)
+
 // Height represents an ABI tuple
 type Height struct {
 	RevisionNumber uint64
@@ -323,6 +331,8 @@ func (t *Height) Decode(data []byte) (int, error) {
 }
 
 const ICS20AllocationStaticSize = 160
+
+var _ abi.Tuple = (*ICS20Allocation)(nil)
 
 // ICS20Allocation represents an ABI tuple
 type ICS20Allocation struct {
@@ -490,6 +500,8 @@ func (t *ICS20Allocation) Decode(data []byte) (int, error) {
 
 const PageRequestStaticSize = 160
 
+var _ abi.Tuple = (*PageRequest)(nil)
+
 // PageRequest represents an ABI tuple
 type PageRequest struct {
 	Key        []byte
@@ -603,6 +615,8 @@ func (t *PageRequest) Decode(data []byte) (int, error) {
 }
 
 const PageResponseStaticSize = 64
+
+var _ abi.Tuple = (*PageResponse)(nil)
 
 // PageResponse represents an ABI tuple
 type PageResponse struct {
@@ -751,7 +765,11 @@ func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*DummyCall)(nil)
+
 const DummyCallStaticSize = 288
+
+var _ abi.Tuple = (*DummyCall)(nil)
 
 // DummyCall represents an ABI tuple
 type DummyCall struct {

@@ -54,7 +54,11 @@ const (
 	WithdrawID     = 773487949
 )
 
+var _ abi.Method = (*AllowanceCall)(nil)
+
 const AllowanceCallStaticSize = 64
+
+var _ abi.Tuple = (*AllowanceCall)(nil)
 
 // AllowanceCall represents an ABI tuple
 type AllowanceCall struct {
@@ -117,6 +121,16 @@ func (t *AllowanceCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t AllowanceCall) GetMethodName() string {
+	return "allowance"
+}
+
+// GetMethodID returns the function name
+func (t AllowanceCall) GetMethodID() [4]byte {
+	return AllowanceSelector
+}
+
 // EncodeWithSelector encodes allowance arguments to ABI bytes including function selector
 func (t AllowanceCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -128,6 +142,8 @@ func (t AllowanceCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const AllowanceReturnStaticSize = 32
+
+var _ abi.Tuple = (*AllowanceReturn)(nil)
 
 // AllowanceReturn represents an ABI tuple
 type AllowanceReturn struct {
@@ -179,7 +195,11 @@ func (t *AllowanceReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*ApproveCall)(nil)
+
 const ApproveCallStaticSize = 64
+
+var _ abi.Tuple = (*ApproveCall)(nil)
 
 // ApproveCall represents an ABI tuple
 type ApproveCall struct {
@@ -242,6 +262,16 @@ func (t *ApproveCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t ApproveCall) GetMethodName() string {
+	return "approve"
+}
+
+// GetMethodID returns the function name
+func (t ApproveCall) GetMethodID() [4]byte {
+	return ApproveSelector
+}
+
 // EncodeWithSelector encodes approve arguments to ABI bytes including function selector
 func (t ApproveCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -253,6 +283,8 @@ func (t ApproveCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const ApproveReturnStaticSize = 32
+
+var _ abi.Tuple = (*ApproveReturn)(nil)
 
 // ApproveReturn represents an ABI tuple
 type ApproveReturn struct {
@@ -304,7 +336,11 @@ func (t *ApproveReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*BalanceOfCall)(nil)
+
 const BalanceOfCallStaticSize = 32
+
+var _ abi.Tuple = (*BalanceOfCall)(nil)
 
 // BalanceOfCall represents an ABI tuple
 type BalanceOfCall struct {
@@ -356,6 +392,16 @@ func (t *BalanceOfCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t BalanceOfCall) GetMethodName() string {
+	return "balanceOf"
+}
+
+// GetMethodID returns the function name
+func (t BalanceOfCall) GetMethodID() [4]byte {
+	return BalanceOfSelector
+}
+
 // EncodeWithSelector encodes balanceOf arguments to ABI bytes including function selector
 func (t BalanceOfCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -367,6 +413,8 @@ func (t BalanceOfCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const BalanceOfReturnStaticSize = 32
+
+var _ abi.Tuple = (*BalanceOfReturn)(nil)
 
 // BalanceOfReturn represents an ABI tuple
 type BalanceOfReturn struct {
@@ -423,6 +471,16 @@ type DecimalsCall struct {
 	abi.EmptyTuple
 }
 
+// GetMethodName returns the function name
+func (t DecimalsCall) GetMethodName() string {
+	return "decimals"
+}
+
+// GetMethodID returns the function name
+func (t DecimalsCall) GetMethodID() [4]byte {
+	return DecimalsSelector
+}
+
 // EncodeWithSelector encodes decimals arguments to ABI bytes including function selector
 func (t DecimalsCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -434,6 +492,8 @@ func (t DecimalsCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const DecimalsReturnStaticSize = 32
+
+var _ abi.Tuple = (*DecimalsReturn)(nil)
 
 // DecimalsReturn represents an ABI tuple
 type DecimalsReturn struct {
@@ -490,6 +550,16 @@ type DepositCall struct {
 	abi.EmptyTuple
 }
 
+// GetMethodName returns the function name
+func (t DepositCall) GetMethodName() string {
+	return "deposit"
+}
+
+// GetMethodID returns the function name
+func (t DepositCall) GetMethodID() [4]byte {
+	return DepositSelector
+}
+
 // EncodeWithSelector encodes deposit arguments to ABI bytes including function selector
 func (t DepositCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -510,6 +580,16 @@ type NameCall struct {
 	abi.EmptyTuple
 }
 
+// GetMethodName returns the function name
+func (t NameCall) GetMethodName() string {
+	return "name"
+}
+
+// GetMethodID returns the function name
+func (t NameCall) GetMethodID() [4]byte {
+	return NameSelector
+}
+
 // EncodeWithSelector encodes name arguments to ABI bytes including function selector
 func (t NameCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -521,6 +601,8 @@ func (t NameCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const NameReturnStaticSize = 32
+
+var _ abi.Tuple = (*NameReturn)(nil)
 
 // NameReturn represents an ABI tuple
 type NameReturn struct {
@@ -595,6 +677,16 @@ type SymbolCall struct {
 	abi.EmptyTuple
 }
 
+// GetMethodName returns the function name
+func (t SymbolCall) GetMethodName() string {
+	return "symbol"
+}
+
+// GetMethodID returns the function name
+func (t SymbolCall) GetMethodID() [4]byte {
+	return SymbolSelector
+}
+
 // EncodeWithSelector encodes symbol arguments to ABI bytes including function selector
 func (t SymbolCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -606,6 +698,8 @@ func (t SymbolCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const SymbolReturnStaticSize = 32
+
+var _ abi.Tuple = (*SymbolReturn)(nil)
 
 // SymbolReturn represents an ABI tuple
 type SymbolReturn struct {
@@ -680,6 +774,16 @@ type TotalSupplyCall struct {
 	abi.EmptyTuple
 }
 
+// GetMethodName returns the function name
+func (t TotalSupplyCall) GetMethodName() string {
+	return "totalSupply"
+}
+
+// GetMethodID returns the function name
+func (t TotalSupplyCall) GetMethodID() [4]byte {
+	return TotalSupplySelector
+}
+
 // EncodeWithSelector encodes totalSupply arguments to ABI bytes including function selector
 func (t TotalSupplyCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -691,6 +795,8 @@ func (t TotalSupplyCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const TotalSupplyReturnStaticSize = 32
+
+var _ abi.Tuple = (*TotalSupplyReturn)(nil)
 
 // TotalSupplyReturn represents an ABI tuple
 type TotalSupplyReturn struct {
@@ -742,7 +848,11 @@ func (t *TotalSupplyReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TransferCall)(nil)
+
 const TransferCallStaticSize = 64
+
+var _ abi.Tuple = (*TransferCall)(nil)
 
 // TransferCall represents an ABI tuple
 type TransferCall struct {
@@ -805,6 +915,16 @@ func (t *TransferCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t TransferCall) GetMethodName() string {
+	return "transfer"
+}
+
+// GetMethodID returns the function name
+func (t TransferCall) GetMethodID() [4]byte {
+	return TransferSelector
+}
+
 // EncodeWithSelector encodes transfer arguments to ABI bytes including function selector
 func (t TransferCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -816,6 +936,8 @@ func (t TransferCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const TransferReturnStaticSize = 32
+
+var _ abi.Tuple = (*TransferReturn)(nil)
 
 // TransferReturn represents an ABI tuple
 type TransferReturn struct {
@@ -867,7 +989,11 @@ func (t *TransferReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TransferFromCall)(nil)
+
 const TransferFromCallStaticSize = 96
+
+var _ abi.Tuple = (*TransferFromCall)(nil)
 
 // TransferFromCall represents an ABI tuple
 type TransferFromCall struct {
@@ -941,6 +1067,16 @@ func (t *TransferFromCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t TransferFromCall) GetMethodName() string {
+	return "transferFrom"
+}
+
+// GetMethodID returns the function name
+func (t TransferFromCall) GetMethodID() [4]byte {
+	return TransferFromSelector
+}
+
 // EncodeWithSelector encodes transferFrom arguments to ABI bytes including function selector
 func (t TransferFromCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -952,6 +1088,8 @@ func (t TransferFromCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const TransferFromReturnStaticSize = 32
+
+var _ abi.Tuple = (*TransferFromReturn)(nil)
 
 // TransferFromReturn represents an ABI tuple
 type TransferFromReturn struct {
@@ -1003,7 +1141,11 @@ func (t *TransferFromReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*WithdrawCall)(nil)
+
 const WithdrawCallStaticSize = 32
+
+var _ abi.Tuple = (*WithdrawCall)(nil)
 
 // WithdrawCall represents an ABI tuple
 type WithdrawCall struct {
@@ -1055,6 +1197,16 @@ func (t *WithdrawCall) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+// GetMethodName returns the function name
+func (t WithdrawCall) GetMethodName() string {
+	return "withdraw"
+}
+
+// GetMethodID returns the function name
+func (t WithdrawCall) GetMethodID() [4]byte {
+	return WithdrawSelector
+}
+
 // EncodeWithSelector encodes withdraw arguments to ABI bytes including function selector
 func (t WithdrawCall) EncodeWithSelector() ([]byte, error) {
 	result := make([]byte, 4+t.EncodedSize())
@@ -1083,6 +1235,8 @@ var (
 )
 
 // ApprovalEvent represents the Approval event
+var _ abi.Event = (*ApprovalEvent)(nil)
+
 type ApprovalEvent struct {
 	ApprovalEventIndexed
 	ApprovalEventData
@@ -1103,6 +1257,16 @@ func NewApprovalEvent(
 			Value: value,
 		},
 	}
+}
+
+// GetEventName returns the event name
+func (e ApprovalEvent) GetEventName() string {
+	return "Approval"
+}
+
+// GetEventID returns the event ID (topic)
+func (e ApprovalEvent) GetEventID() common.Hash {
+	return ApprovalEventTopic
 }
 
 // Approval represents an ABI event
@@ -1156,6 +1320,8 @@ func (e *ApprovalEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const ApprovalEventDataStaticSize = 32
 
+var _ abi.Tuple = (*ApprovalEventData)(nil)
+
 // ApprovalEventData represents an ABI tuple
 type ApprovalEventData struct {
 	Value *big.Int
@@ -1207,6 +1373,8 @@ func (t *ApprovalEventData) Decode(data []byte) (int, error) {
 }
 
 // DepositEvent represents the Deposit event
+var _ abi.Event = (*DepositEvent)(nil)
+
 type DepositEvent struct {
 	DepositEventIndexed
 	DepositEventData
@@ -1225,6 +1393,16 @@ func NewDepositEvent(
 			Wad: wad,
 		},
 	}
+}
+
+// GetEventName returns the event name
+func (e DepositEvent) GetEventName() string {
+	return "Deposit"
+}
+
+// GetEventID returns the event ID (topic)
+func (e DepositEvent) GetEventID() common.Hash {
+	return DepositEventTopic
 }
 
 // Deposit represents an ABI event
@@ -1264,6 +1442,8 @@ func (e *DepositEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const DepositEventDataStaticSize = 32
+
+var _ abi.Tuple = (*DepositEventData)(nil)
 
 // DepositEventData represents an ABI tuple
 type DepositEventData struct {
@@ -1316,6 +1496,8 @@ func (t *DepositEventData) Decode(data []byte) (int, error) {
 }
 
 // TransferEvent represents the Transfer event
+var _ abi.Event = (*TransferEvent)(nil)
+
 type TransferEvent struct {
 	TransferEventIndexed
 	TransferEventData
@@ -1336,6 +1518,16 @@ func NewTransferEvent(
 			Value: value,
 		},
 	}
+}
+
+// GetEventName returns the event name
+func (e TransferEvent) GetEventName() string {
+	return "Transfer"
+}
+
+// GetEventID returns the event ID (topic)
+func (e TransferEvent) GetEventID() common.Hash {
+	return TransferEventTopic
 }
 
 // Transfer represents an ABI event
@@ -1389,6 +1581,8 @@ func (e *TransferEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const TransferEventDataStaticSize = 32
 
+var _ abi.Tuple = (*TransferEventData)(nil)
+
 // TransferEventData represents an ABI tuple
 type TransferEventData struct {
 	Value *big.Int
@@ -1440,6 +1634,8 @@ func (t *TransferEventData) Decode(data []byte) (int, error) {
 }
 
 // WithdrawalEvent represents the Withdrawal event
+var _ abi.Event = (*WithdrawalEvent)(nil)
+
 type WithdrawalEvent struct {
 	WithdrawalEventIndexed
 	WithdrawalEventData
@@ -1458,6 +1654,16 @@ func NewWithdrawalEvent(
 			Wad: wad,
 		},
 	}
+}
+
+// GetEventName returns the event name
+func (e WithdrawalEvent) GetEventName() string {
+	return "Withdrawal"
+}
+
+// GetEventID returns the event ID (topic)
+func (e WithdrawalEvent) GetEventID() common.Hash {
+	return WithdrawalEventTopic
 }
 
 // Withdrawal represents an ABI event
@@ -1497,6 +1703,8 @@ func (e *WithdrawalEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const WithdrawalEventDataStaticSize = 32
+
+var _ abi.Tuple = (*WithdrawalEventData)(nil)
 
 // WithdrawalEventData represents an ABI tuple
 type WithdrawalEventData struct {

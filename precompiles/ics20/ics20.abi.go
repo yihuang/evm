@@ -37,6 +37,8 @@ const (
 
 const DenomStaticSize = 64
 
+var _ abi.Tuple = (*Denom)(nil)
+
 // Denom represents an ABI tuple
 type Denom struct {
 	Base  string
@@ -130,6 +132,8 @@ func (t *Denom) Decode(data []byte) (int, error) {
 }
 
 const HopStaticSize = 64
+
+var _ abi.Tuple = (*Hop)(nil)
 
 // Hop represents an ABI tuple
 type Hop struct {
@@ -359,7 +363,11 @@ func DecodeHopSlice(data []byte) ([]Hop, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*DenomCall)(nil)
+
 const DenomCallStaticSize = 32
+
+var _ abi.Tuple = (*DenomCall)(nil)
 
 // DenomCall represents an ABI tuple
 type DenomCall struct {
@@ -451,6 +459,8 @@ func (t DenomCall) EncodeWithSelector() ([]byte, error) {
 
 const DenomReturnStaticSize = 32
 
+var _ abi.Tuple = (*DenomReturn)(nil)
+
 // DenomReturn represents an ABI tuple
 type DenomReturn struct {
 	Denom Denom
@@ -519,7 +529,11 @@ func (t *DenomReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DenomHashCall)(nil)
+
 const DenomHashCallStaticSize = 32
+
+var _ abi.Tuple = (*DenomHashCall)(nil)
 
 // DenomHashCall represents an ABI tuple
 type DenomHashCall struct {
@@ -611,6 +625,8 @@ func (t DenomHashCall) EncodeWithSelector() ([]byte, error) {
 
 const DenomHashReturnStaticSize = 32
 
+var _ abi.Tuple = (*DenomHashReturn)(nil)
+
 // DenomHashReturn represents an ABI tuple
 type DenomHashReturn struct {
 	Hash string
@@ -679,7 +695,11 @@ func (t *DenomHashReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DenomsCall)(nil)
+
 const DenomsCallStaticSize = 32
+
+var _ abi.Tuple = (*DenomsCall)(nil)
 
 // DenomsCall represents an ABI tuple
 type DenomsCall struct {
@@ -770,6 +790,8 @@ func (t DenomsCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const DenomsReturnStaticSize = 64
+
+var _ abi.Tuple = (*DenomsReturn)(nil)
 
 // DenomsReturn represents an ABI tuple
 type DenomsReturn struct {
@@ -863,7 +885,11 @@ func (t *DenomsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*TransferCall)(nil)
+
 const TransferCallStaticSize = 320
+
+var _ abi.Tuple = (*TransferCall)(nil)
 
 // TransferCall represents an ABI tuple
 type TransferCall struct {
@@ -1095,6 +1121,8 @@ func (t TransferCall) EncodeWithSelector() ([]byte, error) {
 
 const TransferReturnStaticSize = 32
 
+var _ abi.Tuple = (*TransferReturn)(nil)
+
 // TransferReturn represents an ABI tuple
 type TransferReturn struct {
 	NextSequence uint64
@@ -1152,6 +1180,8 @@ var (
 )
 
 // IBCTransferEvent represents the IBCTransfer event
+var _ abi.Event = (*IBCTransferEvent)(nil)
+
 type IBCTransferEvent struct {
 	IBCTransferEventIndexed
 	IBCTransferEventData
@@ -1240,6 +1270,8 @@ func (e *IBCTransferEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const IBCTransferEventDataStaticSize = 160
+
+var _ abi.Tuple = (*IBCTransferEventData)(nil)
 
 // IBCTransferEventData represents an ABI tuple
 type IBCTransferEventData struct {

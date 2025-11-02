@@ -65,6 +65,8 @@ const (
 
 const DepositDataStaticSize = 96
 
+var _ abi.Tuple = (*DepositData)(nil)
+
 // DepositData represents an ABI tuple
 type DepositData struct {
 	ProposalId uint64
@@ -156,6 +158,8 @@ func (t *DepositData) Decode(data []byte) (int, error) {
 }
 
 const ParamsStaticSize = 512
+
+var _ abi.Tuple = (*Params)(nil)
 
 // Params represents an ABI tuple
 type Params struct {
@@ -509,6 +513,8 @@ func (t *Params) Decode(data []byte) (int, error) {
 
 const ProposalDataStaticSize = 416
 
+var _ abi.Tuple = (*ProposalData)(nil)
+
 // ProposalData represents an ABI tuple
 type ProposalData struct {
 	Id               uint64
@@ -776,6 +782,8 @@ func (t *ProposalData) Decode(data []byte) (int, error) {
 
 const TallyResultDataStaticSize = 128
 
+var _ abi.Tuple = (*TallyResultData)(nil)
+
 // TallyResultData represents an ABI tuple
 type TallyResultData struct {
 	Yes        string
@@ -918,6 +926,8 @@ func (t *TallyResultData) Decode(data []byte) (int, error) {
 
 const WeightedVoteStaticSize = 128
 
+var _ abi.Tuple = (*WeightedVote)(nil)
+
 // WeightedVote represents an ABI tuple
 type WeightedVote struct {
 	ProposalId uint64
@@ -1033,6 +1043,8 @@ func (t *WeightedVote) Decode(data []byte) (int, error) {
 }
 
 const WeightedVoteOptionStaticSize = 64
+
+var _ abi.Tuple = (*WeightedVoteOption)(nil)
 
 // WeightedVoteOption represents an ABI tuple
 type WeightedVoteOption struct {
@@ -1453,7 +1465,11 @@ func DecodeWeightedVoteSlice(data []byte) ([]WeightedVote, int, error) {
 	return result, dynamicOffset + 32, nil
 }
 
+var _ abi.Method = (*CancelProposalCall)(nil)
+
 const CancelProposalCallStaticSize = 64
+
+var _ abi.Tuple = (*CancelProposalCall)(nil)
 
 // CancelProposalCall represents an ABI tuple
 type CancelProposalCall struct {
@@ -1538,6 +1554,8 @@ func (t CancelProposalCall) EncodeWithSelector() ([]byte, error) {
 
 const CancelProposalReturnStaticSize = 32
 
+var _ abi.Tuple = (*CancelProposalReturn)(nil)
+
 // CancelProposalReturn represents an ABI tuple
 type CancelProposalReturn struct {
 	Success bool
@@ -1588,7 +1606,11 @@ func (t *CancelProposalReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*DepositCall)(nil)
+
 const DepositCallStaticSize = 96
+
+var _ abi.Tuple = (*DepositCall)(nil)
 
 // DepositCall represents an ABI tuple
 type DepositCall struct {
@@ -1702,6 +1724,8 @@ func (t DepositCall) EncodeWithSelector() ([]byte, error) {
 
 const DepositReturnStaticSize = 32
 
+var _ abi.Tuple = (*DepositReturn)(nil)
+
 // DepositReturn represents an ABI tuple
 type DepositReturn struct {
 	Success bool
@@ -1779,6 +1803,8 @@ func (t GetConstitutionCall) EncodeWithSelector() ([]byte, error) {
 
 const GetConstitutionReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetConstitutionReturn)(nil)
+
 // GetConstitutionReturn represents an ABI tuple
 type GetConstitutionReturn struct {
 	Constitution string
@@ -1847,7 +1873,11 @@ func (t *GetConstitutionReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDepositCall)(nil)
+
 const GetDepositCallStaticSize = 64
+
+var _ abi.Tuple = (*GetDepositCall)(nil)
 
 // GetDepositCall represents an ABI tuple
 type GetDepositCall struct {
@@ -1932,6 +1962,8 @@ func (t GetDepositCall) EncodeWithSelector() ([]byte, error) {
 
 const GetDepositReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetDepositReturn)(nil)
+
 // GetDepositReturn represents an ABI tuple
 type GetDepositReturn struct {
 	Deposit DepositData
@@ -2000,7 +2032,11 @@ func (t *GetDepositReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetDepositsCall)(nil)
+
 const GetDepositsCallStaticSize = 64
+
+var _ abi.Tuple = (*GetDepositsCall)(nil)
 
 // GetDepositsCall represents an ABI tuple
 type GetDepositsCall struct {
@@ -2102,6 +2138,8 @@ func (t GetDepositsCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const GetDepositsReturnStaticSize = 64
+
+var _ abi.Tuple = (*GetDepositsReturn)(nil)
 
 // GetDepositsReturn represents an ABI tuple
 type GetDepositsReturn struct {
@@ -2222,6 +2260,8 @@ func (t GetParamsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetParamsReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetParamsReturn)(nil)
+
 // GetParamsReturn represents an ABI tuple
 type GetParamsReturn struct {
 	Params Params
@@ -2290,7 +2330,11 @@ func (t *GetParamsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetProposalCall)(nil)
+
 const GetProposalCallStaticSize = 32
+
+var _ abi.Tuple = (*GetProposalCall)(nil)
 
 // GetProposalCall represents an ABI tuple
 type GetProposalCall struct {
@@ -2364,6 +2408,8 @@ func (t GetProposalCall) EncodeWithSelector() ([]byte, error) {
 
 const GetProposalReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetProposalReturn)(nil)
+
 // GetProposalReturn represents an ABI tuple
 type GetProposalReturn struct {
 	Proposal ProposalData
@@ -2432,7 +2478,11 @@ func (t *GetProposalReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetProposalsCall)(nil)
+
 const GetProposalsCallStaticSize = 128
+
+var _ abi.Tuple = (*GetProposalsCall)(nil)
 
 // GetProposalsCall represents an ABI tuple
 type GetProposalsCall struct {
@@ -2557,6 +2607,8 @@ func (t GetProposalsCall) EncodeWithSelector() ([]byte, error) {
 
 const GetProposalsReturnStaticSize = 64
 
+var _ abi.Tuple = (*GetProposalsReturn)(nil)
+
 // GetProposalsReturn represents an ABI tuple
 type GetProposalsReturn struct {
 	Proposals    []ProposalData
@@ -2649,7 +2701,11 @@ func (t *GetProposalsReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetTallyResultCall)(nil)
+
 const GetTallyResultCallStaticSize = 32
+
+var _ abi.Tuple = (*GetTallyResultCall)(nil)
 
 // GetTallyResultCall represents an ABI tuple
 type GetTallyResultCall struct {
@@ -2723,6 +2779,8 @@ func (t GetTallyResultCall) EncodeWithSelector() ([]byte, error) {
 
 const GetTallyResultReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetTallyResultReturn)(nil)
+
 // GetTallyResultReturn represents an ABI tuple
 type GetTallyResultReturn struct {
 	TallyResult TallyResultData
@@ -2791,7 +2849,11 @@ func (t *GetTallyResultReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetVoteCall)(nil)
+
 const GetVoteCallStaticSize = 64
+
+var _ abi.Tuple = (*GetVoteCall)(nil)
 
 // GetVoteCall represents an ABI tuple
 type GetVoteCall struct {
@@ -2876,6 +2938,8 @@ func (t GetVoteCall) EncodeWithSelector() ([]byte, error) {
 
 const GetVoteReturnStaticSize = 32
 
+var _ abi.Tuple = (*GetVoteReturn)(nil)
+
 // GetVoteReturn represents an ABI tuple
 type GetVoteReturn struct {
 	Vote WeightedVote
@@ -2944,7 +3008,11 @@ func (t *GetVoteReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*GetVotesCall)(nil)
+
 const GetVotesCallStaticSize = 64
+
+var _ abi.Tuple = (*GetVotesCall)(nil)
 
 // GetVotesCall represents an ABI tuple
 type GetVotesCall struct {
@@ -3047,6 +3115,8 @@ func (t GetVotesCall) EncodeWithSelector() ([]byte, error) {
 
 const GetVotesReturnStaticSize = 64
 
+var _ abi.Tuple = (*GetVotesReturn)(nil)
+
 // GetVotesReturn represents an ABI tuple
 type GetVotesReturn struct {
 	Votes        []WeightedVote
@@ -3139,7 +3209,11 @@ func (t *GetVotesReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*SubmitProposalCall)(nil)
+
 const SubmitProposalCallStaticSize = 96
+
+var _ abi.Tuple = (*SubmitProposalCall)(nil)
 
 // SubmitProposalCall represents an ABI tuple
 type SubmitProposalCall struct {
@@ -3266,6 +3340,8 @@ func (t SubmitProposalCall) EncodeWithSelector() ([]byte, error) {
 
 const SubmitProposalReturnStaticSize = 32
 
+var _ abi.Tuple = (*SubmitProposalReturn)(nil)
+
 // SubmitProposalReturn represents an ABI tuple
 type SubmitProposalReturn struct {
 	ProposalId uint64
@@ -3316,7 +3392,11 @@ func (t *SubmitProposalReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*VoteCall)(nil)
+
 const VoteCallStaticSize = 128
+
+var _ abi.Tuple = (*VoteCall)(nil)
 
 // VoteCall represents an ABI tuple
 type VoteCall struct {
@@ -3441,6 +3521,8 @@ func (t VoteCall) EncodeWithSelector() ([]byte, error) {
 
 const VoteReturnStaticSize = 32
 
+var _ abi.Tuple = (*VoteReturn)(nil)
+
 // VoteReturn represents an ABI tuple
 type VoteReturn struct {
 	Success bool
@@ -3491,7 +3573,11 @@ func (t *VoteReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*VoteWeightedCall)(nil)
+
 const VoteWeightedCallStaticSize = 128
+
+var _ abi.Tuple = (*VoteWeightedCall)(nil)
 
 // VoteWeightedCall represents an ABI tuple
 type VoteWeightedCall struct {
@@ -3629,6 +3715,8 @@ func (t VoteWeightedCall) EncodeWithSelector() ([]byte, error) {
 
 const VoteWeightedReturnStaticSize = 32
 
+var _ abi.Tuple = (*VoteWeightedReturn)(nil)
+
 // VoteWeightedReturn represents an ABI tuple
 type VoteWeightedReturn struct {
 	Success bool
@@ -3694,6 +3782,8 @@ var (
 )
 
 // CancelProposalEvent represents the CancelProposal event
+var _ abi.Event = (*CancelProposalEvent)(nil)
+
 type CancelProposalEvent struct {
 	CancelProposalEventIndexed
 	CancelProposalEventData
@@ -3762,6 +3852,8 @@ func (e *CancelProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const CancelProposalEventDataStaticSize = 32
 
+var _ abi.Tuple = (*CancelProposalEventData)(nil)
+
 // CancelProposalEventData represents an ABI tuple
 type CancelProposalEventData struct {
 	ProposalId uint64
@@ -3813,6 +3905,8 @@ func (t *CancelProposalEventData) Decode(data []byte) (int, error) {
 }
 
 // DepositEvent represents the Deposit event
+var _ abi.Event = (*DepositEvent)(nil)
+
 type DepositEvent struct {
 	DepositEventIndexed
 	DepositEventData
@@ -3882,6 +3976,8 @@ func (e *DepositEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const DepositEventDataStaticSize = 64
+
+var _ abi.Tuple = (*DepositEventData)(nil)
 
 // DepositEventData represents an ABI tuple
 type DepositEventData struct {
@@ -3963,6 +4059,8 @@ func (t *DepositEventData) Decode(data []byte) (int, error) {
 }
 
 // SubmitProposalEvent represents the SubmitProposal event
+var _ abi.Event = (*SubmitProposalEvent)(nil)
+
 type SubmitProposalEvent struct {
 	SubmitProposalEventIndexed
 	SubmitProposalEventData
@@ -4031,6 +4129,8 @@ func (e *SubmitProposalEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const SubmitProposalEventDataStaticSize = 32
 
+var _ abi.Tuple = (*SubmitProposalEventData)(nil)
+
 // SubmitProposalEventData represents an ABI tuple
 type SubmitProposalEventData struct {
 	ProposalId uint64
@@ -4082,6 +4182,8 @@ func (t *SubmitProposalEventData) Decode(data []byte) (int, error) {
 }
 
 // VoteEvent represents the Vote event
+var _ abi.Event = (*VoteEvent)(nil)
+
 type VoteEvent struct {
 	VoteEventIndexed
 	VoteEventData
@@ -4152,6 +4254,8 @@ func (e *VoteEventIndexed) DecodeTopics(topics []common.Hash) error {
 
 const VoteEventDataStaticSize = 64
 
+var _ abi.Tuple = (*VoteEventData)(nil)
+
 // VoteEventData represents an ABI tuple
 type VoteEventData struct {
 	ProposalId uint64
@@ -4214,6 +4318,8 @@ func (t *VoteEventData) Decode(data []byte) (int, error) {
 }
 
 // VoteWeightedEvent represents the VoteWeighted event
+var _ abi.Event = (*VoteWeightedEvent)(nil)
+
 type VoteWeightedEvent struct {
 	VoteWeightedEventIndexed
 	VoteWeightedEventData
@@ -4283,6 +4389,8 @@ func (e *VoteWeightedEventIndexed) DecodeTopics(topics []common.Hash) error {
 }
 
 const VoteWeightedEventDataStaticSize = 64
+
+var _ abi.Tuple = (*VoteWeightedEventData)(nil)
 
 // VoteWeightedEventData represents an ABI tuple
 type VoteWeightedEventData struct {

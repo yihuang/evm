@@ -34,7 +34,7 @@ const (
 	GasSupplyOf = 2_477
 )
 
-//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -module bank
+//go:generate go run github.com/yihuang/go-abi/cmd -input abi.json -output bank.abi.go
 
 var _ vm.PrecompiledContract = &Precompile{}
 

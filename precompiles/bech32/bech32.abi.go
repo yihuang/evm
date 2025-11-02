@@ -25,7 +25,11 @@ const (
 	HexToBech32ID = 4183337356
 )
 
+var _ abi.Method = (*Bech32ToHexCall)(nil)
+
 const Bech32ToHexCallStaticSize = 32
+
+var _ abi.Tuple = (*Bech32ToHexCall)(nil)
 
 // Bech32ToHexCall represents an ABI tuple
 type Bech32ToHexCall struct {
@@ -117,6 +121,8 @@ func (t Bech32ToHexCall) EncodeWithSelector() ([]byte, error) {
 
 const Bech32ToHexReturnStaticSize = 32
 
+var _ abi.Tuple = (*Bech32ToHexReturn)(nil)
+
 // Bech32ToHexReturn represents an ABI tuple
 type Bech32ToHexReturn struct {
 	Addr common.Address
@@ -167,7 +173,11 @@ func (t *Bech32ToHexReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*HexToBech32Call)(nil)
+
 const HexToBech32CallStaticSize = 64
+
+var _ abi.Tuple = (*HexToBech32Call)(nil)
 
 // HexToBech32Call represents an ABI tuple
 type HexToBech32Call struct {
@@ -269,6 +279,8 @@ func (t HexToBech32Call) EncodeWithSelector() ([]byte, error) {
 }
 
 const HexToBech32ReturnStaticSize = 32
+
+var _ abi.Tuple = (*HexToBech32Return)(nil)
 
 // HexToBech32Return represents an ABI tuple
 type HexToBech32Return struct {

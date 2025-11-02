@@ -233,7 +233,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			Context("and funds are part of the transaction", func() {
 				When("the method is deposit", func() {
 					It("it should return funds to sender and emit the event", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.DepositMethod)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.DepositCall{})
 						txArgs.Amount = depositAmount
 
 						_, _, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -241,7 +241,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.DepositMethod)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.DepositCall{})
 						txArgs.Amount = depositAmount
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -261,7 +261,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.DepositMethod)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.DepositCall{})
 						txArgs.Amount = depositAmount
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -361,7 +361,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.DepositMethod)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.DepositCall{})
 						txArgs.Amount = depositAmount
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -465,21 +465,21 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					// First, sender needs to deposit to get WERC20 tokens
 					// Use a larger deposit amount to ensure sufficient balance for transfer
 					depositForTransfer := new(big.Int).Mul(transferAmount, big.NewInt(10)) // 10x transfer amount
-					txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.DepositMethod)
+					txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.DepositCall{})
 					txArgs.Amount = depositForTransfer
 					_, _, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, callArgs, depositCheck)
 					Expect(err).ToNot(HaveOccurred(), "failed to deposit before transfer")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock after deposit")
 
 					// Now perform the transfer
-					txArgs, transferArgs := callsData.getTxAndCallArgs(directCall, erc20.TransferMethod, user.Addr, transferAmount)
+					txArgs, transferArgs := callsData.getTxAndCallArgs(directCall, &erc20.TransferCall{To: user.Addr, Amount: transferAmount})
 
 					_, _, err = is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, transferArgs, transferCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock after transfer")
 				})
 				It("it should fail to transfer tokens to a receiver using `transferFrom`", func() {
-					txArgs, transferArgs := callsData.getTxAndCallArgs(directCall, erc20.TransferFromMethod, txSender.Addr, user.Addr, transferAmount)
+					txArgs, transferArgs := callsData.getTxAndCallArgs(directCall, &erc20.TransferFromCall{From: txSender.Addr, To: user.Addr, Amount: transferAmount})
 
 					insufficientAllowanceCheck := failCheck.WithErrContains(erc20.ErrInsufficientAllowance.Error())
 					_, _, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, transferArgs, insufficientAllowanceCheck)
@@ -491,7 +491,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				Context("to retrieve a balance", func() {
 					It("should return the correct balance for an existing account", func() {
 						// Query the balance
-						txArgs, balancesArgs := callsData.getTxAndCallArgs(directCall, erc20.BalanceOfMethod, txSender.Addr)
+						txArgs, balancesArgs := callsData.getTxAndCallArgs(directCall, &erc20.BalanceOfCall{Account: txSender.Addr})
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, balancesArgs, passCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -507,7 +507,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					})
 					It("should return 0 for a new account", func() {
 						// Query the balance
-						txArgs, balancesArgs := callsData.getTxAndCallArgs(directCall, erc20.BalanceOfMethod, utiltx.GenerateAddress())
+						txArgs, balancesArgs := callsData.getTxAndCallArgs(directCall, &erc20.BalanceOfCall{Account: utiltx.GenerateAddress()})
 
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, balancesArgs, passCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -519,7 +519,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					})
 				})
 				It("should return the correct name", func() {
-					txArgs, nameArgs := callsData.getTxAndCallArgs(directCall, erc20.NameMethod)
+					txArgs, nameArgs := callsData.getTxAndCallArgs(directCall, &erc20.NameCall{})
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, nameArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -531,7 +531,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 
 				It("should return the correct symbol", func() {
-					txArgs, symbolArgs := callsData.getTxAndCallArgs(directCall, erc20.SymbolMethod)
+					txArgs, symbolArgs := callsData.getTxAndCallArgs(directCall, &erc20.SymbolCall{})
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, symbolArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
@@ -543,7 +543,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 
 				It("should return the decimals", func() {
-					txArgs, decimalsArgs := callsData.getTxAndCallArgs(directCall, erc20.DecimalsMethod)
+					txArgs, decimalsArgs := callsData.getTxAndCallArgs(directCall, &erc20.DecimalsCall{})
 
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, decimalsArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")

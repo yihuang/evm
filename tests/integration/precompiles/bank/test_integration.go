@@ -170,14 +170,15 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
 					balanceAfter, err := is.grpcHandler.GetBalanceFromBank(receiver.Bytes(), is.tokenDenom)
 					Expect(err).ToNot(HaveOccurred(), "failed to get balance")
 
-					Expect(math.NewInt(balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
-					Expect(*balances[0].Amount).To(Equal(*amount))
+					Expect(math.NewInt(ret.Balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
+					Expect(*ret.Balances[0].Amount).To(Equal(*amount))
 				})
 
 				It("should return a single token balance", func() {
@@ -192,14 +193,15 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
 					balanceAfter, err := is.grpcHandler.GetBalanceFromBank(receiver.Bytes(), is.network.GetBaseDenom())
 					Expect(err).ToNot(HaveOccurred(), "failed to get balance")
 
-					Expect(math.NewInt(balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
-					Expect(*balances[0].Amount).To(Equal(*amount))
+					Expect(math.NewInt(ret.Balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
+					Expect(*ret.Balances[0].Amount).To(Equal(*amount))
 				})
 
 				It("should return no balance for new account", func() {
@@ -207,10 +209,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(balances).To(BeEmpty())
+					Expect(ret.Balances).To(BeEmpty())
 				})
 
 				It("should consume the correct amount of gas", func() {
@@ -221,10 +224,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					ethRes, err := evmtypes.DecodeTxResponse(res.Data)
 					Expect(err).ToNot(HaveOccurred(), "failed to decode tx response")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					gasUsed := Max(bank2.GasBalances, len(balances)*bank2.GasBalances)
+					gasUsed := Max(bank2.GasBalances, len(ret.Balances)*bank2.GasBalances)
 					// Here increasing the GasBalanceOf will increase the use of gas so they will never be equal
 					Expect(gasUsed).To(BeNumerically("<=", ethRes.GasUsed))
 				})
@@ -236,11 +240,12 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeTotalSupplyResult(ethRes.Ret)
+					var ret bank2.TotalSupplyReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(balances[0].Amount.String()).To(Equal(cosmosEVMTotalSupply.String()))
-					Expect(balances[1].Amount.String()).To(Equal(xmplTotalSupply.String()))
+					Expect(ret.TotalSupply[0].Amount.String()).To(Equal(cosmosEVMTotalSupply.String()))
+					Expect(ret.TotalSupply[1].Amount.String()).To(Equal(xmplTotalSupply.String()))
 				})
 			})
 
@@ -250,10 +255,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.String()).To(Equal(cosmosEVMTotalSupply.String()))
+					Expect(ret.TotalSupply.String()).To(Equal(cosmosEVMTotalSupply.String()))
 				})
 
 				It("should return the supply of XMPL", func() {
@@ -261,10 +267,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.String()).To(Equal(xmplTotalSupply.String()))
+					Expect(ret.TotalSupply.String()).To(Equal(xmplTotalSupply.String()))
 				})
 
 				It("should return a supply of 0 for a non existing token", func() {
@@ -272,10 +279,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.Int64()).To(Equal(big.NewInt(0).Int64()))
+					Expect(ret.TotalSupply.Int64()).To(Equal(big.NewInt(0).Int64()))
 				})
 
 				It("should consume the correct amount of gas", func() {
@@ -308,14 +316,15 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
 					balanceAfter, err := is.grpcHandler.GetBalanceFromBank(receiver.Bytes(), is.tokenDenom)
 					Expect(err).ToNot(HaveOccurred(), "failed to get balance")
 
-					Expect(math.NewInt(balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
-					Expect(*balances[0].Amount).To(Equal(*amount))
+					Expect(math.NewInt(ret.Balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
+					Expect(*ret.Balances[0].Amount).To(Equal(*amount))
 				})
 
 				It("should return a single token balance", func() {
@@ -330,14 +339,15 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
 					balanceAfter, err := is.grpcHandler.GetBalanceFromBank(receiver.Bytes(), is.network.GetBaseDenom())
 					Expect(err).ToNot(HaveOccurred(), "failed to get balance")
 
-					Expect(math.NewInt(balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
-					Expect(*balances[0].Amount).To(Equal(*amount))
+					Expect(math.NewInt(ret.Balances[0].Amount.Int64())).To(Equal(balanceAfter.Balance.Amount))
+					Expect(*ret.Balances[0].Amount).To(Equal(*amount))
 				})
 
 				It("should return no balance for new account", func() {
@@ -345,10 +355,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, balancesArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(balances).To(BeEmpty())
+					Expect(ret.Balances).To(BeEmpty())
 				})
 
 				It("should consume the correct amount of gas", func() {
@@ -359,10 +370,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					ethRes, err := evmtypes.DecodeTxResponse(res.Data)
 					Expect(err).ToNot(HaveOccurred(), "failed to decode tx response")
 
-					balances, err := decodeBalancesResult(ethRes.Ret)
+					var ret bank2.BalancesReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					gasUsed := Max(bank2.GasBalances, len(balances)*bank2.GasBalances)
+					gasUsed := Max(bank2.GasBalances, len(ret.Balances)*bank2.GasBalances)
 					// Here increasing the GasBalanceOf will increase the use of gas so they will never be equal
 					Expect(gasUsed).To(BeNumerically("<=", ethRes.GasUsed))
 				})
@@ -374,11 +386,12 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					balances, err := decodeTotalSupplyResult(ethRes.Ret)
+					var ret bank2.TotalSupplyReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(balances[0].Amount.String()).To(Equal(cosmosEVMTotalSupply.String()))
-					Expect(balances[1].Amount.String()).To(Equal(xmplTotalSupply.String()))
+					Expect(ret.TotalSupply[0].Amount.String()).To(Equal(cosmosEVMTotalSupply.String()))
+					Expect(ret.TotalSupply[1].Amount.String()).To(Equal(xmplTotalSupply.String()))
 				})
 			})
 
@@ -388,10 +401,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.String()).To(Equal(cosmosEVMTotalSupply.String()))
+					Expect(ret.TotalSupply.String()).To(Equal(cosmosEVMTotalSupply.String()))
 				})
 
 				It("should return the supply of XMPL", func() {
@@ -399,10 +413,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.String()).To(Equal(xmplTotalSupply.String()))
+					Expect(ret.TotalSupply.String()).To(Equal(xmplTotalSupply.String()))
 				})
 
 				It("should return a supply of 0 for a non existing token", func() {
@@ -410,10 +425,11 @@ func TestIntegrationSuite(t *testing.T, create network.CreateEvmApp, options ...
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(sender.Priv, queryArgs, supplyArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					supply, err := decodeSupplyOfResult(ethRes.Ret)
+					var ret bank2.SupplyOfReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack balances")
 
-					Expect(supply.Int64()).To(Equal(big.NewInt(0).Int64()))
+					Expect(ret.TotalSupply.Int64()).To(Equal(big.NewInt(0).Int64()))
 				})
 
 				It("should consume the correct amount of gas", func() {

@@ -31,6 +31,8 @@ const (
 
 const BalanceStaticSize = 64
 
+var _ abi.Tuple = (*Balance)(nil)
+
 // Balance represents an ABI tuple
 type Balance struct {
 	ContractAddress common.Address
@@ -145,7 +147,11 @@ func DecodeBalanceSlice(data []byte) ([]Balance, int, error) {
 	return result, offset + 32, nil
 }
 
+var _ abi.Method = (*BalancesCall)(nil)
+
 const BalancesCallStaticSize = 32
+
+var _ abi.Tuple = (*BalancesCall)(nil)
 
 // BalancesCall represents an ABI tuple
 type BalancesCall struct {
@@ -219,6 +225,8 @@ func (t BalancesCall) EncodeWithSelector() ([]byte, error) {
 
 const BalancesReturnStaticSize = 32
 
+var _ abi.Tuple = (*BalancesReturn)(nil)
+
 // BalancesReturn represents an ABI tuple
 type BalancesReturn struct {
 	Balances []Balance
@@ -287,7 +295,11 @@ func (t *BalancesReturn) Decode(data []byte) (int, error) {
 	return dynamicOffset, nil
 }
 
+var _ abi.Method = (*SupplyOfCall)(nil)
+
 const SupplyOfCallStaticSize = 32
+
+var _ abi.Tuple = (*SupplyOfCall)(nil)
 
 // SupplyOfCall represents an ABI tuple
 type SupplyOfCall struct {
@@ -360,6 +372,8 @@ func (t SupplyOfCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const SupplyOfReturnStaticSize = 32
+
+var _ abi.Tuple = (*SupplyOfReturn)(nil)
 
 // SupplyOfReturn represents an ABI tuple
 type SupplyOfReturn struct {
@@ -437,6 +451,8 @@ func (t TotalSupplyCall) EncodeWithSelector() ([]byte, error) {
 }
 
 const TotalSupplyReturnStaticSize = 32
+
+var _ abi.Tuple = (*TotalSupplyReturn)(nil)
 
 // TotalSupplyReturn represents an ABI tuple
 type TotalSupplyReturn struct {
