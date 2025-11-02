@@ -60,7 +60,8 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 			txSender, user keyring.Key
 
-			revertContractAddr common.Address
+			revertContractAddr      common.Address
+			revertCallerContract   evmtypes.CompiledContract
 
 			// Account balance tracking
 			accountBalances      []*AccountBalanceInfo
@@ -192,21 +193,17 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 			// Support struct used to simplify transactions creation.
 			callsData = CallsData{
-				sender: txSender,
-
-				precompileAddr: precompileAddr,
-				precompileABI:  precompile.ABI,
-
+				sender:               txSender,
+				precompileAddr:        precompileAddr,
 				precompileReverterAddr: revertContractAddr,
-				precompileReverterABI:  revertCallerContract.ABI,
 			}
 
 			// Utility types used to check the different events emitted.
-			failCheck = testutil.LogCheckArgs{ABIEvents: is.precompile.Events}
+			failCheck = testutil.LogCheckArgs{}
 			passCheck = failCheck.WithExpPass(true)
-			withdrawCheck = passCheck.WithExpEvents(werc20.EventTypeWithdrawal)
-			depositCheck = passCheck.WithExpEvents(werc20.EventTypeDeposit)
-			transferCheck = passCheck.WithExpEvents(erc20.EventTypeTransfer)
+			withdrawCheck = passCheck
+			depositCheck = passCheck
+			transferCheck = passCheck
 
 			// Initialize and reset balance tracking state for each test
 			accountBalances = InitializeAccountBalances(
@@ -253,7 +250,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				//nolint:dupl
 				When("no calldata is provided", func() {
 					It("it should call the receive which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 
 						_, _, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -272,7 +269,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 				When("the specified method is too short", func() {
 					It("it should call the fallback which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Short method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte{1, 2, 3}
@@ -282,7 +279,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Short method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte{1, 2, 3}
@@ -295,7 +292,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 				When("the specified method does not exist", func() {
 					It("it should call the fallback which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Wrong method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte("nonExistingMethod")
@@ -305,7 +302,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Wrong method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte("nonExistingMethod")
@@ -329,21 +326,21 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(err).ToNot(HaveOccurred(), "expected no error sending tokens")
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.WithdrawMethod, withdrawAmount)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.WithdrawCall{Wad: withdrawAmount})
 
 						_, _, err = is.factory.CallContractAndCheckLogs(newUserPriv, txArgs, callArgs, withdrawCheck)
 						Expect(err).To(HaveOccurred(), "expected an error because not enough funds")
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should be a no-op and emit the event", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.WithdrawMethod, withdrawAmount)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.WithdrawCall{Wad: withdrawAmount})
 
 						_, _, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, withdrawCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected error calling the precompile")
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the withdraw requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, werc20.WithdrawMethod, withdrawAmount)
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, &werc20.WithdrawCall{Wad: withdrawAmount})
 
 						_, ethRes, _ := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, withdrawCheck)
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
@@ -353,7 +350,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				//nolint:dupl
 				When("no calldata is provided", func() {
 					It("it should call the fallback which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 
 						_, _, err := is.factory.CallContractAndCheckLogs(user.Priv, txArgs, callArgs, depositCheck)
@@ -372,7 +369,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 				When("the specified method is too short", func() {
 					It("it should call the fallback which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Short method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte{1, 2, 3}
@@ -382,7 +379,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Short method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte{1, 2, 3}
@@ -395,7 +392,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 				})
 				When("the specified method does not exist", func() {
 					It("it should call the fallback which behave like deposit", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Wrong method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte("nonExistingMethod")
@@ -405,7 +402,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 					})
 					It("it should consume at least the deposit requested gas", func() {
-						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, "")
+						txArgs, callArgs := callsData.getTxAndCallArgs(directCall, nil)
 						txArgs.Amount = depositAmount
 						// Wrong method is directly set in the input to skip ABI validation
 						txArgs.Input = []byte("nonExistingMethod")
@@ -434,19 +431,29 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 					balanceOf(PrecisebankModule).IntegerDelta = borrow
 
-					txArgs, callArgs := callsData.getTxAndCallArgs(contractCall, "depositWithRevert", false, false)
+					txArgs, callArgs := callsData.getTxAndCallArgs(contractCall, nil)
 					txArgs.Amount = depositAmount
 
-					_, _, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, callArgs, depositCheck)
+					// Encode the depositWithRevert call for the Solidity contract
+					input, err := revertCallerContract.ABI.Pack("depositWithRevert", false, false)
+					Expect(err).ToNot(HaveOccurred(), "failed to pack depositWithRevert")
+					txArgs.Input = input
+
+					_, _, err = is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, callArgs, depositCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected error calling the precompile")
 					Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 				})
 			})
 			DescribeTable("to call the deposit", func(before, after bool) {
-				txArgs, callArgs := callsData.getTxAndCallArgs(contractCall, "depositWithRevert", before, after)
+				txArgs, callArgs := callsData.getTxAndCallArgs(contractCall, nil)
 				txArgs.Amount = depositAmount
 
-				_, _, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, callArgs, depositCheck)
+				// Encode the depositWithRevert call for the Solidity contract
+				input, err := revertCallerContract.ABI.Pack("depositWithRevert", before, after)
+				Expect(err).ToNot(HaveOccurred(), "failed to pack depositWithRevert")
+				txArgs.Input = input
+
+				_, _, err = is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, callArgs, depositCheck)
 				Expect(err).To(HaveOccurred(), "execution should have reverted")
 				Expect(is.network.NextBlock()).ToNot(HaveOccurred(), "error on NextBlock")
 			},
@@ -500,10 +507,11 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						expBalanceRes, err := is.grpcHandler.GetBalanceFromBank(txSender.AccAddr, is.wrappedCoinDenom)
 						Expect(err).ToNot(HaveOccurred(), "failed to get balance from grpcHandler")
 
-						var balance *big.Int
-						err = is.precompile.UnpackIntoInterface(&balance, erc20.BalanceOfMethod, ethRes.Ret)
+						var ret erc20.BalanceOfReturn
+						_, err = ret.Decode(ethRes.Ret)
 						Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
-						Expect(balance).To(Equal(expBalanceRes.Balance.Amount.BigInt()), "expected different balance")
+						expectBalance := expBalanceRes.Balance.Amount.BigInt()
+						Expect(ret.Field1).To(Equal(expectBalance), "expected different balance")
 					})
 					It("should return 0 for a new account", func() {
 						// Query the balance
@@ -512,10 +520,10 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 						_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, balancesArgs, passCheck)
 						Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-						var balance *big.Int
-						err = is.precompile.UnpackIntoInterface(&balance, erc20.BalanceOfMethod, ethRes.Ret)
+						var ret erc20.BalanceOfReturn
+						_, err = ret.Decode(ethRes.Ret)
 						Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
-						Expect(balance.Int64()).To(Equal(int64(0)), "expected different balance")
+						Expect(ret.Field1.Int64()).To(Equal(int64(0)), "expected different balance")
 					})
 				})
 				It("should return the correct name", func() {
@@ -524,10 +532,10 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, nameArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					var name string
-					err = is.precompile.UnpackIntoInterface(&name, erc20.NameMethod, ethRes.Ret)
+					var ret erc20.NameReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
-					Expect(name).To(ContainSubstring("Cosmos EVM"), "expected different name")
+					Expect(ret.Field1).To(ContainSubstring("Cosmos EVM"), "expected different name")
 				})
 
 				It("should return the correct symbol", func() {
@@ -536,10 +544,10 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, symbolArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					var symbol string
-					err = is.precompile.UnpackIntoInterface(&symbol, erc20.SymbolMethod, ethRes.Ret)
+					var ret erc20.SymbolReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
-					Expect(symbol).To(ContainSubstring("ATOM"), "expected different symbol")
+					Expect(ret.Field1).To(ContainSubstring("ATOM"), "expected different symbol")
 				})
 
 				It("should return the decimals", func() {
@@ -548,15 +556,15 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 					_, ethRes, err := is.factory.CallContractAndCheckLogs(txSender.Priv, txArgs, decimalsArgs, passCheck)
 					Expect(err).ToNot(HaveOccurred(), "unexpected result calling contract")
 
-					var decimals uint8
-					err = is.precompile.UnpackIntoInterface(&decimals, erc20.DecimalsMethod, ethRes.Ret)
+					var ret erc20.DecimalsReturn
+					_, err = ret.Decode(ethRes.Ret)
 					Expect(err).ToNot(HaveOccurred(), "failed to unpack result")
 
 					coinInfo := testconstants.ExampleChainCoinInfo[testconstants.ChainID{
 						ChainID:    is.network.GetChainID(),
 						EVMChainID: is.network.GetEIP155ChainID().Uint64(),
 					}]
-					Expect(decimals).To(Equal(uint8(coinInfo.Decimals)), "expected different decimals") //nolint:gosec // G115
+					Expect(ret.Field1).To(Equal(uint8(coinInfo.Decimals)), "expected different decimals") //nolint:gosec // G115
 				},
 				)
 			})

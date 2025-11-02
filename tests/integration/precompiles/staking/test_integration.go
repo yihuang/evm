@@ -62,11 +62,10 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 		var s *PrecompileTestSuite
 
 		BeforeEach(func() {
-			var err error
 			s = NewPrecompileTestSuite(create, options...)
 			s.SetupTest()
 
-			valAddr, err = sdk.ValAddressFromBech32(s.network.GetValidators()[0].GetOperator())
+			valAddr, err := sdk.ValAddressFromBech32(s.network.GetValidators()[0].GetOperator())
 			Expect(err).To(BeNil())
 			valAddr2, err = sdk.ValAddressFromBech32(s.network.GetValidators()[1].GetOperator())
 			Expect(err).To(BeNil())
@@ -1391,7 +1390,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			s.SetupTest()
 			delegator := s.keyring.GetKey(0)
 
-			contractAddr, err = s.factory.DeployContract(
+			contractAddr, err := s.factory.DeployContract(
 				delegator.Priv,
 				evmtypes.EvmTxArgs{}, // NOTE: passing empty struct to use default values
 				testutiltypes.ContractDeploymentData{
@@ -1407,7 +1406,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			Expect(s.network.NextBlock()).To(BeNil())
 
 			// Deploy StakingCallerTwo contract
-			contractTwoAddr, err = s.factory.DeployContract(
+			contractTwoAddr, err := s.factory.DeployContract(
 				delegator.Priv,
 				evmtypes.EvmTxArgs{}, // NOTE: passing empty struct to use default values
 				testutiltypes.ContractDeploymentData{
@@ -1418,7 +1417,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 			Expect(s.network.NextBlock()).To(BeNil())
 
 			// Deploy StakingReverter contract
-			stkReverterAddr, err = s.factory.DeployContract(
+			stkReverterAddr, err := s.factory.DeployContract(
 				delegator.Priv,
 				evmtypes.EvmTxArgs{}, // NOTE: passing empty struct to use default values
 				testutiltypes.ContractDeploymentData{
@@ -1430,7 +1429,7 @@ func TestPrecompileIntegrationTestSuite(t *testing.T, create network.CreateEvmAp
 
 			// send some funds to the StakingCallerTwo & StakingReverter contracts to transfer to the
 			// delegator during the tx
-			err := utils.FundAccountWithBaseDenom(s.factory, s.network, s.keyring.GetKey(0), contractTwoAddr.Bytes(), testContractInitialBalance)
+			err = utils.FundAccountWithBaseDenom(s.factory, s.network, s.keyring.GetKey(0), contractTwoAddr.Bytes(), testContractInitialBalance)
 			Expect(err).To(BeNil(), "error while funding the smart contract: %v", err)
 			Expect(s.network.NextBlock()).To(BeNil())
 			err = utils.FundAccountWithBaseDenom(s.factory, s.network, s.keyring.GetKey(0), stkReverterAddr.Bytes(), testContractInitialBalance)

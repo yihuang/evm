@@ -107,27 +107,18 @@ func TestIntegrationTestSuite(t *testing.T, create network.CreateEvmApp, options
 			// contractsData holds the addresses and ABIs for the different
 			// contract instances that are subject to testing here.
 			contractsData ContractsData
-
-			erc20MdCallerContract evmtypes.CompiledContract
-			revertCallerContract  evmtypes.CompiledContract
-			erc20MinterV5Contract evmtypes.CompiledContract
-
-			execRevertedCheck testutil.LogCheckArgs
-			failCheck         testutil.LogCheckArgs
-			passCheck         testutil.LogCheckArgs
 		)
 
 		BeforeEach(func() {
 			is.SetupTest()
 
-			var err error
-			erc20MdCallerContract, err = testdata.LoadERC20TestCaller()
+			erc20MdCallerContract, err := testdata.LoadERC20TestCaller()
 			Expect(err).ToNot(HaveOccurred(), "failed to load ERC20 allowance caller contract")
 
-			erc20MinterV5Contract, err = testdata.LoadERC20MinterV5Contract()
+			erc20MinterV5Contract, err := testdata.LoadERC20MinterV5Contract()
 			Expect(err).ToNot(HaveOccurred(), "failed to load ERC20 minter contract")
 
-			revertCallerContract, err = testdata.LoadERC20TestCaller()
+			revertCallerContract, err := testdata.LoadERC20TestCaller()
 			Expect(err).ToNot(HaveOccurred(), "failed to load ERC20 allowance caller contract")
 
 			sender := is.keyring.GetKey(0)
