@@ -1,16 +1,12 @@
 package slashing
 
 import (
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/common"
 
 	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/cosmos/evm/precompiles/slashing"
-	"github.com/cosmos/evm/precompiles/testutil"
 
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/query"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 )
 
@@ -92,7 +88,7 @@ func (s *PrecompileTestSuite) TestGetSigningInfos() {
 	testCases := []struct {
 		name        string
 		malleate    func() slashing.GetSigningInfosCall
-		postCheck   func(signingInfos []slashing.SigningInfo, pageResponse *query.PageResponse)
+		postCheck   func(signingInfos []slashing.SigningInfo, pageResponse slashing.PageResponse)
 		expError    bool
 		errContains string
 	}{
@@ -100,13 +96,13 @@ func (s *PrecompileTestSuite) TestGetSigningInfos() {
 			"success - get all signing infos",
 			func() slashing.GetSigningInfosCall {
 				return slashing.GetSigningInfosCall{
-					Pagination: query.PageRequest{
+					Pagination: cmn.PageRequest{
 						Limit:      10,
 						CountTotal: true,
 					},
 				}
 			},
-			func(signingInfos []slashing.SigningInfo, pageResponse *query.PageResponse) {
+			func(signingInfos []slashing.SigningInfo, pageResponse slashing.PageResponse) {
 				s.Require().Len(signingInfos, 3)
 				s.Require().Equal(uint64(3), pageResponse.Total)
 
@@ -142,13 +138,13 @@ func (s *PrecompileTestSuite) TestGetSigningInfos() {
 			"success - get signing infos with pagination",
 			func() slashing.GetSigningInfosCall {
 				return slashing.GetSigningInfosCall{
-					Pagination: query.PageRequest{
+					Pagination: cmn.PageRequest{
 						Limit:      1,
 						CountTotal: true,
 					},
 				}
 			},
-			func(signingInfos []slashing.SigningInfo, pageResponse *query.PageResponse) {
+			func(signingInfos []slashing.SigningInfo, pageResponse slashing.PageResponse) {
 				s.Require().Len(signingInfos, 1)
 				s.Require().Equal(uint64(3), pageResponse.Total)
 				s.Require().NotNil(pageResponse.NextKey)
@@ -181,7 +177,7 @@ func (s *PrecompileTestSuite) TestGetSigningInfos() {
 			} else {
 				s.Require().NoError(err)
 				s.Require().NotNil(result)
-				tc.postCheck(result.SigningInfos, &result.PageResponse)
+				tc.postCheck(result.SigningInfos, result.PageResponse)
 			}
 		})
 	}
