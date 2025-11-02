@@ -237,25 +237,25 @@ var _ abi.Tuple = (*IbcTransferAndRevertCall)(nil)
 
 // IbcTransferAndRevertCall represents an ABI tuple
 type IbcTransferAndRevertCall struct {
-	_SourcePort       string
-	_SourceChannel    string
-	_Denom            string
-	_Amount           *big.Int
-	_Sender           common.Address
-	_Receiver         string
-	_TimeoutHeight    Height
-	_TimeoutTimestamp uint64
-	_Memo             string
+	SourcePort       string
+	SourceChannel    string
+	Denom            string
+	Amount           *big.Int
+	Sender           common.Address
+	Receiver         string
+	TimeoutHeight    Height
+	TimeoutTimestamp uint64
+	Memo             string
 }
 
 // EncodedSize returns the total encoded size of IbcTransferAndRevertCall
 func (t IbcTransferAndRevertCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._SourcePort)
-	dynamicSize += abi.SizeString(t._SourceChannel)
-	dynamicSize += abi.SizeString(t._Denom)
-	dynamicSize += abi.SizeString(t._Receiver)
-	dynamicSize += abi.SizeString(t._Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return IbcTransferAndRevertCallStaticSize + dynamicSize
 }
@@ -268,71 +268,71 @@ func (value IbcTransferAndRevertCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _SourcePort: string
+	// Field SourcePort: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _SourceChannel: string
+	// Field SourceChannel: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Denom: string
+	// Field Denom: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[96:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Sender: address
-	if _, err := abi.EncodeAddress(value._Sender, buf[128:]); err != nil {
+	// Field Sender: address
+	if _, err := abi.EncodeAddress(value.Sender, buf[128:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Receiver: string
+	// Field Receiver: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _TimeoutHeight: (uint64,uint64)
-	if _, err := value._TimeoutHeight.EncodeTo(buf[192:]); err != nil {
+	// Field TimeoutHeight: (uint64,uint64)
+	if _, err := value.TimeoutHeight.EncodeTo(buf[192:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutTimestamp: uint64
-	if _, err := abi.EncodeUint64(value._TimeoutTimestamp, buf[256:]); err != nil {
+	// Field TimeoutTimestamp: uint64
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[256:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Memo: string
+	// Field Memo: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[288+24:288+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -360,81 +360,81 @@ func (t *IbcTransferAndRevertCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 320
-	// Decode dynamic field _SourcePort
+	// Decode dynamic field SourcePort
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourcePort")
+			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t._SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _SourceChannel
+	// Decode dynamic field SourceChannel
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourceChannel")
+			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t._SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Denom
+	// Decode dynamic field Denom
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Denom")
+			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t._Denom, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[96:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Sender: address
-	t._Sender, _, err = abi.DecodeAddress(data[128:])
+	// Decode static field Sender: address
+	t.Sender, _, err = abi.DecodeAddress(data[128:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Receiver
+	// Decode dynamic field Receiver
 	{
 		offset := int(binary.BigEndian.Uint64(data[160+24 : 160+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Receiver")
+			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t._Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _TimeoutHeight: (uint64,uint64)
-	_, err = t._TimeoutHeight.Decode(data[192:])
+	// Decode static field TimeoutHeight: (uint64,uint64)
+	_, err = t.TimeoutHeight.Decode(data[192:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutTimestamp: uint64
-	t._TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
+	// Decode static field TimeoutTimestamp: uint64
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Memo
+	// Decode dynamic field Memo
 	{
 		offset := int(binary.BigEndian.Uint64(data[288+24 : 288+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Memo")
+			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t._Memo, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -530,25 +530,25 @@ var _ abi.Tuple = (*TestIbcTransferCall)(nil)
 
 // TestIbcTransferCall represents an ABI tuple
 type TestIbcTransferCall struct {
-	_SourcePort       string
-	_SourceChannel    string
-	_Denom            string
-	_Amount           *big.Int
-	_Sender           common.Address
-	_Receiver         string
-	_TimeoutHeight    Height
-	_TimeoutTimestamp uint64
-	_Memo             string
+	SourcePort       string
+	SourceChannel    string
+	Denom            string
+	Amount           *big.Int
+	Sender           common.Address
+	Receiver         string
+	TimeoutHeight    Height
+	TimeoutTimestamp uint64
+	Memo             string
 }
 
 // EncodedSize returns the total encoded size of TestIbcTransferCall
 func (t TestIbcTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._SourcePort)
-	dynamicSize += abi.SizeString(t._SourceChannel)
-	dynamicSize += abi.SizeString(t._Denom)
-	dynamicSize += abi.SizeString(t._Receiver)
-	dynamicSize += abi.SizeString(t._Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return TestIbcTransferCallStaticSize + dynamicSize
 }
@@ -561,71 +561,71 @@ func (value TestIbcTransferCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _SourcePort: string
+	// Field SourcePort: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _SourceChannel: string
+	// Field SourceChannel: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Denom: string
+	// Field Denom: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[96:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Sender: address
-	if _, err := abi.EncodeAddress(value._Sender, buf[128:]); err != nil {
+	// Field Sender: address
+	if _, err := abi.EncodeAddress(value.Sender, buf[128:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Receiver: string
+	// Field Receiver: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _TimeoutHeight: (uint64,uint64)
-	if _, err := value._TimeoutHeight.EncodeTo(buf[192:]); err != nil {
+	// Field TimeoutHeight: (uint64,uint64)
+	if _, err := value.TimeoutHeight.EncodeTo(buf[192:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutTimestamp: uint64
-	if _, err := abi.EncodeUint64(value._TimeoutTimestamp, buf[256:]); err != nil {
+	// Field TimeoutTimestamp: uint64
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[256:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Memo: string
+	// Field Memo: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[288+24:288+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -653,81 +653,81 @@ func (t *TestIbcTransferCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 320
-	// Decode dynamic field _SourcePort
+	// Decode dynamic field SourcePort
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourcePort")
+			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t._SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _SourceChannel
+	// Decode dynamic field SourceChannel
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourceChannel")
+			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t._SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Denom
+	// Decode dynamic field Denom
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Denom")
+			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t._Denom, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[96:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Sender: address
-	t._Sender, _, err = abi.DecodeAddress(data[128:])
+	// Decode static field Sender: address
+	t.Sender, _, err = abi.DecodeAddress(data[128:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Receiver
+	// Decode dynamic field Receiver
 	{
 		offset := int(binary.BigEndian.Uint64(data[160+24 : 160+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Receiver")
+			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t._Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _TimeoutHeight: (uint64,uint64)
-	_, err = t._TimeoutHeight.Decode(data[192:])
+	// Decode static field TimeoutHeight: (uint64,uint64)
+	_, err = t.TimeoutHeight.Decode(data[192:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutTimestamp: uint64
-	t._TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
+	// Decode static field TimeoutTimestamp: uint64
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Memo
+	// Decode dynamic field Memo
 	{
 		offset := int(binary.BigEndian.Uint64(data[288+24 : 288+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Memo")
+			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t._Memo, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -823,24 +823,24 @@ var _ abi.Tuple = (*TestIbcTransferFromContractCall)(nil)
 
 // TestIbcTransferFromContractCall represents an ABI tuple
 type TestIbcTransferFromContractCall struct {
-	_SourcePort       string
-	_SourceChannel    string
-	_Denom            string
-	_Amount           *big.Int
-	_Receiver         string
-	_TimeoutHeight    Height
-	_TimeoutTimestamp uint64
-	_Memo             string
+	SourcePort       string
+	SourceChannel    string
+	Denom            string
+	Amount           *big.Int
+	Receiver         string
+	TimeoutHeight    Height
+	TimeoutTimestamp uint64
+	Memo             string
 }
 
 // EncodedSize returns the total encoded size of TestIbcTransferFromContractCall
 func (t TestIbcTransferFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._SourcePort)
-	dynamicSize += abi.SizeString(t._SourceChannel)
-	dynamicSize += abi.SizeString(t._Denom)
-	dynamicSize += abi.SizeString(t._Receiver)
-	dynamicSize += abi.SizeString(t._Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return TestIbcTransferFromContractCallStaticSize + dynamicSize
 }
@@ -853,66 +853,66 @@ func (value TestIbcTransferFromContractCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _SourcePort: string
+	// Field SourcePort: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _SourceChannel: string
+	// Field SourceChannel: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Denom: string
+	// Field Denom: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[96:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Receiver: string
+	// Field Receiver: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[128+24:128+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _TimeoutHeight: (uint64,uint64)
-	if _, err := value._TimeoutHeight.EncodeTo(buf[160:]); err != nil {
+	// Field TimeoutHeight: (uint64,uint64)
+	if _, err := value.TimeoutHeight.EncodeTo(buf[160:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutTimestamp: uint64
-	if _, err := abi.EncodeUint64(value._TimeoutTimestamp, buf[224:]); err != nil {
+	// Field TimeoutTimestamp: uint64
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[224:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Memo: string
+	// Field Memo: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[256+24:256+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -940,76 +940,76 @@ func (t *TestIbcTransferFromContractCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 288
-	// Decode dynamic field _SourcePort
+	// Decode dynamic field SourcePort
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourcePort")
+			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t._SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _SourceChannel
+	// Decode dynamic field SourceChannel
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourceChannel")
+			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t._SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Denom
+	// Decode dynamic field Denom
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Denom")
+			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t._Denom, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[96:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Receiver
+	// Decode dynamic field Receiver
 	{
 		offset := int(binary.BigEndian.Uint64(data[128+24 : 128+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Receiver")
+			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t._Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _TimeoutHeight: (uint64,uint64)
-	_, err = t._TimeoutHeight.Decode(data[160:])
+	// Decode static field TimeoutHeight: (uint64,uint64)
+	_, err = t.TimeoutHeight.Decode(data[160:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutTimestamp: uint64
-	t._TimeoutTimestamp, _, err = abi.DecodeUint64(data[224:])
+	// Decode static field TimeoutTimestamp: uint64
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[224:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Memo
+	// Decode dynamic field Memo
 	{
 		offset := int(binary.BigEndian.Uint64(data[256+24 : 256+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Memo")
+			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t._Memo, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1105,27 +1105,27 @@ var _ abi.Tuple = (*TestIbcTransferWithTransferCall)(nil)
 
 // TestIbcTransferWithTransferCall represents an ABI tuple
 type TestIbcTransferWithTransferCall struct {
-	_SourcePort       string
-	_SourceChannel    string
-	_Denom            string
-	_Amount           *big.Int
-	_Sender           common.Address
-	_Receiver         string
-	_TimeoutHeight    Height
-	_TimeoutTimestamp uint64
-	_Memo             string
-	_Before           bool
-	_After            bool
+	SourcePort       string
+	SourceChannel    string
+	Denom            string
+	Amount           *big.Int
+	Sender           common.Address
+	Receiver         string
+	TimeoutHeight    Height
+	TimeoutTimestamp uint64
+	Memo             string
+	Before           bool
+	After            bool
 }
 
 // EncodedSize returns the total encoded size of TestIbcTransferWithTransferCall
 func (t TestIbcTransferWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._SourcePort)
-	dynamicSize += abi.SizeString(t._SourceChannel)
-	dynamicSize += abi.SizeString(t._Denom)
-	dynamicSize += abi.SizeString(t._Receiver)
-	dynamicSize += abi.SizeString(t._Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return TestIbcTransferWithTransferCallStaticSize + dynamicSize
 }
@@ -1138,83 +1138,83 @@ func (value TestIbcTransferWithTransferCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _SourcePort: string
+	// Field SourcePort: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _SourceChannel: string
+	// Field SourceChannel: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Denom: string
+	// Field Denom: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[96:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Sender: address
-	if _, err := abi.EncodeAddress(value._Sender, buf[128:]); err != nil {
+	// Field Sender: address
+	if _, err := abi.EncodeAddress(value.Sender, buf[128:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Receiver: string
+	// Field Receiver: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _TimeoutHeight: (uint64,uint64)
-	if _, err := value._TimeoutHeight.EncodeTo(buf[192:]); err != nil {
+	// Field TimeoutHeight: (uint64,uint64)
+	if _, err := value.TimeoutHeight.EncodeTo(buf[192:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutTimestamp: uint64
-	if _, err := abi.EncodeUint64(value._TimeoutTimestamp, buf[256:]); err != nil {
+	// Field TimeoutTimestamp: uint64
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[256:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Memo: string
+	// Field Memo: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[288+24:288+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[320:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[320:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[352:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[352:]); err != nil {
 		return 0, err
 	}
 
@@ -1240,93 +1240,93 @@ func (t *TestIbcTransferWithTransferCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 384
-	// Decode dynamic field _SourcePort
+	// Decode dynamic field SourcePort
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourcePort")
+			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t._SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _SourceChannel
+	// Decode dynamic field SourceChannel
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourceChannel")
+			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t._SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Denom
+	// Decode dynamic field Denom
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Denom")
+			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t._Denom, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[96:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Sender: address
-	t._Sender, _, err = abi.DecodeAddress(data[128:])
+	// Decode static field Sender: address
+	t.Sender, _, err = abi.DecodeAddress(data[128:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Receiver
+	// Decode dynamic field Receiver
 	{
 		offset := int(binary.BigEndian.Uint64(data[160+24 : 160+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Receiver")
+			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t._Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _TimeoutHeight: (uint64,uint64)
-	_, err = t._TimeoutHeight.Decode(data[192:])
+	// Decode static field TimeoutHeight: (uint64,uint64)
+	_, err = t.TimeoutHeight.Decode(data[192:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutTimestamp: uint64
-	t._TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
+	// Decode static field TimeoutTimestamp: uint64
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[256:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Memo
+	// Decode dynamic field Memo
 	{
 		offset := int(binary.BigEndian.Uint64(data[288+24 : 288+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Memo")
+			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t._Memo, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[320:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[320:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[352:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[352:])
 	if err != nil {
 		return 0, err
 	}
@@ -1420,27 +1420,27 @@ var _ abi.Tuple = (*TestRevertIbcTransferCall)(nil)
 
 // TestRevertIbcTransferCall represents an ABI tuple
 type TestRevertIbcTransferCall struct {
-	_SourcePort       string
-	_SourceChannel    string
-	_Denom            string
-	_Amount           *big.Int
-	_Sender           common.Address
-	_Receiver         string
-	_ReceiverAddr     common.Address
-	_TimeoutHeight    Height
-	_TimeoutTimestamp uint64
-	_Memo             string
-	_After            bool
+	SourcePort       string
+	SourceChannel    string
+	Denom            string
+	Amount           *big.Int
+	Sender           common.Address
+	Receiver         string
+	ReceiverAddr     common.Address
+	TimeoutHeight    Height
+	TimeoutTimestamp uint64
+	Memo             string
+	After            bool
 }
 
 // EncodedSize returns the total encoded size of TestRevertIbcTransferCall
 func (t TestRevertIbcTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._SourcePort)
-	dynamicSize += abi.SizeString(t._SourceChannel)
-	dynamicSize += abi.SizeString(t._Denom)
-	dynamicSize += abi.SizeString(t._Receiver)
-	dynamicSize += abi.SizeString(t._Memo)
+	dynamicSize += abi.SizeString(t.SourcePort)
+	dynamicSize += abi.SizeString(t.SourceChannel)
+	dynamicSize += abi.SizeString(t.Denom)
+	dynamicSize += abi.SizeString(t.Receiver)
+	dynamicSize += abi.SizeString(t.Memo)
 
 	return TestRevertIbcTransferCallStaticSize + dynamicSize
 }
@@ -1453,83 +1453,83 @@ func (value TestRevertIbcTransferCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _SourcePort: string
+	// Field SourcePort: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourcePort, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourcePort, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _SourceChannel: string
+	// Field SourceChannel: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._SourceChannel, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.SourceChannel, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Denom: string
+	// Field Denom: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Denom, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[96:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[96:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Sender: address
-	if _, err := abi.EncodeAddress(value._Sender, buf[128:]); err != nil {
+	// Field Sender: address
+	if _, err := abi.EncodeAddress(value.Sender, buf[128:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Receiver: string
+	// Field Receiver: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[160+24:160+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Receiver, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Receiver, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _ReceiverAddr: address
-	if _, err := abi.EncodeAddress(value._ReceiverAddr, buf[192:]); err != nil {
+	// Field ReceiverAddr: address
+	if _, err := abi.EncodeAddress(value.ReceiverAddr, buf[192:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutHeight: (uint64,uint64)
-	if _, err := value._TimeoutHeight.EncodeTo(buf[224:]); err != nil {
+	// Field TimeoutHeight: (uint64,uint64)
+	if _, err := value.TimeoutHeight.EncodeTo(buf[224:]); err != nil {
 		return 0, err
 	}
 
-	// Field _TimeoutTimestamp: uint64
-	if _, err := abi.EncodeUint64(value._TimeoutTimestamp, buf[288:]); err != nil {
+	// Field TimeoutTimestamp: uint64
+	if _, err := abi.EncodeUint64(value.TimeoutTimestamp, buf[288:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Memo: string
+	// Field Memo: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[320+24:320+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._Memo, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.Memo, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[352:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[352:]); err != nil {
 		return 0, err
 	}
 
@@ -1555,93 +1555,93 @@ func (t *TestRevertIbcTransferCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 384
-	// Decode dynamic field _SourcePort
+	// Decode dynamic field SourcePort
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourcePort")
+			return 0, errors.New("invalid offset for dynamic field SourcePort")
 		}
-		t._SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourcePort, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _SourceChannel
+	// Decode dynamic field SourceChannel
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _SourceChannel")
+			return 0, errors.New("invalid offset for dynamic field SourceChannel")
 		}
-		t._SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.SourceChannel, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode dynamic field _Denom
+	// Decode dynamic field Denom
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Denom")
+			return 0, errors.New("invalid offset for dynamic field Denom")
 		}
-		t._Denom, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[96:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[96:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Sender: address
-	t._Sender, _, err = abi.DecodeAddress(data[128:])
+	// Decode static field Sender: address
+	t.Sender, _, err = abi.DecodeAddress(data[128:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Receiver
+	// Decode dynamic field Receiver
 	{
 		offset := int(binary.BigEndian.Uint64(data[160+24 : 160+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Receiver")
+			return 0, errors.New("invalid offset for dynamic field Receiver")
 		}
-		t._Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Receiver, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _ReceiverAddr: address
-	t._ReceiverAddr, _, err = abi.DecodeAddress(data[192:])
+	// Decode static field ReceiverAddr: address
+	t.ReceiverAddr, _, err = abi.DecodeAddress(data[192:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutHeight: (uint64,uint64)
-	_, err = t._TimeoutHeight.Decode(data[224:])
+	// Decode static field TimeoutHeight: (uint64,uint64)
+	_, err = t.TimeoutHeight.Decode(data[224:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _TimeoutTimestamp: uint64
-	t._TimeoutTimestamp, _, err = abi.DecodeUint64(data[288:])
+	// Decode static field TimeoutTimestamp: uint64
+	t.TimeoutTimestamp, _, err = abi.DecodeUint64(data[288:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _Memo
+	// Decode dynamic field Memo
 	{
 		offset := int(binary.BigEndian.Uint64(data[320+24 : 320+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _Memo")
+			return 0, errors.New("invalid offset for dynamic field Memo")
 		}
-		t._Memo, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.Memo, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[352:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[352:])
 	if err != nil {
 		return 0, err
 	}

@@ -9,6 +9,7 @@ import (
 	"io"
 	"math/big"
 
+	cmn "github.com/cosmos/evm/precompiles/common"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/yihuang/go-abi"
 )
@@ -116,89 +117,6 @@ const (
 	TestWithdrawValidatorCommissionWithTransferID = 1631407592
 	WithdrawDelegatorRewardsAndRevertID           = 2908507357
 )
-
-const CoinStaticSize = 64
-
-var _ abi.Tuple = (*Coin)(nil)
-
-// Coin represents an ABI tuple
-type Coin struct {
-	Denom  string
-	Amount *big.Int
-}
-
-// EncodedSize returns the total encoded size of Coin
-func (t Coin) EncodedSize() int {
-	dynamicSize := 0
-	dynamicSize += abi.SizeString(t.Denom)
-
-	return CoinStaticSize + dynamicSize
-}
-
-// EncodeTo encodes Coin to ABI bytes in the provided buffer
-func (value Coin) EncodeTo(buf []byte) (int, error) {
-	// Encode tuple fields
-	dynamicOffset := CoinStaticSize // Start dynamic data after static section
-	var (
-		err error
-		n   int
-	)
-	// Field Denom: string
-	// Encode offset pointer
-	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
-	// Encode dynamic data
-	n, err = abi.EncodeString(value.Denom, buf[dynamicOffset:])
-	if err != nil {
-		return 0, err
-	}
-	dynamicOffset += n
-
-	// Field Amount: uint256
-	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
-		return 0, err
-	}
-
-	return dynamicOffset, nil
-}
-
-// Encode encodes Coin to ABI bytes
-func (value Coin) Encode() ([]byte, error) {
-	buf := make([]byte, value.EncodedSize())
-	if _, err := value.EncodeTo(buf); err != nil {
-		return nil, err
-	}
-	return buf, nil
-}
-
-// Decode decodes Coin from ABI bytes in the provided buffer
-func (t *Coin) Decode(data []byte) (int, error) {
-	if len(data) < 64 {
-		return 0, io.ErrUnexpectedEOF
-	}
-	var (
-		err error
-		n   int
-	)
-	dynamicOffset := 64
-	// Decode dynamic field Denom
-	{
-		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
-		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field Denom")
-		}
-		t.Denom, n, err = abi.DecodeString(data[dynamicOffset:])
-		if err != nil {
-			return 0, err
-		}
-		dynamicOffset += n
-	}
-	// Decode static field Amount: uint256
-	t.Amount, _, err = abi.DecodeUint256(data[32:])
-	if err != nil {
-		return 0, err
-	}
-	return dynamicOffset, nil
-}
 
 const DecStaticSize = 64
 
@@ -840,7 +758,7 @@ func (t *ValidatorSlashEvent) Decode(data []byte) (int, error) {
 }
 
 // EncodeCoinSlice encodes (string,uint256)[] to ABI bytes
-func EncodeCoinSlice(value []Coin, buf []byte) (int, error) {
+func EncodeCoinSlice(value []cmn.Coin, buf []byte) (int, error) {
 	// Encode length
 	binary.BigEndian.PutUint64(buf[24:32], uint64(len(value)))
 	buf = buf[32:]
@@ -934,7 +852,7 @@ func EncodeValidatorSlashEventSlice(value []ValidatorSlashEvent, buf []byte) (in
 }
 
 // SizeCoinSlice returns the encoded size of (string,uint256)[]
-func SizeCoinSlice(value []Coin) int {
+func SizeCoinSlice(value []cmn.Coin) int {
 	size := 32 + 32*len(value) // length + offset pointers for dynamic elements
 	for _, elem := range value {
 		size += elem.EncodedSize()
@@ -967,7 +885,7 @@ func SizeValidatorSlashEventSlice(value []ValidatorSlashEvent) int {
 }
 
 // DecodeCoinSlice decodes (string,uint256)[] from ABI bytes
-func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
+func DecodeCoinSlice(data []byte) ([]cmn.Coin, int, error) {
 	// Decode length
 	length := int(binary.BigEndian.Uint64(data[24:32]))
 	if len(data) < 32 {
@@ -983,7 +901,7 @@ func DecodeCoinSlice(data []byte) ([]Coin, int, error) {
 		offset int
 	)
 	// Decode elements with dynamic types
-	result := make([]Coin, length)
+	result := make([]cmn.Coin, length)
 	dynamicOffset := length * 32
 	for i := 0; i < length; i++ {
 		offset += 32
@@ -1190,14 +1108,14 @@ var _ abi.Tuple = (*DelegateCallSetWithdrawAddressCall)(nil)
 
 // DelegateCallSetWithdrawAddressCall represents an ABI tuple
 type DelegateCallSetWithdrawAddressCall struct {
-	_DelAddr      common.Address
-	_WithdrawAddr string
+	DelAddr      common.Address
+	WithdrawAddr string
 }
 
 // EncodedSize returns the total encoded size of DelegateCallSetWithdrawAddressCall
 func (t DelegateCallSetWithdrawAddressCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._WithdrawAddr)
+	dynamicSize += abi.SizeString(t.WithdrawAddr)
 
 	return DelegateCallSetWithdrawAddressCallStaticSize + dynamicSize
 }
@@ -1210,16 +1128,16 @@ func (value DelegateCallSetWithdrawAddressCall) EncodeTo(buf []byte) (int, error
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _WithdrawAddr: string
+	// Field WithdrawAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._WithdrawAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.WithdrawAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1247,18 +1165,18 @@ func (t *DelegateCallSetWithdrawAddressCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _WithdrawAddr
+	// Decode dynamic field WithdrawAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _WithdrawAddr")
+			return 0, errors.New("invalid offset for dynamic field WithdrawAddr")
 		}
-		t._WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1446,14 +1364,14 @@ var _ abi.Tuple = (*GetDelegationRewardsCall)(nil)
 
 // GetDelegationRewardsCall represents an ABI tuple
 type GetDelegationRewardsCall struct {
-	_DelAddr common.Address
-	_ValAddr string
+	DelAddr common.Address
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of GetDelegationRewardsCall
 func (t GetDelegationRewardsCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return GetDelegationRewardsCallStaticSize + dynamicSize
 }
@@ -1466,16 +1384,16 @@ func (value GetDelegationRewardsCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -1503,18 +1421,18 @@ func (t *GetDelegationRewardsCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -1628,7 +1546,7 @@ var _ abi.Tuple = (*GetDelegationTotalRewardsCall)(nil)
 
 // GetDelegationTotalRewardsCall represents an ABI tuple
 type GetDelegationTotalRewardsCall struct {
-	_DelAddr common.Address
+	DelAddr common.Address
 }
 
 // EncodedSize returns the total encoded size of GetDelegationTotalRewardsCall
@@ -1642,8 +1560,8 @@ func (t GetDelegationTotalRewardsCall) EncodedSize() int {
 func (value GetDelegationTotalRewardsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetDelegationTotalRewardsCallStaticSize // Start dynamic data after static section
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1668,8 +1586,8 @@ func (t *GetDelegationTotalRewardsCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 32
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1805,7 +1723,7 @@ var _ abi.Tuple = (*GetDelegatorValidatorsCall)(nil)
 
 // GetDelegatorValidatorsCall represents an ABI tuple
 type GetDelegatorValidatorsCall struct {
-	_DelAddr common.Address
+	DelAddr common.Address
 }
 
 // EncodedSize returns the total encoded size of GetDelegatorValidatorsCall
@@ -1819,8 +1737,8 @@ func (t GetDelegatorValidatorsCall) EncodedSize() int {
 func (value GetDelegatorValidatorsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetDelegatorValidatorsCallStaticSize // Start dynamic data after static section
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1845,8 +1763,8 @@ func (t *GetDelegatorValidatorsCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 32
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -1958,7 +1876,7 @@ var _ abi.Tuple = (*GetDelegatorWithdrawAddressCall)(nil)
 
 // GetDelegatorWithdrawAddressCall represents an ABI tuple
 type GetDelegatorWithdrawAddressCall struct {
-	_DelAddr common.Address
+	DelAddr common.Address
 }
 
 // EncodedSize returns the total encoded size of GetDelegatorWithdrawAddressCall
@@ -1972,8 +1890,8 @@ func (t GetDelegatorWithdrawAddressCall) EncodedSize() int {
 func (value GetDelegatorWithdrawAddressCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := GetDelegatorWithdrawAddressCallStaticSize // Start dynamic data after static section
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -1998,8 +1916,8 @@ func (t *GetDelegatorWithdrawAddressCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 32
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -2111,13 +2029,13 @@ var _ abi.Tuple = (*GetValidatorCommissionCall)(nil)
 
 // GetValidatorCommissionCall represents an ABI tuple
 type GetValidatorCommissionCall struct {
-	_ValAddr string
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of GetValidatorCommissionCall
 func (t GetValidatorCommissionCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return GetValidatorCommissionCallStaticSize + dynamicSize
 }
@@ -2130,11 +2048,11 @@ func (value GetValidatorCommissionCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2162,13 +2080,13 @@ func (t *GetValidatorCommissionCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2282,13 +2200,13 @@ var _ abi.Tuple = (*GetValidatorDistributionInfoCall)(nil)
 
 // GetValidatorDistributionInfoCall represents an ABI tuple
 type GetValidatorDistributionInfoCall struct {
-	_ValAddr string
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of GetValidatorDistributionInfoCall
 func (t GetValidatorDistributionInfoCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return GetValidatorDistributionInfoCallStaticSize + dynamicSize
 }
@@ -2301,11 +2219,11 @@ func (value GetValidatorDistributionInfoCall) EncodeTo(buf []byte) (int, error) 
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2333,13 +2251,13 @@ func (t *GetValidatorDistributionInfoCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2453,13 +2371,13 @@ var _ abi.Tuple = (*GetValidatorOutstandingRewardsCall)(nil)
 
 // GetValidatorOutstandingRewardsCall represents an ABI tuple
 type GetValidatorOutstandingRewardsCall struct {
-	_ValAddr string
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of GetValidatorOutstandingRewardsCall
 func (t GetValidatorOutstandingRewardsCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return GetValidatorOutstandingRewardsCallStaticSize + dynamicSize
 }
@@ -2472,11 +2390,11 @@ func (value GetValidatorOutstandingRewardsCall) EncodeTo(buf []byte) (int, error
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -2504,13 +2422,13 @@ func (t *GetValidatorOutstandingRewardsCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -2624,16 +2542,16 @@ var _ abi.Tuple = (*GetValidatorSlashesCall)(nil)
 
 // GetValidatorSlashesCall represents an ABI tuple
 type GetValidatorSlashesCall struct {
-	_ValAddr        string
-	_StartingHeight uint64
-	_EndingHeight   uint64
-	PageRequest     PageRequest
+	ValAddr        string
+	StartingHeight uint64
+	EndingHeight   uint64
+	PageRequest    PageRequest
 }
 
 // EncodedSize returns the total encoded size of GetValidatorSlashesCall
 func (t GetValidatorSlashesCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 	dynamicSize += t.PageRequest.EncodedSize()
 
 	return GetValidatorSlashesCallStaticSize + dynamicSize
@@ -2647,23 +2565,23 @@ func (value GetValidatorSlashesCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _StartingHeight: uint64
-	if _, err := abi.EncodeUint64(value._StartingHeight, buf[32:]); err != nil {
+	// Field StartingHeight: uint64
+	if _, err := abi.EncodeUint64(value.StartingHeight, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _EndingHeight: uint64
-	if _, err := abi.EncodeUint64(value._EndingHeight, buf[64:]); err != nil {
+	// Field EndingHeight: uint64
+	if _, err := abi.EncodeUint64(value.EndingHeight, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -2699,25 +2617,25 @@ func (t *GetValidatorSlashesCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 128
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _StartingHeight: uint64
-	t._StartingHeight, _, err = abi.DecodeUint64(data[32:])
+	// Decode static field StartingHeight: uint64
+	t.StartingHeight, _, err = abi.DecodeUint64(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _EndingHeight: uint64
-	t._EndingHeight, _, err = abi.DecodeUint64(data[64:])
+	// Decode static field EndingHeight: uint64
+	t.EndingHeight, _, err = abi.DecodeUint64(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -2865,16 +2783,16 @@ var _ abi.Tuple = (*RevertWithdrawRewardsAndTransferCall)(nil)
 
 // RevertWithdrawRewardsAndTransferCall represents an ABI tuple
 type RevertWithdrawRewardsAndTransferCall struct {
-	_DelAddr    common.Address
-	_Withdrawer common.Address
-	_ValAddr    string
-	_After      bool
+	DelAddr    common.Address
+	Withdrawer common.Address
+	ValAddr    string
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of RevertWithdrawRewardsAndTransferCall
 func (t RevertWithdrawRewardsAndTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return RevertWithdrawRewardsAndTransferCallStaticSize + dynamicSize
 }
@@ -2887,28 +2805,28 @@ func (value RevertWithdrawRewardsAndTransferCall) EncodeTo(buf []byte) (int, err
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Withdrawer: address
-	if _, err := abi.EncodeAddress(value._Withdrawer, buf[32:]); err != nil {
+	// Field Withdrawer: address
+	if _, err := abi.EncodeAddress(value.Withdrawer, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -2934,30 +2852,30 @@ func (t *RevertWithdrawRewardsAndTransferCall) Decode(data []byte) (int, error) 
 		n   int
 	)
 	dynamicOffset := 128
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Withdrawer: address
-	t._Withdrawer, _, err = abi.DecodeAddress(data[32:])
+	// Decode static field Withdrawer: address
+	t.Withdrawer, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -3002,7 +2920,7 @@ var _ abi.Tuple = (*StaticCallGetWithdrawAddressCall)(nil)
 
 // StaticCallGetWithdrawAddressCall represents an ABI tuple
 type StaticCallGetWithdrawAddressCall struct {
-	_DelAddr common.Address
+	DelAddr common.Address
 }
 
 // EncodedSize returns the total encoded size of StaticCallGetWithdrawAddressCall
@@ -3016,8 +2934,8 @@ func (t StaticCallGetWithdrawAddressCall) EncodedSize() int {
 func (value StaticCallGetWithdrawAddressCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := StaticCallGetWithdrawAddressCallStaticSize // Start dynamic data after static section
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
@@ -3042,8 +2960,8 @@ func (t *StaticCallGetWithdrawAddressCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 32
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
@@ -3155,14 +3073,14 @@ var _ abi.Tuple = (*StaticCallSetWithdrawAddressCall)(nil)
 
 // StaticCallSetWithdrawAddressCall represents an ABI tuple
 type StaticCallSetWithdrawAddressCall struct {
-	_DelAddr      common.Address
-	_WithdrawAddr string
+	DelAddr      common.Address
+	WithdrawAddr string
 }
 
 // EncodedSize returns the total encoded size of StaticCallSetWithdrawAddressCall
 func (t StaticCallSetWithdrawAddressCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._WithdrawAddr)
+	dynamicSize += abi.SizeString(t.WithdrawAddr)
 
 	return StaticCallSetWithdrawAddressCallStaticSize + dynamicSize
 }
@@ -3175,16 +3093,16 @@ func (value StaticCallSetWithdrawAddressCall) EncodeTo(buf []byte) (int, error) 
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _WithdrawAddr: string
+	// Field WithdrawAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._WithdrawAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.WithdrawAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -3212,18 +3130,18 @@ func (t *StaticCallSetWithdrawAddressCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _WithdrawAddr
+	// Decode dynamic field WithdrawAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _WithdrawAddr")
+			return 0, errors.New("invalid offset for dynamic field WithdrawAddr")
 		}
-		t._WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -3270,8 +3188,8 @@ var _ abi.Tuple = (*TestClaimRewardsCall)(nil)
 
 // TestClaimRewardsCall represents an ABI tuple
 type TestClaimRewardsCall struct {
-	_DelAddr     common.Address
-	_MaxRetrieve uint32
+	DelAddr     common.Address
+	MaxRetrieve uint32
 }
 
 // EncodedSize returns the total encoded size of TestClaimRewardsCall
@@ -3285,13 +3203,13 @@ func (t TestClaimRewardsCall) EncodedSize() int {
 func (value TestClaimRewardsCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TestClaimRewardsCallStaticSize // Start dynamic data after static section
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _MaxRetrieve: uint32
-	if _, err := abi.EncodeUint32(value._MaxRetrieve, buf[32:]); err != nil {
+	// Field MaxRetrieve: uint32
+	if _, err := abi.EncodeUint32(value.MaxRetrieve, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -3316,13 +3234,13 @@ func (t *TestClaimRewardsCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _MaxRetrieve: uint32
-	t._MaxRetrieve, _, err = abi.DecodeUint32(data[32:])
+	// Decode static field MaxRetrieve: uint32
+	t.MaxRetrieve, _, err = abi.DecodeUint32(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -3416,9 +3334,9 @@ var _ abi.Tuple = (*TestClaimRewardsWithTransferCall)(nil)
 
 // TestClaimRewardsWithTransferCall represents an ABI tuple
 type TestClaimRewardsWithTransferCall struct {
-	_MaxRetrieve uint32
-	_Before      bool
-	_After       bool
+	MaxRetrieve uint32
+	Before      bool
+	After       bool
 }
 
 // EncodedSize returns the total encoded size of TestClaimRewardsWithTransferCall
@@ -3432,18 +3350,18 @@ func (t TestClaimRewardsWithTransferCall) EncodedSize() int {
 func (value TestClaimRewardsWithTransferCall) EncodeTo(buf []byte) (int, error) {
 	// Encode tuple fields
 	dynamicOffset := TestClaimRewardsWithTransferCallStaticSize // Start dynamic data after static section
-	// Field _MaxRetrieve: uint32
-	if _, err := abi.EncodeUint32(value._MaxRetrieve, buf[0:]); err != nil {
+	// Field MaxRetrieve: uint32
+	if _, err := abi.EncodeUint32(value.MaxRetrieve, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[32:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[64:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -3468,18 +3386,18 @@ func (t *TestClaimRewardsWithTransferCall) Decode(data []byte) (int, error) {
 		err error
 	)
 	dynamicOffset := 96
-	// Decode static field _MaxRetrieve: uint32
-	t._MaxRetrieve, _, err = abi.DecodeUint32(data[0:])
+	// Decode static field MaxRetrieve: uint32
+	t.MaxRetrieve, _, err = abi.DecodeUint32(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[32:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[64:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -3524,14 +3442,14 @@ var _ abi.Tuple = (*TestDelegateFromContractCall)(nil)
 
 // TestDelegateFromContractCall represents an ABI tuple
 type TestDelegateFromContractCall struct {
-	_ValidatorAddr string
-	_Amount        *big.Int
+	ValidatorAddr string
+	Amount        *big.Int
 }
 
 // EncodedSize returns the total encoded size of TestDelegateFromContractCall
 func (t TestDelegateFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValidatorAddr)
+	dynamicSize += abi.SizeString(t.ValidatorAddr)
 
 	return TestDelegateFromContractCallStaticSize + dynamicSize
 }
@@ -3544,18 +3462,18 @@ func (value TestDelegateFromContractCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _ValidatorAddr: string
+	// Field ValidatorAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValidatorAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValidatorAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Amount: uint256
-	if _, err := abi.EncodeUint256(value._Amount, buf[32:]); err != nil {
+	// Field Amount: uint256
+	if _, err := abi.EncodeUint256(value.Amount, buf[32:]); err != nil {
 		return 0, err
 	}
 
@@ -3581,20 +3499,20 @@ func (t *TestDelegateFromContractCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode dynamic field _ValidatorAddr
+	// Decode dynamic field ValidatorAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValidatorAddr")
+			return 0, errors.New("invalid offset for dynamic field ValidatorAddr")
 		}
-		t._ValidatorAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValidatorAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Amount: uint256
-	t._Amount, _, err = abi.DecodeUint256(data[32:])
+	// Decode static field Amount: uint256
+	t.Amount, _, err = abi.DecodeUint256(data[32:])
 	if err != nil {
 		return 0, err
 	}
@@ -3641,7 +3559,7 @@ var _ abi.Tuple = (*TestDepositValidatorRewardsPoolCall)(nil)
 type TestDepositValidatorRewardsPoolCall struct {
 	Depositor        common.Address
 	ValidatorAddress string
-	Amount           []Coin
+	Amount           []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestDepositValidatorRewardsPoolCall
@@ -3828,9 +3746,9 @@ var _ abi.Tuple = (*TestDepositValidatorRewardsPoolWithTransferCall)(nil)
 // TestDepositValidatorRewardsPoolWithTransferCall represents an ABI tuple
 type TestDepositValidatorRewardsPoolWithTransferCall struct {
 	ValidatorAddress string
-	Amount           []Coin
-	_Before          bool
-	_After           bool
+	Amount           []cmn.Coin
+	Before           bool
+	After            bool
 }
 
 // EncodedSize returns the total encoded size of TestDepositValidatorRewardsPoolWithTransferCall
@@ -3870,13 +3788,13 @@ func (value TestDepositValidatorRewardsPoolWithTransferCall) EncodeTo(buf []byte
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -3926,13 +3844,13 @@ func (t *TestDepositValidatorRewardsPoolWithTransferCall) Decode(data []byte) (i
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -3978,7 +3896,7 @@ var _ abi.Tuple = (*TestFundCommunityPoolCall)(nil)
 // TestFundCommunityPoolCall represents an ABI tuple
 type TestFundCommunityPoolCall struct {
 	Depositor common.Address
-	Amount    []Coin
+	Amount    []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestFundCommunityPoolCall
@@ -4142,9 +4060,9 @@ var _ abi.Tuple = (*TestFundCommunityPoolWithTransferCall)(nil)
 // TestFundCommunityPoolWithTransferCall represents an ABI tuple
 type TestFundCommunityPoolWithTransferCall struct {
 	Depositor common.Address
-	Amount    []Coin
-	_Before   bool
-	_After    bool
+	Amount    []cmn.Coin
+	Before    bool
+	After     bool
 }
 
 // EncodedSize returns the total encoded size of TestFundCommunityPoolWithTransferCall
@@ -4178,13 +4096,13 @@ func (value TestFundCommunityPoolWithTransferCall) EncodeTo(buf []byte) (int, er
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -4227,13 +4145,13 @@ func (t *TestFundCommunityPoolWithTransferCall) Decode(data []byte) (int, error)
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -4278,16 +4196,16 @@ var _ abi.Tuple = (*TestRevertStateCall)(nil)
 
 // TestRevertStateCall represents an ABI tuple
 type TestRevertStateCall struct {
-	_WithdrawAddr string
-	_DelAddr      common.Address
-	_ValAddr      string
+	WithdrawAddr string
+	DelAddr      common.Address
+	ValAddr      string
 }
 
 // EncodedSize returns the total encoded size of TestRevertStateCall
 func (t TestRevertStateCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._WithdrawAddr)
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.WithdrawAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestRevertStateCallStaticSize + dynamicSize
 }
@@ -4300,26 +4218,26 @@ func (value TestRevertStateCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _WithdrawAddr: string
+	// Field WithdrawAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._WithdrawAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.WithdrawAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[32:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[64+24:64+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -4347,30 +4265,30 @@ func (t *TestRevertStateCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 96
-	// Decode dynamic field _WithdrawAddr
+	// Decode dynamic field WithdrawAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _WithdrawAddr")
+			return 0, errors.New("invalid offset for dynamic field WithdrawAddr")
 		}
-		t._WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[32:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[64+24 : 64+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -4410,7 +4328,7 @@ var _ abi.Tuple = (*TestRevertStateReturn)(nil)
 
 // TestRevertStateReturn represents an ABI tuple
 type TestRevertStateReturn struct {
-	Field1 []Coin
+	Field1 []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestRevertStateReturn
@@ -4484,14 +4402,14 @@ var _ abi.Tuple = (*TestSetWithdrawAddressCall)(nil)
 
 // TestSetWithdrawAddressCall represents an ABI tuple
 type TestSetWithdrawAddressCall struct {
-	_DelAddr      common.Address
-	_WithdrawAddr string
+	DelAddr      common.Address
+	WithdrawAddr string
 }
 
 // EncodedSize returns the total encoded size of TestSetWithdrawAddressCall
 func (t TestSetWithdrawAddressCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._WithdrawAddr)
+	dynamicSize += abi.SizeString(t.WithdrawAddr)
 
 	return TestSetWithdrawAddressCallStaticSize + dynamicSize
 }
@@ -4504,16 +4422,16 @@ func (value TestSetWithdrawAddressCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _WithdrawAddr: string
+	// Field WithdrawAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._WithdrawAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.WithdrawAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -4541,18 +4459,18 @@ func (t *TestSetWithdrawAddressCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _WithdrawAddr
+	// Decode dynamic field WithdrawAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _WithdrawAddr")
+			return 0, errors.New("invalid offset for dynamic field WithdrawAddr")
 		}
-		t._WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -4648,13 +4566,13 @@ var _ abi.Tuple = (*TestSetWithdrawAddressFromContractCall)(nil)
 
 // TestSetWithdrawAddressFromContractCall represents an ABI tuple
 type TestSetWithdrawAddressFromContractCall struct {
-	_WithdrawAddr string
+	WithdrawAddr string
 }
 
 // EncodedSize returns the total encoded size of TestSetWithdrawAddressFromContractCall
 func (t TestSetWithdrawAddressFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._WithdrawAddr)
+	dynamicSize += abi.SizeString(t.WithdrawAddr)
 
 	return TestSetWithdrawAddressFromContractCallStaticSize + dynamicSize
 }
@@ -4667,11 +4585,11 @@ func (value TestSetWithdrawAddressFromContractCall) EncodeTo(buf []byte) (int, e
 		err error
 		n   int
 	)
-	// Field _WithdrawAddr: string
+	// Field WithdrawAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._WithdrawAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.WithdrawAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -4699,13 +4617,13 @@ func (t *TestSetWithdrawAddressFromContractCall) Decode(data []byte) (int, error
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _WithdrawAddr
+	// Decode dynamic field WithdrawAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _WithdrawAddr")
+			return 0, errors.New("invalid offset for dynamic field WithdrawAddr")
 		}
-		t._WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.WithdrawAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -4947,14 +4865,14 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardCall)(nil)
 
 // TestWithdrawDelegatorRewardCall represents an ABI tuple
 type TestWithdrawDelegatorRewardCall struct {
-	_DelAddr common.Address
-	_ValAddr string
+	DelAddr common.Address
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardCall
 func (t TestWithdrawDelegatorRewardCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestWithdrawDelegatorRewardCallStaticSize + dynamicSize
 }
@@ -4967,16 +4885,16 @@ func (value TestWithdrawDelegatorRewardCall) EncodeTo(buf []byte) (int, error) {
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -5004,18 +4922,18 @@ func (t *TestWithdrawDelegatorRewardCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -5055,7 +4973,7 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardReturn)(nil)
 
 // TestWithdrawDelegatorRewardReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardReturn struct {
-	Field1 []Coin
+	Field1 []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardReturn
@@ -5129,13 +5047,13 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardFromContractCall)(nil)
 
 // TestWithdrawDelegatorRewardFromContractCall represents an ABI tuple
 type TestWithdrawDelegatorRewardFromContractCall struct {
-	_ValAddr string
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardFromContractCall
 func (t TestWithdrawDelegatorRewardFromContractCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestWithdrawDelegatorRewardFromContractCallStaticSize + dynamicSize
 }
@@ -5148,11 +5066,11 @@ func (value TestWithdrawDelegatorRewardFromContractCall) EncodeTo(buf []byte) (i
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -5180,13 +5098,13 @@ func (t *TestWithdrawDelegatorRewardFromContractCall) Decode(data []byte) (int, 
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -5226,7 +5144,7 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardFromContractReturn)(nil)
 
 // TestWithdrawDelegatorRewardFromContractReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardFromContractReturn struct {
-	Field1 []Coin
+	Field1 []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardFromContractReturn
@@ -5300,15 +5218,15 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardWithTransferCall)(nil)
 
 // TestWithdrawDelegatorRewardWithTransferCall represents an ABI tuple
 type TestWithdrawDelegatorRewardWithTransferCall struct {
-	_ValAddr string
-	_Before  bool
-	_After   bool
+	ValAddr string
+	Before  bool
+	After   bool
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardWithTransferCall
 func (t TestWithdrawDelegatorRewardWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestWithdrawDelegatorRewardWithTransferCallStaticSize + dynamicSize
 }
@@ -5321,23 +5239,23 @@ func (value TestWithdrawDelegatorRewardWithTransferCall) EncodeTo(buf []byte) (i
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[32:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[64:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[64:]); err != nil {
 		return 0, err
 	}
 
@@ -5363,25 +5281,25 @@ func (t *TestWithdrawDelegatorRewardWithTransferCall) Decode(data []byte) (int, 
 		n   int
 	)
 	dynamicOffset := 96
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[32:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[64:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
@@ -5419,7 +5337,7 @@ var _ abi.Tuple = (*TestWithdrawDelegatorRewardWithTransferReturn)(nil)
 
 // TestWithdrawDelegatorRewardWithTransferReturn represents an ABI tuple
 type TestWithdrawDelegatorRewardWithTransferReturn struct {
-	Coins []Coin
+	Coins []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawDelegatorRewardWithTransferReturn
@@ -5493,13 +5411,13 @@ var _ abi.Tuple = (*TestWithdrawValidatorCommissionCall)(nil)
 
 // TestWithdrawValidatorCommissionCall represents an ABI tuple
 type TestWithdrawValidatorCommissionCall struct {
-	_ValAddr string
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawValidatorCommissionCall
 func (t TestWithdrawValidatorCommissionCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestWithdrawValidatorCommissionCallStaticSize + dynamicSize
 }
@@ -5512,11 +5430,11 @@ func (value TestWithdrawValidatorCommissionCall) EncodeTo(buf []byte) (int, erro
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -5544,13 +5462,13 @@ func (t *TestWithdrawValidatorCommissionCall) Decode(data []byte) (int, error) {
 		n   int
 	)
 	dynamicOffset := 32
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -5590,7 +5508,7 @@ var _ abi.Tuple = (*TestWithdrawValidatorCommissionReturn)(nil)
 
 // TestWithdrawValidatorCommissionReturn represents an ABI tuple
 type TestWithdrawValidatorCommissionReturn struct {
-	Field1 []Coin
+	Field1 []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawValidatorCommissionReturn
@@ -5664,16 +5582,16 @@ var _ abi.Tuple = (*TestWithdrawValidatorCommissionWithTransferCall)(nil)
 
 // TestWithdrawValidatorCommissionWithTransferCall represents an ABI tuple
 type TestWithdrawValidatorCommissionWithTransferCall struct {
-	_ValAddr    string
-	_Withdrawer common.Address
-	_Before     bool
-	_After      bool
+	ValAddr    string
+	Withdrawer common.Address
+	Before     bool
+	After      bool
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawValidatorCommissionWithTransferCall
 func (t TestWithdrawValidatorCommissionWithTransferCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return TestWithdrawValidatorCommissionWithTransferCallStaticSize + dynamicSize
 }
@@ -5686,28 +5604,28 @@ func (value TestWithdrawValidatorCommissionWithTransferCall) EncodeTo(buf []byte
 		err error
 		n   int
 	)
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[0+24:0+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
 	dynamicOffset += n
 
-	// Field _Withdrawer: address
-	if _, err := abi.EncodeAddress(value._Withdrawer, buf[32:]); err != nil {
+	// Field Withdrawer: address
+	if _, err := abi.EncodeAddress(value.Withdrawer, buf[32:]); err != nil {
 		return 0, err
 	}
 
-	// Field _Before: bool
-	if _, err := abi.EncodeBool(value._Before, buf[64:]); err != nil {
+	// Field Before: bool
+	if _, err := abi.EncodeBool(value.Before, buf[64:]); err != nil {
 		return 0, err
 	}
 
-	// Field _After: bool
-	if _, err := abi.EncodeBool(value._After, buf[96:]); err != nil {
+	// Field After: bool
+	if _, err := abi.EncodeBool(value.After, buf[96:]); err != nil {
 		return 0, err
 	}
 
@@ -5733,30 +5651,30 @@ func (t *TestWithdrawValidatorCommissionWithTransferCall) Decode(data []byte) (i
 		n   int
 	)
 	dynamicOffset := 128
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[0+24 : 0+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
 		dynamicOffset += n
 	}
-	// Decode static field _Withdrawer: address
-	t._Withdrawer, _, err = abi.DecodeAddress(data[32:])
+	// Decode static field Withdrawer: address
+	t.Withdrawer, _, err = abi.DecodeAddress(data[32:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _Before: bool
-	t._Before, _, err = abi.DecodeBool(data[64:])
+	// Decode static field Before: bool
+	t.Before, _, err = abi.DecodeBool(data[64:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode static field _After: bool
-	t._After, _, err = abi.DecodeBool(data[96:])
+	// Decode static field After: bool
+	t.After, _, err = abi.DecodeBool(data[96:])
 	if err != nil {
 		return 0, err
 	}
@@ -5794,7 +5712,7 @@ var _ abi.Tuple = (*TestWithdrawValidatorCommissionWithTransferReturn)(nil)
 
 // TestWithdrawValidatorCommissionWithTransferReturn represents an ABI tuple
 type TestWithdrawValidatorCommissionWithTransferReturn struct {
-	Coins []Coin
+	Coins []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of TestWithdrawValidatorCommissionWithTransferReturn
@@ -5868,14 +5786,14 @@ var _ abi.Tuple = (*WithdrawDelegatorRewardsAndRevertCall)(nil)
 
 // WithdrawDelegatorRewardsAndRevertCall represents an ABI tuple
 type WithdrawDelegatorRewardsAndRevertCall struct {
-	_DelAddr common.Address
-	_ValAddr string
+	DelAddr common.Address
+	ValAddr string
 }
 
 // EncodedSize returns the total encoded size of WithdrawDelegatorRewardsAndRevertCall
 func (t WithdrawDelegatorRewardsAndRevertCall) EncodedSize() int {
 	dynamicSize := 0
-	dynamicSize += abi.SizeString(t._ValAddr)
+	dynamicSize += abi.SizeString(t.ValAddr)
 
 	return WithdrawDelegatorRewardsAndRevertCallStaticSize + dynamicSize
 }
@@ -5888,16 +5806,16 @@ func (value WithdrawDelegatorRewardsAndRevertCall) EncodeTo(buf []byte) (int, er
 		err error
 		n   int
 	)
-	// Field _DelAddr: address
-	if _, err := abi.EncodeAddress(value._DelAddr, buf[0:]); err != nil {
+	// Field DelAddr: address
+	if _, err := abi.EncodeAddress(value.DelAddr, buf[0:]); err != nil {
 		return 0, err
 	}
 
-	// Field _ValAddr: string
+	// Field ValAddr: string
 	// Encode offset pointer
 	binary.BigEndian.PutUint64(buf[32+24:32+32], uint64(dynamicOffset))
 	// Encode dynamic data
-	n, err = abi.EncodeString(value._ValAddr, buf[dynamicOffset:])
+	n, err = abi.EncodeString(value.ValAddr, buf[dynamicOffset:])
 	if err != nil {
 		return 0, err
 	}
@@ -5925,18 +5843,18 @@ func (t *WithdrawDelegatorRewardsAndRevertCall) Decode(data []byte) (int, error)
 		n   int
 	)
 	dynamicOffset := 64
-	// Decode static field _DelAddr: address
-	t._DelAddr, _, err = abi.DecodeAddress(data[0:])
+	// Decode static field DelAddr: address
+	t.DelAddr, _, err = abi.DecodeAddress(data[0:])
 	if err != nil {
 		return 0, err
 	}
-	// Decode dynamic field _ValAddr
+	// Decode dynamic field ValAddr
 	{
 		offset := int(binary.BigEndian.Uint64(data[32+24 : 32+32]))
 		if offset != dynamicOffset {
-			return 0, errors.New("invalid offset for dynamic field _ValAddr")
+			return 0, errors.New("invalid offset for dynamic field ValAddr")
 		}
-		t._ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
+		t.ValAddr, n, err = abi.DecodeString(data[dynamicOffset:])
 		if err != nil {
 			return 0, err
 		}
@@ -5976,7 +5894,7 @@ var _ abi.Tuple = (*WithdrawDelegatorRewardsAndRevertReturn)(nil)
 
 // WithdrawDelegatorRewardsAndRevertReturn represents an ABI tuple
 type WithdrawDelegatorRewardsAndRevertReturn struct {
-	Coins []Coin
+	Coins []cmn.Coin
 }
 
 // EncodedSize returns the total encoded size of WithdrawDelegatorRewardsAndRevertReturn
