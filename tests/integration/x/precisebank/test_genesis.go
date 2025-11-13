@@ -234,6 +234,8 @@ func (s *GenesisTestSuite) TestExportGenesis() {
 		{
 			"balances, no remainder",
 			func() *types.GenesisState {
+				addr := s.network.App.GetAccountKeeper().GetModuleAddress(types.ModuleName)
+				fmt.Println("Module address:", addr.String(), s.network.App.GetBankKeeper().GetAllBalances(s.network.GetContext(), addr))
 				// Burn the initial balance created by network setup, then mint the expected amount
 				err := s.network.App.GetBankKeeper().BurnCoins(
 					s.network.GetContext(),

@@ -137,6 +137,8 @@ func (n *IntegrationNetwork) configureAndInitChain(evmApp evm.EvmApp) error {
 		sdktypes.NewCoin(n.cfg.chainCoins.BaseDenom(), totalBonded),
 	)
 
+	fmt.Println("gen accounts", genAccounts, fundedAccountBalances)
+
 	delegations := createDelegations(validators, genAccounts[0].GetAddress())
 
 	stakingParams := StakingCustomGenesisState{
