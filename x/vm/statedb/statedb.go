@@ -459,9 +459,11 @@ func (s *StateDB) AddPrecompileFn(snapshot int, events sdk.Events) error {
 		snapshot: snapshot,
 		events:   events,
 	})
-	s.precompileCallsCounter++
-	if s.precompileCallsCounter > types.MaxPrecompileCalls {
-		return fmt.Errorf("max calls to precompiles (%d) reached", types.MaxPrecompileCalls)
+	if types.MaxPrecompileCalls > 0 {
+		s.precompileCallsCounter++
+		if s.precompileCallsCounter > types.MaxPrecompileCalls {
+			return fmt.Errorf("max calls to precompiles (%d) reached", types.MaxPrecompileCalls)
+		}
 	}
 	return nil
 }

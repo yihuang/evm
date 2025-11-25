@@ -11,5 +11,6 @@ const (
 
 // MaxPrecompileCalls is the maximum number of precompile
 // calls within a transaction. We want to limit this because
-// for each precompile tx we're creating a cached context
-const MaxPrecompileCalls uint8 = 20
+// for each precompile tx we're creating a cached context.
+// set to 0 to remove the limit.
+var MaxPrecompileCalls uint8 = 20
